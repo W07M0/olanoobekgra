@@ -151,7 +151,7 @@ function stopParkour(reward=true){
  state.parkourBest=Math.max(state.parkourBest,score);
  finishMini('parkour','Noob Rider',score+' m',Math.min(1,score/420),score)
 }
-$('#parkourCanvas').addEventListener('pointerdown',e=>{e.preventDefault();parkourJump()});
+$('#parkourCanvas')?.addEventListener('pointerdown',e=>{e.preventDefault();parkourJump()});
 
 /* REFLEX */
 const reflexKeys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
@@ -220,8 +220,8 @@ document.addEventListener('keydown',e=>{
  if(dodgeRunning&&dodgeKeys[e.code]){dodgeData[dodgeKeys[e.code]]=true;e.preventDefault()}
 });
 document.addEventListener('keyup',e=>{if(dodgeRunning&&dodgeKeys[e.code])dodgeData[dodgeKeys[e.code]]=false});
-$('#dodgeCanvas').addEventListener('pointerdown',e=>{const r=e.currentTarget.getBoundingClientRect();dodgeData.left=e.clientX-r.left<r.width/2;dodgeData.right=!dodgeData.left});
-$('#dodgeCanvas').addEventListener('pointerup',()=>{if(dodgeData){dodgeData.left=false;dodgeData.right=false}});
+$('#dodgeCanvas')?.addEventListener('pointerdown',e=>{if(!dodgeData)return;const r=e.currentTarget.getBoundingClientRect();dodgeData.left=e.clientX-r.left<r.width/2;dodgeData.right=!dodgeData.left});
+$('#dodgeCanvas')?.addEventListener('pointerup',()=>{if(dodgeData){dodgeData.left=false;dodgeData.right=false}});
 
 async function submitMinigameScore(game,score){
  if(!db||!state.playerName)return;
@@ -239,5 +239,19 @@ async function loadMinigameLeaderboards(){
  }
  box.innerHTML=Object.entries(names).map(([game,name])=>`<div class="mini-board"><h3>${name}</h3>${(minigameBoards[game]||[]).map((r,i)=>`<div><b>${i+1}.</b><span>${safeText(r.player_name)}</span><strong>${game==='aim'?(r.score/100).toFixed(1)+'%':fmt(r.score)}</strong></div>`).join('')||'<p class="muted">Brak wyników</p>'}<small>Twój rekord: ${game==='aim'?((state.minigameRecords.aim||0)/100).toFixed(1)+'%':fmt(state.minigameRecords[game]||0)}</small></div>`).join('')
 }
-$('#miniResultClose').onclick=()=>{$('#miniResultOverlay').classList.remove('show');hideGames()};
+if($('#miniResultClose'))$('#miniResultClose').onclick=()=>{$('#miniResultOverlay')?.classList.remove('show');hideGames()};
 renderMiniCooldowns();
+
+
+/* Explicit public API — avoids missing globals after cache/deployment issues. */
+Object.assign(window,{
+ renderMiniCooldowns,
+ startAimGame,stopAimGame,
+ startParkour,stopParkour,parkourJump,
+ startReflex,stopReflex,
+ startDodge,stopDodge,
+ stopAllMinigames,hideGames,
+ loadMinigameLeaderboards,
+ submitMinigameScore
+});
+window.__ARCADE_V06_READY__=true;

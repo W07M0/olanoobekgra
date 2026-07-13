@@ -221,6 +221,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 /* Minigry i kasyno */
+if(typeof startAimGame!=='function'){
+ console.error('Minigames module did not load: js/minigames.js');
+ saveDiagnostic?.('Minigry','Nie załadowano js/minigames.js','Sprawdź, czy plik istnieje w repozytorium.');
+}
+
 if(typeof loadMinigameLeaderboards==='function'){try{loadMinigameLeaderboards()}catch(error){console.error('Minigame boards:',error)}}
 if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('Cooldowns:',error)}}
 try{renderCasino()}catch(error){console.error('Casino:',error)}
