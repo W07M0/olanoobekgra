@@ -1,5 +1,11 @@
 # Historia wersji
 
+## 0.5c — Player Profiles & Admin Tools
+- Profil gracza i Player ID.
+- Automatyczny ranking.
+- Ustawienia, eksport/import, tryb oszczędny.
+- Panel administratora z Supabase Auth.
+
 ## 0.5b — Pet Evolution Update
 - Osobne egzemplarze petów i migracja starego zapisu.
 - Poziomy oraz EXP petów.

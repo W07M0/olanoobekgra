@@ -10,7 +10,7 @@ const defaults={
  perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,permRebirthPower:0,permGemIncome:0,permBossLoot:0,permClickPower:0,permAutoPower:0,
  rebirths:0,world:'neon',unlockedWorlds:['neon'],pets:[],equipped:[],
  sound:true,music:false,lastDaily:0,dailyStreak:0,claimedAchievements:[],quests:null,
- leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
+ leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,playerName:'',nameChangedAt:0,effectsLevel:2,ecoMode:false,autoLeaderboard:true,eventStats:{golden:0,rain:0,crates:0,minigames:0}
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
 
@@ -50,6 +50,19 @@ function migratePetInstancesV05b(){
  localStorage.setItem(SAVE_KEY,JSON.stringify(state))
 }
 migratePetInstancesV05b();
+
+const PROFILE_MIGRATION_KEY='olaProfile_v05c';
+function ensurePlayerProfileV05c(){
+ state.playerName=String(state.playerName||localStorage.getItem('olaPlayerName')||'').trim().slice(0,16);
+ state.nameChangedAt=Number(state.nameChangedAt)||0;
+ state.effectsLevel=Math.max(0,Math.min(2,Number(state.effectsLevel??2)));
+ state.ecoMode=Boolean(state.ecoMode);
+ state.autoLeaderboard=state.autoLeaderboard!==false;
+ localStorage.setItem(PROFILE_MIGRATION_KEY,'done');
+ localStorage.setItem(SAVE_KEY,JSON.stringify(state))
+}
+ensurePlayerProfileV05c();
+
 
 
 const WORLD_RESET_MIGRATION_KEY='olaWorldReset_v04c';
@@ -110,7 +123,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.5b';
+const GAME_VERSION='0.5c';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -134,7 +147,21 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
-  version:'0.5b',date:'Aktualna wersja',title:'Pet Evolution Update',
+  version:'0.5c',date:'Aktualna wersja',title:'Player Profiles & Admin Tools',
+  summary:'Profile graczy, automatyczny ranking, ustawienia i bezpieczny panel administratora.',
+  changes:[
+   'Dodano zapamiętywany nick oraz stały Player ID.',
+   'Wynik zapisuje się automatycznie co 45 sekund i po ważnych wydarzeniach.',
+   'Dodano rankingi punktów, poziomu oraz rebirthów.',
+   'Dodano panel ustawień z eksportem i importem zapisu.',
+   'Dodano tryb oszczędny oraz regulację intensywności efektów.',
+   'Dodano logowanie administratora przez Supabase Auth.',
+   'Panel admina pozwala moderować graczy, ranking i feedback.',
+   'Dodano SQL z RLS i historią działań administratora.'
+  ]
+ },
+ {
+  version:'0.5b',date:'Poprzednia aktualizacja',title:'Pet Evolution Update',
   summary:'Osobne egzemplarze petów, poziomy, ewolucje i porządki w panelu bocznym.',
   changes:[
    'Każdy zdobyty pet jest teraz osobnym egzemplarzem z unikalnym identyfikatorem.',
@@ -306,7 +333,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.5b';
+let selectedPatch='0.5c';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');
@@ -326,12 +353,14 @@ const featureUnlocks={
  awards:2,
  patchnotes:1,
  collection:5,
- feedback:1
+ feedback:1,
+ settings:1,
+ admin:1
 };
 function requiredLevelForFeature(id){return featureUnlocks[id]||1}
 function featureUnlocked(id){return state.level>=requiredLevelForFeature(id)}
 function lockedFeatureMessage(id){
- const names={shop:'Sklep',pets:'Pety',minigames:'Minigry',skins:'Skiny',casino:'Kasyno',worlds:'Światy',rebirth:'Rebirth',awards:'Nagrody',patchnotes:'Patch notes',collection:'Kolekcja',feedback:'Feedback'};
+ const names={shop:'Sklep',pets:'Pety',minigames:'Minigry',skins:'Skiny',casino:'Kasyno',worlds:'Światy',rebirth:'Rebirth',awards:'Nagrody',patchnotes:'Patch notes',collection:'Kolekcja',feedback:'Feedback',settings:'Ustawienia',admin:'Admin'};
  return `${names[id]||id} odblokuje się na poziomie ${requiredLevelForFeature(id)}`
 }
 

@@ -1,4 +1,4 @@
-# Ola to Noobek — wersja 0.5b
+# Ola to Noobek — wersja 0.5c
 
 Wersja techniczna. Rozgrywka i zapis graczy pozostają zgodne z wersją 0.4g.
 
@@ -46,3 +46,7 @@ Nie publikuj klucza Supabase `service_role`. Klucz publishable/anon używany prz
 
 ## System petów 0.5b
 Pety są zapisywane jako osobne egzemplarze z `uid`, poziomem, EXP i poziomem ewolucji. Stary zapis migruje automatycznie.
+
+
+## Profile i admin 0.5c
+Uruchom `supabase_profiles_admin_v0_5c.sql` i przeczytaj `ADMIN_SETUP.md`.

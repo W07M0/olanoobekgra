@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
-<title>Ola to Noobek v0.5b — Ultimate Clicker</title>
+<title>Ola to Noobek v0.5c — Ultimate Clicker</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
 <nav class="panel nav">
- <div class="logo">OLA TO<br><span>NOOBEK</span><small class="version-badge">v0.5b</small></div>
+ <div class="logo">OLA TO<br><span>NOOBEK</span><small class="version-badge">v0.5c</small></div>
  <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
  <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
  <button class="nav-btn" data-view="pets">🐾 <span class="label">Pety</span><span class="dot" id="petDot">0</span></button>
@@ -22,7 +22,9 @@
  <button class="nav-btn" data-view="awards">🏆 <span class="label">Nagrody</span></button>
  <button class="nav-btn" data-view="collection">📚 <span class="label">Kolekcja</span></button>
  <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
- <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5b</span></button>
+ <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
+ <button class="nav-btn hidden" id="adminNavBtn" data-view="admin">🛡️ <span class="label">Admin</span></button>
+ <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5c</span></button>
  <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button><button class="icon-btn" id="resetBtn">↻</button></div>
 </nav>
 
@@ -236,10 +238,49 @@
 
 </section>
 
+
+<section class="view" id="view-settings">
+ <div class="section-title"><div><h1>⚙️ Ustawienia i profil</h1><p class="muted">Nick, Player ID, wydajność oraz kopia zapisu.</p></div><span class="chip">Profil lokalny</span></div>
+ <div class="settings-grid">
+  <div class="card settings-card"><h2>👤 Profil gracza</h2>
+   <label>Nick na rankingu</label><div class="settings-row"><input id="settingsPlayerName" maxlength="16" placeholder="3–16 znaków"><button class="small-btn" id="savePlayerName">Zapisz</button></div>
+   <p class="muted">Nick można zmienić raz na godzinę.</p>
+   <label>Player ID</label><div class="settings-row"><input id="settingsPlayerId" readonly><button class="small-btn" id="copyPlayerId">Kopiuj</button></div>
+   <div class="profile-status" id="profileStatus">Profil nie został zapisany online.</div>
+  </div>
+  <div class="card settings-card"><h2>🎮 Gra i wydajność</h2>
+   <label class="setting-toggle"><span>Dźwięki</span><input type="checkbox" id="settingsSound"></label>
+   <label class="setting-toggle"><span>Muzyka</span><input type="checkbox" id="settingsMusic"></label>
+   <label class="setting-toggle"><span>Automatyczny ranking</span><input type="checkbox" id="settingsAutoBoard"></label>
+   <label>Intensywność efektów</label><select id="settingsEffects"><option value="0">Niska</option><option value="1">Średnia</option><option value="2">Wysoka</option></select>
+   <label class="setting-toggle"><span>Tryb oszczędny</span><input type="checkbox" id="settingsEco"></label>
+  </div>
+  <div class="card settings-card"><h2>💾 Dane gry</h2>
+   <button class="small-btn settings-button" id="manualSave">Zapisz teraz</button>
+   <button class="small-btn settings-button" id="exportSave">Eksportuj zapis</button>
+   <label class="small-btn settings-button import-label">Importuj zapis<input type="file" id="importSave" accept=".json,application/json" hidden></label>
+   <button class="small-btn settings-button danger-btn" id="resetSave">Zresetuj całą grę</button>
+  </div>
+  <div class="card settings-card"><h2>🛡️ Logowanie administratora</h2>
+   <input id="adminEmail" type="email" autocomplete="username" placeholder="E-mail administratora">
+   <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Hasło">
+   <div class="settings-row"><button class="small-btn" id="adminLogin">Zaloguj</button><button class="small-btn hidden" id="adminLogout">Wyloguj</button></div>
+   <p class="muted" id="adminLoginStatus">Panel pojawi się tylko dla konta administratora.</p>
+  </div>
+ </div>
+</section>
+<section class="view" id="view-admin">
+ <div class="section-title"><div><h1>🛡️ Panel administratora</h1><p class="muted">Moderacja graczy, rankingu i komentarzy.</p></div><button class="small-btn" id="refreshAdmin">Odśwież</button></div>
+ <div class="admin-summary" id="adminSummary"></div>
+ <div class="admin-tabs"><button class="tab active" data-admin-tab="players">Gracze</button><button class="tab" data-admin-tab="feedback">Feedback</button><button class="tab" data-admin-tab="actions">Historia</button></div>
+ <div class="admin-panel active" id="admin-players"><div class="settings-row"><input id="adminPlayerSearch" placeholder="Nick lub Player ID"><button class="small-btn" id="adminSearchPlayers">Szukaj</button></div><div class="admin-list" id="adminPlayersList"></div></div>
+ <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
+ <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
+</section>
 <section class="view" id="view-patchnotes">
  <div class="section-title">
   <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ola to Noobek.</p></div>
-  <div class="chip">Aktualna wersja: <b>0.5b</b></div>
+  <div class="chip">Aktualna wersja: <b>0.5c</b></div>
  </div>
  <div class="patch-layout">
   <aside class="patch-list" id="patchList"></aside>
@@ -257,10 +298,10 @@
 <aside class="right">
  <section class="panel event-box"><div class="event-title" id="eventTitle">✨ Następny event</div><div class="event-timer" id="eventTimer">00:45</div><div class="muted" id="eventDesc">Losowy bonus pojawi się za chwilę.</div></section>
  <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
- <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="global">Global</button><button class="tab" data-board="recent">Ostatnie</button></div><div id="leaderboard"></div><div class="name-save"><input id="playerName" maxlength="14" value="Gracz"><button class="small-btn" id="saveScore">Zapisz</button></div></section>
+ <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="name-save"><input id="playerName" maxlength="14" value="Gracz"><button class="small-btn" id="saveScore">Zapisz</button></div></section>
  
  <section class="panel mini-patch-card">
-  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5b</span></div>
+  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5c</span></div>
   <p><b>Skin Renderer Hotfix</b></p>
   <p class="muted">Naprawiony renderer skinów i blokowanie całego interfejsu.</p>
   <button class="small-btn" onclick="showView('patchnotes')">Zobacz historię</button>
