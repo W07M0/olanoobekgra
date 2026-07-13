@@ -110,7 +110,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.5c';
+const GAME_VERSION='0.5d';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -133,6 +133,22 @@ window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error
 window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reason?.message||e.reason,e.reason?.stack||''));
 
 const patchNotes=[
+ {
+  version:'0.5d',date:'Aktualna wersja',title:'Polish & Overhaul',
+  summary:'Duże porządki interfejsu, petów, skinów i ustawień.',
+  changes:[
+   'Przebudowano wygląd menu bocznego i kart.',
+   'Orbita petów jest wycentrowana względem klikera.',
+   'Karty petów są czytelniejsze i bardziej kompaktowe.',
+   'Ekran zdobycia peta pokazuje wyraźną ikonę i rzadkość.',
+   'Skiny mają mocniejsze efekty zależne od rzadkości.',
+   'Usunięto ręczne dodawanie wyniku do rankingu.',
+   'Usunięto eksport, import, ręczny zapis i reset dla zwykłego gracza.',
+   'Ustawienia zostały uproszczone.',
+   'Poprawiono responsywność i ograniczono nadmiar efektów.',
+   'Zachowano dotychczasowy zapis i całą zawartość gry.'
+  ]
+ },
  {
   version:'0.5c-r3',date:'Poprawka 0.5c',title:'Pets, Cases & Rebrand Fix',
   summary:'Naprawione pety widmo, zgodne losowania i nowy wygląd klikera.',
@@ -158,7 +174,7 @@ const patchNotes=[
   ]
  },
  {
-  version:'0.5c',date:'Aktualna wersja',title:'Profiles & Ranking — Fixed',
+  version:'0.5c',date:'Poprzednia aktualizacja',title:'Profiles & Ranking — Fixed',
   summary:'Profile graczy i panel admina dodane bez naruszania systemów gry.',
   changes:[
    'Naprawiono ranking i przywrócono funkcję saveOnline.',
@@ -344,7 +360,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.5c';
+let selectedPatch='0.5d';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');

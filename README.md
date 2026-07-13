@@ -1,4 +1,4 @@
-# Ola to Noobek — wersja 0.5c
+# Ola to Noobek — wersja 0.5d
 
 Wersja techniczna. Rozgrywka i zapis graczy pozostają zgodne z wersją 0.4g.
 
@@ -59,3 +59,7 @@ automatycznie pokazuje stare wpisy z tabeli `scores`.
 
 Plik `supabase_migrate_old_scores_v0_5c.sql` pozwala jednorazowo przenieść stare wyniki
 do nowej tabeli `players`.
+
+
+## 0.5d — Polish & Overhaul
+Nowe UI, poprawiona orbita petów, ulepszone skiny i uproszczone ustawienia.

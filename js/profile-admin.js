@@ -32,7 +32,7 @@ function renderProfileSettings(){
  $('#settingsEco').checked=state.ecoMode;
  $('#rankingProfileName').textContent=state.playerName||'Ustaw nick w profilu';
  $('#playerName').value=state.playerName||'';
- $('#profileStatus').textContent=state.playerName?'Profil gotowy — ranking zapisuje się automatycznie.':'Ustaw nick, aby włączyć ranking.';
+ $('#profileStatus').textContent=state.playerName?'Profil gotowy — ranking zapisuje się automatycznie.':'Ustaw nick, aby włączyć ranking.';const auto=$('#autosaveStatus');if(auto)auto.textContent='Automatyczny zapis aktywny';
  applyProfilePerformance()
 }
 async function savePlayerProfile(showError=false){
@@ -196,10 +196,10 @@ function bindProfileSettings(){
  $('#settingsAutoBoard').onchange=e=>{state.autoLeaderboard=e.target.checked;save()};
  $('#settingsEffects').onchange=e=>{state.effectsLevel=+e.target.value;applyProfilePerformance();save()};
  $('#settingsEco').onchange=e=>{state.ecoMode=e.target.checked;applyProfilePerformance();save()};
- $('#manualSave').onclick=()=>{save();automaticLeaderboardSave();toast('Zapisano')};
- $('#exportSave').onclick=exportProfileSave;
- $('#importSave').onchange=e=>importProfileSave(e.target.files?.[0]);
- $('#resetSave').onclick=resetProfileSave;
+ 
+ 
+ 
+ 
  $$('.board-tabs [data-board]').forEach(button=>button.onclick=()=>{
   boardMode=button.dataset.board;
   $$('.board-tabs [data-board]').forEach(x=>x.classList.toggle('active',x===button));

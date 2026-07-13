@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
-<title>Ultimate Noob Clicker v0.5c</title>
+<title>Ultimate Noob Clicker v0.5d</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
 <nav class="panel nav">
- <div class="logo">ULTIMATE<br><span>NOOB CLICKER</span><small class="version-badge">v0.5c</small></div>
+ <div class="logo">ULTIMATE<br><span>NOOB CLICKER</span><small class="version-badge">v0.5d</small></div>
  <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
  <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
  <button class="nav-btn" data-view="pets">🐾 <span class="label">Pety</span><span class="dot" id="petDot">0</span></button>
@@ -25,7 +25,7 @@
  <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
  <button class="nav-btn hidden" id="adminNavBtn" data-view="admin">🛡️ <span class="label">Admin</span></button>
  <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5c</span></button>
- <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button><button class="icon-btn" id="resetBtn">↻</button></div>
+ <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button></div>
 </nav>
 
 <main class="panel main" id="mainPanel">
@@ -44,8 +44,8 @@
  <div class="world-banner" id="worldBanner"><span id="worldEmoji">🌃</span><div><b id="worldName">Neonowa Piwnica</b><small id="worldFlavor">Pierwszy krok każdego nooba.</small></div></div>
  <div class="arena">
   <div class="aura" id="aura"></div>
-  <div class="clicker-wrap" id="clickerWrap"><div class="skin-orbit-fx" id="skinOrbitFx"></div><button class="clicker" id="clicker"><span class="skin-fx"></span><span class="clicker-word" id="clickerWord">NOOB</span></button><div class="skin-particles" id="skinParticles"></div></div>
-  <div class="pet-orbit" id="petOrbit"></div>
+  <div class="clicker-wrap" id="clickerWrap"><div class="skin-orbit-fx" id="skinOrbitFx"></div><div class="pet-orbit" id="petOrbit"></div><button class="clicker" id="clicker"><span class="skin-fx"></span><span class="clicker-word" id="clickerWord">NOOB</span></button><div class="skin-particles" id="skinParticles"></div></div>
+  
   <div class="combo" id="combo">COMBO x1</div>
  </div>
  
@@ -241,8 +241,8 @@
 
 <section class="view" id="view-settings">
  <div class="section-title">
-  <div><h1>⚙️ Ustawienia i profil</h1><p class="muted">Nick, Player ID, wydajność oraz kopia zapisu.</p></div>
-  <span class="chip">Profil lokalny</span>
+  <div><h1>⚙️ Ustawienia i profil</h1><p class="muted">Nick, Player ID, dźwięki i wydajność.</p></div>
+  <span class="chip">Profil gracza</span>
  </div>
  <div class="settings-grid">
   <div class="card settings-card">
@@ -266,12 +266,10 @@
   </div>
 
   <div class="card settings-card">
-   <h2>💾 Dane gry</h2>
-   <button class="small-btn settings-button" id="manualSave">Zapisz teraz</button>
-   <button class="small-btn settings-button" id="exportSave">Eksportuj zapis</button>
-   <label class="small-btn settings-button import-label">Importuj zapis<input type="file" id="importSave" accept=".json,application/json" hidden></label>
-   <button class="small-btn settings-button danger-btn" id="resetSave">Zresetuj całą grę</button>
-  </div>
+      <h2>💾 Automatyczny zapis</h2>
+      <p class="muted">Postęp zapisuje się automatycznie w przeglądarce. Ranking synchronizuje się po ustawieniu nicku.</p>
+      <div class="profile-status" id="autosaveStatus">Automatyczny zapis aktywny.</div>
+    </div>
 
   <div class="card settings-card">
    <h2>🛡️ Logowanie administratora</h2>
@@ -305,7 +303,7 @@
 <section class="view" id="view-patchnotes">
  <div class="section-title">
   <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ultimate Noob Clicker.</p></div>
-  <div class="chip">Aktualna wersja: <b>0.5c</b></div>
+  <div class="chip">Aktualna wersja: <b>0.5d</b></div>
  </div>
  <div class="patch-layout">
   <aside class="patch-list" id="patchList"></aside>
@@ -320,15 +318,15 @@
 </section>
 </main>
 
-<aside class="right">
+<aside class="right right-overhaul">
  <section class="panel event-box"><div class="event-title" id="eventTitle">✨ Następny event</div><div class="event-timer" id="eventTimer">00:45</div><div class="muted" id="eventDesc">Losowy bonus pojawi się za chwilę.</div></section>
  <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
- <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="name-save"><input id="playerName" maxlength="14" value="Gracz"><button class="small-btn" id="saveScore">Zapisz</button></div></section>
+ <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="compact-profile"><span id="rankingProfileName">Ustaw nick w profilu</span><input id="playerName" hidden></div></section>
  
  <section class="panel mini-patch-card">
-  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5c</span></div>
-  <p><b>Pets, Cases & Rebrand Fix</b></p>
-  <p class="muted">Naprawione pety widmo, losowania oraz nowy przycisk NOOB.</p>
+  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5d</span></div>
+  <p><b>Polish & Overhaul</b></p>
+  <p class="muted">Nowe UI, poprawiona orbita petów i ulepszone skiny.</p>
   <button class="small-btn" onclick="showView('patchnotes')">Zobacz historię</button>
  </section>
 
@@ -336,7 +334,7 @@
 </aside>
 </div>
 
-<div class="overlay" id="crateOverlay"><div class="modal egg-modal"><div class="pet-egg" id="petEgg"><span>?</span></div><div class="egg-glow" id="eggGlow"></div><h2 style="text-align:center" id="crateTitle">Otwieranie jajka…</h2><p style="text-align:center" id="crateResult"></p><button class="small-btn hidden" id="crateClose" style="width:100%">Super!</button></div></div>
+<div class="overlay" id="crateOverlay"><div class="modal egg-modal"><div class="pet-egg" id="petEgg"><span>?</span></div><div class="egg-glow" id="eggGlow"></div><div class="pet-reveal-card"><div class="pet-reveal-icon" id="petRevealIcon">❔</div><h2 id="crateTitle">Otwieranie jajka…</h2><div class="pet-reveal-rarity" id="petRevealRarity"></div><p id="crateResult"></p></div><button class="small-btn hidden" id="crateClose" style="width:100%">Super!</button></div></div>
 
 <div class="overlay" id="goldCrateOverlay"><div class="modal gold-modal"><div class="gold-rays"></div><div class="gold-case">👑</div><h2 id="goldTitle" style="text-align:center">GOLD NOOB CASE</h2><div class="roulette-window"><div class="roulette-strip" id="rouletteStrip"></div><div class="roulette-marker"></div></div><p id="goldResult" style="text-align:center;min-height:28px;font-weight:900"></p><button class="small-btn gold-btn hidden" id="goldClose" style="width:100%">Załóż skin</button></div></div>
 

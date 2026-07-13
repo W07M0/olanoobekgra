@@ -409,13 +409,12 @@ function openCrate(){
  const instance={uid:createPetUid(),type:base.id,level:1,xp:0,evolution:0};
  state.gems-=eggCost;state.eventStats.crates++;
  const overlay=$('#crateOverlay'),egg=$('#petEgg'),glow=$('#eggGlow');
- overlay.classList.add('show');$('#crateTitle').textContent='Jajko zaczyna się ruszać…';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');
+ overlay.classList.add('show');$('#crateTitle').textContent='Jajko zaczyna się ruszać…';$('#petRevealIcon').textContent='❔';$('#petRevealRarity').textContent='';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');
  egg.className='pet-egg hatching';egg.innerHTML='<span>?</span>';glow.classList.remove('show');sfx('buy');
- setTimeout(()=>{egg.classList.add('cracking');$('#crateTitle').textContent='Coś jest w środku…';tone(180,.09,'square',.035);tone(240,.08,'square',.028,.1)},900);
+ setTimeout(()=>{egg.classList.add('cracking');$('#crateTitle').textContent='Coś jest w środku…';$('#petRevealIcon').textContent='✨';tone(180,.09,'square',.035);tone(240,.08,'square',.028,.1)},900);
  setTimeout(()=>{
   egg.classList.remove('hatching');egg.classList.add('opened');glow.classList.add('show');egg.innerHTML=`<span>${base.emoji}</span>`;state.pets.push(instance);
-  $('#crateTitle').textContent=base.emoji+' '+base.name;
-  $('#crateResult').innerHTML=`Rzadkość: <b>${base.rarity.toUpperCase()}</b><br>Mnożnik: <b>x${base.mult}</b><br>Nowy osobny egzemplarz`;
+  $('#petRevealIcon').textContent=base.emoji;$('#crateTitle').textContent=base.name;$('#petRevealRarity').textContent=base.rarity.toUpperCase();$('#crateResult').innerHTML=`Mnożnik: <b>x${base.mult}</b><br>Nowy osobny egzemplarz`;
   $('#crateClose').classList.remove('hidden');
   const rare=['legendary','mythic','secret'].includes(base.rarity);sfx(rare?'good':'buy');if(rare)confetti();render()
  },1900)
