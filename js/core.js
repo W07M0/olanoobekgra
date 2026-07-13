@@ -33,7 +33,20 @@ function petDisplayName(instance){
  const base=getPetBase(instance),tier=PET_EVOLUTIONS[instance.evolution||0];
  return instance.evolution>0?`${tier.name} • ${base.name}`:base.name
 }
+
+function sanitizeEquippedPets(){
+ const valid=new Set((Array.isArray(state.pets)?state.pets:[]).map(p=>p?.uid).filter(Boolean));
+ const old=Array.isArray(state.equipped)?state.equipped:[];
+ const clean=[...new Set(old.filter(uid=>valid.has(uid)))].slice(0,maxPetSlots());
+ if(clean.length!==old.length||clean.some((uid,i)=>uid!==old[i])){
+  state.equipped=clean;
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch{}
+ }
+ return clean
+}
+
 function petMultiplier(){
+ sanitizeEquippedPets();
  let base=state.equipped.reduce((m,uid)=>{
   const instance=getPetInstance(uid);
   return instance?m*petInstanceMultiplier(instance):m
@@ -42,6 +55,7 @@ function petMultiplier(){
  return 1+(base-1)*upgrade
 }
 function petExpMultiplier(){
+ sanitizeEquippedPets();
  return state.equipped.reduce((m,uid)=>{
   const instance=getPetInstance(uid),base=getPetBase(instance);
   if(!instance)return m;
@@ -50,6 +64,7 @@ function petExpMultiplier(){
  },1)*(1+(state.petExpBonus||0)*.035)
 }
 function grantPetXp(amount,allPets=false){
+ sanitizeEquippedPets();
  const targets=allPets?state.pets:state.equipped.map(getPetInstance).filter(Boolean);
  if(!targets.length||amount<=0)return;
  for(const pet of targets){

@@ -134,6 +134,19 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
+  version:'0.5c-r3',date:'Poprawka 0.5c',title:'Pets, Cases & Rebrand Fix',
+  summary:'Naprawione pety widmo, zgodne losowania i nowy wygląd klikera.',
+  changes:[
+   'Usunięto nieistniejące pety z listy wyposażonych.',
+   'Licznik wyposażonych petów pokazuje tylko prawdziwe egzemplarze.',
+   'Animacja skinów zawsze zatrzymuje się na faktycznie wygranym skinie.',
+   'Dodano animację pękającego jajka przy zdobywaniu peta.',
+   'Pety kosztują teraz 30 diamentów zamiast Noob Coinów.',
+   'Usunięto odniesienia do Oli i zmieniono nazwę na Ultimate Noob Clicker.',
+   'Zdjęcie na głównym przycisku zastąpiono napisem NOOB.'
+  ]
+ },
+ {
   version:'0.5c-r2',date:'Poprawka 0.5c',title:'Ranking Compatibility Fix',
   summary:'Przywrócono stare wpisy rankingowe i zgodność z tabelą scores.',
   changes:[

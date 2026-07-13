@@ -341,6 +341,7 @@ function renderPetInstance(instance){
  </div>`
 }
 function renderPets(){
+ sanitizeEquippedPets();
  $('#petDot').textContent=state.pets.length;
  $('#equippedCount').textContent=state.equipped.length+'/'+maxPetSlots();
  $('#petBonus').textContent='x'+petMultiplier().toFixed(2);
@@ -402,17 +403,22 @@ function fusePets(type,tier){
 function weightedPet(){let adjusted=pets.map((p,i)=>({...p,w:p.chance*Math.pow(1+(state.luck||0)*.08,i/2)})),total=adjusted.reduce((a,p)=>a+p.w,0),r=Math.random()*total,sum=0;for(let p of adjusted){sum+=p.w;if(r<=sum)return p}return pets[0]}
 function openCrate(){
  if(!featureUnlocked('pets'))return toast(lockedFeatureMessage('pets'));
- if(state.coins<100)return toast('Potrzebujesz 100 Noob Coinów');
- state.coins-=100;state.eventStats.crates++;
- $('#crateOverlay').classList.add('show');$('#crateTitle').textContent='Otwieranie skrzynki…';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');sfx('buy');
+ const eggCost=30;
+ if(state.gems<eggCost)return toast(`Potrzebujesz ${eggCost} diamentów`);
+ const base=weightedPet();
+ const instance={uid:createPetUid(),type:base.id,level:1,xp:0,evolution:0};
+ state.gems-=eggCost;state.eventStats.crates++;
+ const overlay=$('#crateOverlay'),egg=$('#petEgg'),glow=$('#eggGlow');
+ overlay.classList.add('show');$('#crateTitle').textContent='Jajko zaczyna się ruszać…';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');
+ egg.className='pet-egg hatching';egg.innerHTML='<span>?</span>';glow.classList.remove('show');sfx('buy');
+ setTimeout(()=>{egg.classList.add('cracking');$('#crateTitle').textContent='Coś jest w środku…';tone(180,.09,'square',.035);tone(240,.08,'square',.028,.1)},900);
  setTimeout(()=>{
-  let base=weightedPet(),instance={uid:createPetUid(),type:base.id,level:1,xp:0,evolution:0};
-  state.pets.push(instance);
+  egg.classList.remove('hatching');egg.classList.add('opened');glow.classList.add('show');egg.innerHTML=`<span>${base.emoji}</span>`;state.pets.push(instance);
   $('#crateTitle').textContent=base.emoji+' '+base.name;
   $('#crateResult').innerHTML=`Rzadkość: <b>${base.rarity.toUpperCase()}</b><br>Mnożnik: <b>x${base.mult}</b><br>Nowy osobny egzemplarz`;
-  $('#crateClose').classList.remove('hidden');sfx(['legendary','mythic','secret'].includes(base.rarity)?'good':'buy');
-  if(['legendary','mythic','secret'].includes(base.rarity))confetti();render()
- },1700)
+  $('#crateClose').classList.remove('hidden');
+  const rare=['legendary','mythic','secret'].includes(base.rarity);sfx(rare?'good':'buy');if(rare)confetti();render()
+ },1900)
 }
 
 function renderWorldPath(){
@@ -611,4 +617,29 @@ function applySkin(){
 }
 function equipSkin(id){if(state.ownedSkins.includes(id)){state.activeSkin=id;sfx('buy');render()}}
 function randomSkin(){let a=skins.filter(s=>s.id!=='classic'),r=Math.random()*a.reduce((n,s)=>n+s.weight,0),sum=0;for(let s of a){sum+=s.weight;if(r<=sum)return s}return a[0]}
-function openGoldCase(){if(!featureUnlocked('skins'))return toast(lockedFeatureMessage('skins'));if(state.gems<25)return toast('Potrzebujesz 25 diamentów');state.gems-=25;let w=randomSkin(),pool=[];for(let i=0;i<28;i++)pool.push(i===24?w:randomSkin());$('#goldCrateOverlay').classList.add('show');$('#goldClose').classList.add('hidden');$('#goldResult').textContent='';$('#goldTitle').textContent='GOLD NOOB CASE';$('#rouletteStrip').innerHTML=pool.map(s=>`<div class="roulette-item" style="--c:${s.color}">${s.emoji}</div>`).join('');$('#rouletteStrip').style.transition='none';$('#rouletteStrip').style.transform='translateX(0)';requestAnimationFrame(()=>requestAnimationFrame(()=>{$('#rouletteStrip').style.transition='transform 4s cubic-bezier(.12,.7,.12,1)';$('#rouletteStrip').style.transform='translateX(-2090px)'}));setTimeout(()=>{if(!state.ownedSkins.includes(w.id))state.ownedSkins.push(w.id);$('#goldTitle').textContent=w.emoji+' '+w.name;$('#goldResult').innerHTML=`Rzadkość: <b style="color:${w.color}">${w.rarity.toUpperCase()}</b><br>${w.desc}`;$('#goldClose').classList.remove('hidden');$('#goldClose').dataset.skin=w.id;if(w.id==='gold'||w.rarity==='legendary')confetti();sfx('good');render()},4200)}
+function openGoldCase(){
+ if(!featureUnlocked('skins'))return toast(lockedFeatureMessage('skins'));
+ if(state.gems<25)return toast('Potrzebujesz 25 diamentów');
+ state.gems-=25;
+ const winner=randomSkin(),targetIndex=24;
+ const pool=Array.from({length:30},(_,i)=>i===targetIndex?winner:randomSkin());
+ $('#goldCrateOverlay').classList.add('show');$('#goldClose').classList.add('hidden');$('#goldResult').textContent='';$('#goldTitle').textContent='GOLD NOOB CASE';
+ const strip=$('#rouletteStrip');
+ strip.innerHTML=pool.map((skin,i)=>`<div class="roulette-item ${i===targetIndex?'winner-preview':''}" data-index="${i}" style="--c:${skin.color}">${skin.emoji}</div>`).join('');
+ strip.style.transition='none';strip.style.transform='translateX(0)';
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const win=document.querySelector('.roulette-window'),target=strip.querySelector(`[data-index="${targetIndex}"]`);
+  const translate=win.clientWidth/2-(target.offsetLeft+target.offsetWidth/2);
+  strip.style.transition='transform 4s cubic-bezier(.12,.7,.12,1)';
+  strip.style.transform=`translateX(${translate}px)`
+ }));
+ setTimeout(()=>{
+  if(!state.ownedSkins.includes(winner.id))state.ownedSkins.push(winner.id);
+  $('#goldTitle').textContent=winner.emoji+' '+winner.name;
+  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}`;
+  $('#goldClose').classList.remove('hidden');$('#goldClose').dataset.skin=winner.id;
+  if(winner.id==='gold'||['legendary','mythic','secret'].includes(winner.rarity))confetti();
+  sfx('good');render()
+ },4200)
+}
+
