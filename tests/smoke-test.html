@@ -1,24 +1,20 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test v0.6 Final Fix</title>
+<title>Test v0.6 Interaction Fix</title>
 <style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
-<body><h1>Test techniczny v0.6 Final Fix</h1><button id="run">Uruchom</button><div id="out"></div>
+<body><h1>Test techniczny v0.6 Interaction Fix</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
 async function run(){
  const out=document.querySelector('#out');out.innerHTML='';
- const index=await fetch('../index.html?test=06final',{cache:'no-store'}).then(r=>r.text());
- const refs=[...index.matchAll(/(?:src|href)="([^"]+)"/g)].map(x=>x[1]).filter(x=>!x.startsWith('http'));
- for(const ref of refs){
-  const url='../'+ref;
-  const response=await fetch(url,{cache:'no-store'});
-  out.innerHTML+=`<div class="row ${response.ok?'ok':'bad'}">${response.ok?'✅':'❌'} ${ref} — HTTP ${response.status}</div>`;
- }
+ const index=await fetch('../index.html?v=06interaction',{cache:'no-store'}).then(r=>r.text());
+ const app=await fetch('../js/app.js?v=06interaction',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['CSS ma końcówkę .css',index.includes('css/styles.css')],
-  ['JS ma końcówkę .js',index.includes('js/data.js')],
-  ['Nowe minigry',index.includes('Noob Arcade')&&index.includes('Brainrot Dodge')],
-  ['Nowe kasyno',index.includes('casinoChips')&&index.includes('Casino Level')],
-  ['Brak starego układu',!index.includes('Noob Memory')]
+  ['Brak starego guessLower',!app.includes("$('#guessLower').onclick")],
+  ['Brak starego memoryRunning',!app.includes('memoryRunning')],
+  ['Kasyno v0.6',app.includes("bindClick('#spinSlots'")&&app.includes("bindClick('#claimCasinoSupply'")],
+  ['Minigry v0.6',index.includes('Noob Arcade')&&index.includes('Brainrot Dodge')],
+  ['Kliki odporne na brak elementu',app.includes('function bindClick')],
+  ['Eventy zabezpieczone',app.includes("try{tickEvent()}")]
  ];
  checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`);
 }
