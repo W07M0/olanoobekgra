@@ -70,29 +70,104 @@ async function automaticLeaderboardSave(){
 
 /* These functions intentionally override only the old leaderboard functions. */
 async function loadBoard(){
- if(!db)return;
+ if(!db)return renderBoard();
+
  const metric=['score','level','rebirths'].includes(boardMode)?boardMode:'score';
  const column=metric==='score'?'best_score':metric;
- const {data,error}=await db.from('players')
-  .select('player_id,player_name,best_score,level,rebirths,last_seen,is_banned')
-  .eq('is_banned',false).order(column,{ascending:false}).limit(10);
- if(error){console.error(error);return}
- onlineBoard=data||[];renderBoard()
+
+ try{
+  const {data,error}=await db.from('players')
+   .select('player_id,player_name,best_score,level,rebirths,last_seen,is_banned')
+   .eq('is_banned',false)
+   .order(column,{ascending:false})
+   .limit(10);
+
+  if(!error&&data?.length){
+   onlineBoard=data.map(row=>({...row,source:'players'}));
+   return renderBoard()
+  }
+
+  // Stare wyniki były zapisywane w tabeli scores.
+  // Używamy jej jako zgodności wstecznej, dopóki gracze nie utworzą profili.
+  if(metric==='score'){
+   const oldResult=await db.from('scores')
+    .select('player_id,player_name,score,updated_at')
+    .order('score',{ascending:false})
+    .limit(10);
+
+   if(!oldResult.error&&oldResult.data?.length){
+    onlineBoard=oldResult.data.map(row=>({
+     player_id:row.player_id,
+     player_name:row.player_name,
+     best_score:row.score,
+     level:1,
+     rebirths:0,
+     last_seen:row.updated_at,
+     source:'scores'
+    }));
+    return renderBoard()
+   }
+  }
+
+  onlineBoard=[];
+  if(error)console.warn('Nowy ranking players:',error.message);
+  renderBoard()
+ }catch(error){
+  console.error(error);
+  saveDiagnostic?.('Ranking',error.message,error.stack||'');
+  onlineBoard=[];
+  renderBoard()
+ }
 }
 function renderBoard(){
  const target=$('#leaderboard');if(!target)return;
- target.innerHTML=(onlineBoard||[]).map((row,index)=>{
-  const value=boardMode==='level'?`Lv.${row.level}`:boardMode==='rebirths'?`${row.rebirths} ♻️`:fmt(row.best_score);
+ const rows=onlineBoard||[];
+
+ if(!rows.length){
+  target.innerHTML=`<p class="muted">Brak wyników dla tego rankingu.<br><small>${boardMode==='score'?'Ustaw nick lub zapisz wynik ręcznie.':'Rankingi poziomu i rebirthów zapełnią się po zapisaniu nowych profili.'}</small></p>`;
+  return
+ }
+
+ target.innerHTML=rows.map((row,index)=>{
+  const value=boardMode==='level'
+   ?`Lv.${row.level||1}`
+   :boardMode==='rebirths'
+    ?`${row.rebirths||0} ♻️`
+    :fmt(row.best_score||0);
+
   const own=row.player_id===playerId;
-  return`<div class="board-row ${own?'own-row':''}"><b>${index+1}.</b><span>${safeText(row.player_name)}${own?' • Ty':''}</span><b>${value}</b></div>`
- }).join('')||'<p class="muted">Brak wyników.</p>'
+  const legacy=row.source==='scores';
+  return`<div class="board-row ${own?'own-row':''}">
+   <b>${index+1}.</b>
+   <span>${safeText(row.player_name||'Gracz')}${own?' • Ty':''}${legacy?' <small>stary wpis</small>':''}</span>
+   <b>${value}</b>
+  </div>`
+ }).join('')
 }
 async function saveOnline(){
  if(!state.playerName)return toast('Ustaw nick w Ustawieniach');
  if(Date.now()-lastSaveOnline<8000)return toast('Odczekaj chwilę');
  lastSaveOnline=Date.now();
- const ok=await savePlayerProfile(true);
- if(ok){toast('Ranking zapisany');loadBoard()}
+
+ const profileSaved=await savePlayerProfile(true);
+
+ // Zachowujemy także stary wpis scores, aby ranking działał
+ // podczas przejścia pomiędzy systemami.
+ let legacySaved=false;
+ if(db){
+  const legacy=await db.rpc('submit_score',{
+   p_player_id:playerId,
+   p_player_name:state.playerName,
+   p_score:Math.floor(state.points)
+  });
+  legacySaved=!legacy.error;
+  if(legacy.error)console.warn('Stary ranking scores:',legacy.error.message)
+ }
+
+ if(profileSaved||legacySaved){
+  toast('Ranking zapisany');
+  loadBoard()
+ }
 }
 
 function exportProfileSave(){

@@ -134,6 +134,17 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
+  version:'0.5c-r2',date:'Poprawka 0.5c',title:'Ranking Compatibility Fix',
+  summary:'Przywrócono stare wpisy rankingowe i zgodność z tabelą scores.',
+  changes:[
+   'Ranking punktów pokazuje stare wpisy z tabeli scores, gdy tabela players jest pusta.',
+   'Nowe zapisy trafiają do profilu players i zgodnościowego wpisu scores.',
+   'Rankingi poziomu i rebirthów używają nowych profili.',
+   'Dodano opcjonalny SQL do migracji starych wyników do tabeli players.',
+   'Nie zmieniono numeru wyświetlanej wersji gry — nadal 0.5c.'
+  ]
+ },
+ {
   version:'0.5c',date:'Aktualna wersja',title:'Profiles & Ranking — Fixed',
   summary:'Profile graczy i panel admina dodane bez naruszania systemów gry.',
   changes:[

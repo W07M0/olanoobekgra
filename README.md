@@ -50,3 +50,12 @@ Pety są zapisywane jako osobne egzemplarze z `uid`, poziomem, EXP i poziomem ew
 
 ## Poprawiona architektura 0.5c
 Profil i panel admina znajdują się w `js/profile-admin.js`. Systemy gry pozostały niezmienione względem stabilnej wersji 0.5b.
+
+
+## Ranking — zgodność wsteczna
+
+Ranking punktów odczytuje najpierw tabelę `players`. Gdy nie ma tam jeszcze profili,
+automatycznie pokazuje stare wpisy z tabeli `scores`.
+
+Plik `supabase_migrate_old_scores_v0_5c.sql` pozwala jednorazowo przenieść stare wyniki
+do nowej tabeli `players`.
