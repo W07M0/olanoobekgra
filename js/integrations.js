@@ -70,9 +70,9 @@ async function sendFeedback(){
  let message=$('#feedbackText').value.trim().slice(0,500);
  if(message.length<5)return toast('Wiadomość jest za krótka');
  if(!db)return toast('Supabase nie jest dostępny');
+ let {error}=await db.rpc('submit_feedback',{p_player_id:playerId,p_player_name:name,p_feedback_type:type,p_message:message,p_game_version:GAME_VERSION});
+ if(error){console.error(error);saveDiagnostic?.('Feedback',error.message,error.stack||'');toast('Nie udało się wysłać: '+(error.message||'błąd Supabase'));return}
  feedbackCooldown=Date.now();
- let {error}=await db.rpc('submit_feedback',{p_player_id:playerId,p_player_name:name,p_feedback_type:type,p_message:message,p_game_version:GAME_VERSION,signature});
- if(error){console.error(error);toast('Nie udało się wysłać. Sprawdź SQL feedbacku.');return}
  $('#feedbackText').value='';$('#feedbackCount').textContent='0';toast('Dziękujemy za feedback!');loadFeedback()
 }
 

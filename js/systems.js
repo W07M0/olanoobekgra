@@ -42,7 +42,7 @@ function spawnWorldBoss(){
  if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
  let t=currentWorldBossTemplate();
  let maxHp=Math.max(w.bossHp||500,calculatedWorldBossHp(w));
- boss={...t,hp:maxHp,maxHp,time:65,rewardPoints:Math.floor(maxHp*1.8),rewardGems:Math.max(1,Math.floor((worldIndex(w.id)+1)/4)),rewardCoins:Math.max(0,Math.floor(worldIndex(w.id)/5)),blocked:false,blockersCleared:0};
+ boss={...t,hp:maxHp,maxHp,time:65,rewardPoints:Math.floor(maxHp*2.25),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
  $('#bossPanel').classList.remove('hidden');renderBoss();scheduleBossBlocker(true);
  clearInterval(bossTimer);bossTimer=setInterval(()=>{
   if(!boss)return clearInterval(bossTimer);
@@ -98,7 +98,7 @@ function spawnEndgameBoss(){
   {name:'Golden Void',emoji:'👑',desc:'Łączy złoto, pustkę i ogromny lag.'}
  ];
  let t=rand(names),maxHp=calculatedEndgameBossHp();
- boss={...t,hp:maxHp,maxHp,time:85,isEndgame:true,worldId:'dev',rewardPoints:Math.floor(maxHp*2.2),rewardGems:Math.max(4,Math.floor(state.level/14)),rewardCoins:Math.max(2,Math.floor(state.rebirths/5)),blocked:false,blockersCleared:0};
+ boss={...t,hp:maxHp,maxHp,time:85,isEndgame:true,worldId:'dev',rewardPoints:Math.floor(maxHp*2.7),rewardGems:Math.max(8,Math.floor(state.level/9)),rewardCoins:Math.max(4,Math.floor(state.rebirths/3)+2),blocked:false,blockersCleared:0};
  state.lastEndgameBossAt=Date.now();
  $('#bossPanel').classList.remove('hidden');renderBoss();scheduleBossBlocker(true);
  clearInterval(bossTimer);bossTimer=setInterval(()=>{
@@ -157,7 +157,11 @@ function renderBoss(){
 function finishBoss(win){
  if(!boss)return;clearInterval(bossTimer);clearTimeout(blockerTimeout);$('#bossBlockerLayer').classList.add('hidden');$('#bossBlockerLayer').innerHTML='';$('#bossPanel').classList.remove('blocked');let defeated={...boss};
  if(win){
-  state.points+=defeated.rewardPoints;state.gems+=defeated.rewardGems;state.coins+=(defeated.rewardCoins||0);
+  const lootMult=1+(state.permBossLoot||0)*.10;
+  defeated.rewardPoints=Math.floor(defeated.rewardPoints*lootMult);
+  defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()));
+  defeated.rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()));
+  state.points+=defeated.rewardPoints;state.gems+=defeated.rewardGems;state.coins+=defeated.rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
   if(defeated.isWorldBoss)markWorldBossDefeated(defeated.worldId);
   sfx('good');confetti()
@@ -242,7 +246,7 @@ function renderHud(){
  $('#gems').textContent=fmt(state.gems);
  $('#coins').textContent=fmt(state.coins);
  $$('[data-bind="points"]').forEach(e=>e.textContent=fmt(state.points));
- $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));
+ $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#perClick').textContent=fmt(clickValue());
  $('#pps').textContent=fmt(pps());
  $('#level').textContent=state.level;
@@ -271,7 +275,7 @@ function trimEffects(){
 function render(){
  renderHud();
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
- $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));
+ $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#points').textContent=fmt(state.points);$('#playerTitle').textContent='Tytuł: '+currentTitle();
  let wb=worldBossDefeated(world().id);$('#challengeBossBtn').textContent=wb&&state.world!=='dev'?'✅ Boss świata pokonany':'⚔️ Zmierz się z '+world().bossName;
  $('#challengeBossBtn').disabled=wb&&state.world!=='dev';$('#gems').textContent=fmt(state.gems);$('#coins').textContent=fmt(state.coins);
@@ -290,7 +294,23 @@ function nextFeatureUnlock(){
  return entries.length?`${entries[0][0]} — poziom ${entries[0][1]}`:'wszystko odblokowane'
 }
 function renderStats(){$('#statsBox').innerHTML=`Kliknięcia: <b>${fmt(state.totalClicks)}</b><br>Najlepsze combo: <b>x${state.bestCombo}</b><br>Rebirthy: <b>${state.rebirths}</b><br>Czas gry: <b>${Math.floor(state.playSeconds/60)} min</b><br>Skrzynki: <b>${state.eventStats.crates}</b><br>Minigry: <b>${state.eventStats.minigames||0}</b><br>Skiny: <b>${state.ownedSkins.length}</b><br>Światy: <b>${state.unlockedWorlds.length}/${worlds.length}</b><br>Następna funkcja: <b>${nextFeatureUnlock()}</b><br>Bonus petów: <b>x${petMultiplier().toFixed(2)}</b><br>EXP: <b>x${expMultiplier().toFixed(2)}</b><br>Rebirth mnożnik: <b>x${rebirthMultiplier().toFixed(2)}</b><br>Bossy światów: <b>${state.worldBossesDefeated.length}/${worlds.length}</b><br>Bossy razem: <b>${state.bossWins||0}</b><br>Kasyno: <b>${state.casinoWins||0}/${state.casinoGames||0} wygranych</b>`}
-function renderShop(){$('#shopGrid').innerHTML=upgrades.map(u=>{let lvl=u.get(),isMax=lvl>=u.max,c=cost(u),cur=currencyIcon(u.currency);return`<div class="card"><div class="big">${u.icon}</div><h3>${u.name} <small>Lv.${lvl}/${u.max}</small></h3><p class="muted">${u.desc}</p><div class="price">${isMax?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>':fmt(c)+' '+cur}</div><button onclick="buyUpgrade('${u.id}')" ${isMax||state[u.currency]<c?'disabled':''}>${isMax?'MAX':'Kup'}</button></div>`}).join('')}
+function upgradeCard(u){
+ const lvl=u.get(),isMax=lvl>=u.max,c=cost(u),cur=currencyIcon(u.currency);
+ const cardClass=u.permanent?'permanent-card':'temporary-card';
+ return`<div class="card ${cardClass}">
+  <div class="big">${u.icon}</div>
+  <h3>${u.name} <small>Lv.${lvl}/${u.max}</small></h3>
+  <p class="muted">${u.desc}</p>
+  <div class="price">${isMax?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>':fmt(c)+' '+cur}</div>
+  <button onclick="buyUpgrade('${u.id}')" ${isMax||state[u.currency]<c?'disabled':''}>${isMax?'MAX':'Kup'}</button>
+ </div>`
+}
+function renderShop(){
+ const temporary=upgrades.filter(u=>!u.permanent);
+ const permanent=upgrades.filter(u=>u.permanent);
+ $('#temporaryShopGrid').innerHTML=temporary.map(upgradeCard).join('');
+ $('#permanentShopGrid').innerHTML=permanent.map(upgradeCard).join('')
+}
 function buyUpgrade(id){if(!featureUnlocked('shop'))return toast(lockedFeatureMessage('shop'));let u=upgrades.find(x=>x.id===id);if(!u||u.get()>=u.max)return;let c=cost(u);if(state[u.currency]<c)return;state[u.currency]-=c;u.buy();sfx('buy');render()}
 function renderPets(){
  let counts={};state.pets.forEach(id=>counts[id]=(counts[id]||0)+1);
@@ -351,6 +371,51 @@ function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.te
 function renderDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000),can=today>last,rewards=[1,2,3,5,7,10,20];$('#dailyGrid').innerHTML=rewards.map((r,i)=>`<div class="daily ${i===state.dailyStreak%7?'today':''}"><b>Dzień ${i+1}</b><div>💎 ${r}</div></div>`).join('');$('#dailyBtn').disabled=!can;$('#dailyBtn').textContent=can?'Odbierz nagrodę':'Wróć jutro'}
 function claimDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000);if(today<=last)return;if(today-last>1)state.dailyStreak=0;let rewards=[1,2,3,5,7,10,20],r=rewards[state.dailyStreak%7];state.gems+=r;state.dailyStreak++;state.lastDaily=Date.now();confetti();sfx('good');toast('Dzienna nagroda: +'+r+' 💎');render()}
 
+
+function spawnSkinParticles(intensity=1){
+ trimEffects();
+ const host=$('#skinParticles');
+ if(!host)return;
+
+ const skin=skins.find(s=>s.id===state.activeSkin)||skins[0];
+ const rarityCount={common:1,rare:2,epic:3,legendary:4,mythic:6,secret:7};
+ const count=Math.max(1,Math.floor((rarityCount[skin.rarity]||1)*Math.min(2,intensity)));
+
+ for(let i=0;i<count;i++){
+  const particle=document.createElement('span');
+  particle.className='skin-local-particle';
+  particle.textContent=rand(skin.particles||['✨']);
+
+  const angle=Math.random()*Math.PI*2;
+  const distance=50+Math.random()*85;
+  particle.style.setProperty('--x',Math.cos(angle)*distance+'px');
+  particle.style.setProperty('--y',Math.sin(angle)*distance+'px');
+  particle.style.setProperty('--rot',(Math.random()*540-270)+'deg');
+  particle.style.setProperty('--dur',(.65+Math.random()*.45)+'s');
+  particle.style.color=skin.color||'#fff';
+  particle.style.fontSize=(14+Math.random()*14)+'px';
+
+  host.append(particle);
+  setTimeout(()=>particle.remove(),1200)
+ }
+
+ if(skin.id==='gold'){
+  for(let i=0;i<3;i++){
+   setTimeout(()=>{
+    const coin=document.createElement('span');
+    coin.className='skin-local-particle';
+    coin.textContent=rand(['🪙','💰','✨']);
+    coin.style.setProperty('--x',(Math.random()*80-40)+'px');
+    coin.style.setProperty('--y',(55+Math.random()*65)+'px');
+    coin.style.setProperty('--rot',(Math.random()*500-250)+'deg');
+    coin.style.setProperty('--dur','1.1s');
+    host.append(coin);
+    setTimeout(()=>coin.remove(),1300)
+   },i*45)
+  }
+ }
+}
+
 function doClick(e){
 let now=performance.now();combo=now-lastClick<470?Math.min(50,combo+1):1;lastClick=now;state.bestCombo=Math.max(state.bestCombo,combo);state.totalClicks++;
  let crit=Math.random()<Math.min(.32,.05+state.crit*.02),gain=clickValue()*(crit?5:1);addPoints(gain);if(boss)damageBoss(gain);addXp((1+Math.floor(combo/10))*(1+(state.comboExp||0)*Math.min(combo,25)*.006));
@@ -362,7 +427,25 @@ let now=performance.now();combo=now-lastClick<470?Math.min(50,combo+1):1;lastCli
  renderHud();trimEffects()
 }
 function quickBuy(type){if(type==='click'&&state.points>=state.clickCost){state.points-=state.clickCost;state.perClick++;state.clickCost=Math.ceil(state.clickCost*1.72);sfx('buy')}if(type==='auto'&&state.points>=state.autoCost){state.points-=state.autoCost;state.auto++;state.autoCost=Math.ceil(state.autoCost*1.9);sfx('buy')}render()}
-function rebirth(){if(!featureUnlocked('rebirth'))return toast(lockedFeatureMessage('rebirth'));let gain=rebirthGain();if(gain<1)return toast('Potrzebujesz co najmniej 100K punktów');if(!confirm('Zresetować punkty i podstawowe ulepszenia za '+gain+' Noob Coinów?'))return;state.coins+=gain;state.rebirths++;Object.assign(state,{points:0,level:1,xp:0,perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,world:'neon'});confetti();sfx('good');toast('Rebirth wykonany! Funkcje odblokujesz ponownie poziomami.');showView('game');render()}
+function rebirth(){
+ if(!featureUnlocked('rebirth'))return toast(lockedFeatureMessage('rebirth'));
+ const gain=rebirthGain();
+ if(gain<1)return toast('Potrzebujesz co najmniej 250K punktów');
+ if(!confirm('Zresetować punkty, poziom i podstawowe ulepszenia za '+gain+' Noob Coinów? Permanentne ulepszenia zostaną.'))return;
+
+ state.coins+=gain;
+ state.rebirths++;
+ Object.assign(state,{
+  points:0,level:1,xp:0,
+  perClick:1,auto:0,clickCost:20,autoCost:75,
+  crit:0,rain:0,autoBoost:0,clickBurst:0,
+  world:'neon'
+ });
+
+ confetti();sfx('good');
+ toast('Rebirth wykonany! Permanentne ulepszenia zostały zachowane.');
+ showView('game');render()
+}
 
 function startEvent(){
  let events=[

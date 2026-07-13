@@ -19,13 +19,15 @@ function petMultiplier(){
  return 1+(base-1)*upgrade
 }
 function rebirthMultiplier(){
- let c=Math.max(0,state.coins);
- return 1+Math.log2(1+c)*0.22+Math.sqrt(c)*0.035
+ const coins=Math.max(0,state.coins);
+ const baseBonus=Math.log2(1+coins)*0.30+Math.sqrt(coins)*0.05;
+ const permanentBoost=1+(state.permRebirthPower||0)*0.08;
+ return 1+baseBonus*permanentBoost
 }
 function totalMultiplier(){return rebirthMultiplier()*world().mult*petMultiplier()*world().petMult*eventMultiplier}
-function clickValue(){let comboBonus=Math.min(2.5,(combo-1)*state.comboPower*.035);let burst=1+(state.clickBurst||0)*.12;return state.perClick*totalMultiplier()*(1+comboBonus)*burst}
-function pps(){return state.auto*totalMultiplier()*(1+(state.autoBoost||0)*.2)}
-function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)}
+function clickValue(){let comboBonus=Math.min(2.5,(combo-1)*state.comboPower*.035);let burst=1+(state.clickBurst||0)*.12;let permanent=1+(state.permClickPower||0)*.10;return state.perClick*totalMultiplier()*(1+comboBonus)*burst*permanent}
+function pps(){let permanent=1+(state.permAutoPower||0)*.12;return state.auto*totalMultiplier()*(1+(state.autoBoost||0)*.2)*permanent}
+function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)*(1+(state.permGemIncome||0)*.08)}
 function coinRewardMultiplier(){return world().coinMult*(1+(state.petCoinBonus||0)*.04)}
 function petExpMultiplier(){return state.equipped.reduce((m,id)=>m*(pets.find(p=>p.id===id)?.exp||1),1)*(1+(state.petExpBonus||0)*.035)}
 function expMultiplier(){return (1+(state.expBoost||0)*.08)*(1+(state.worldExpBoost||0)*.04)*petExpMultiplier()}

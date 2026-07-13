@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
-<title>Ola to Noobek v0.5 — Ultimate Clicker</title>
+<title>Ola to Noobek v0.5a — Ultimate Clicker</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
 <nav class="panel nav">
- <div class="logo">OLA TO<br><span>NOOBEK</span><small class="version-badge">v0.5</small></div>
+ <div class="logo">OLA TO<br><span>NOOBEK</span><small class="version-badge">v0.5a</small></div>
  <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
  <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
  <button class="nav-btn" data-view="pets">🐾 <span class="label">Pety</span><span class="dot" id="petDot">0</span></button>
@@ -22,7 +22,7 @@
  <button class="nav-btn" data-view="awards">🏆 <span class="label">Nagrody</span></button>
  <button class="nav-btn" data-view="collection">📚 <span class="label">Kolekcja</span></button>
  <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
- <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5</span></button>
+ <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5a</span></button>
  <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button><button class="icon-btn" id="resetBtn">↻</button></div>
 </nav>
 
@@ -66,8 +66,18 @@
 </section>
 
 <section class="view" id="view-shop">
- <div class="section-title"><div><h1>🛒 Sklep ulepszeń</h1><p class="muted">Kupuj coraz mocniejsze bonusy.</p></div><div class="currency"><span class="chip">⭐ <b data-bind="points">0</b></span><span class="chip">💎 <b data-bind="gems">0</b></span></div></div>
- <div class="grid" id="shopGrid"></div>
+ <div class="section-title">
+  <div><h1>🛒 Sklep ulepszeń</h1><p class="muted">Podstawowe ulepszenia resetują się po rebirth. Permanentne zostają na zawsze.</p></div>
+  <div class="currency"><span class="chip">⭐ <b data-bind="points">0</b></span><span class="chip">💎 <b data-bind="gems">0</b></span><span class="chip">🟡 <b data-bind="coins">0</b></span></div>
+ </div>
+ <div class="shop-section temporary-shop">
+  <div class="shop-section-head"><div><h2>⚡ Ulepszenia podstawowe</h2><p class="muted">Kupowane za punkty. Resetują się podczas rebirthu.</p></div><span class="shop-tag reset-tag">RESETOWANE</span></div>
+  <div class="grid" id="temporaryShopGrid"></div>
+ </div>
+ <div class="shop-section permanent-shop">
+  <div class="shop-section-head"><div><h2>♾️ Ulepszenia permanentne</h2><p class="muted">Kupowane za diamenty i Noob Coiny. Zostają po rebirth.</p></div><span class="shop-tag permanent-tag">NA ZAWSZE</span></div>
+  <div class="grid" id="permanentShopGrid"></div>
+ </div>
 </section>
 
 <section class="view" id="view-pets">
@@ -229,7 +239,7 @@
 <section class="view" id="view-patchnotes">
  <div class="section-title">
   <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ola to Noobek.</p></div>
-  <div class="chip">Aktualna wersja: <b>0.5</b></div>
+  <div class="chip">Aktualna wersja: <b>0.5a</b></div>
  </div>
  <div class="patch-layout">
   <aside class="patch-list" id="patchList"></aside>
@@ -250,7 +260,7 @@
  <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="global">Global</button><button class="tab" data-board="recent">Ostatnie</button></div><div id="leaderboard"></div><div class="name-save"><input id="playerName" maxlength="14" value="Gracz"><button class="small-btn" id="saveScore">Zapisz</button></div></section>
  
  <section class="panel mini-patch-card">
-  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5</span></div>
+  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5a</span></div>
   <p><b>Skin Renderer Hotfix</b></p>
   <p class="muted">Naprawiony renderer skinów i blokowanie całego interfejsu.</p>
   <button class="small-btn" onclick="showView('patchnotes')">Zobacz historię</button>

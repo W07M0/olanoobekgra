@@ -387,3 +387,13 @@ body.world-switching .main{animation:worldFlash .7s ease}@keyframes worldFlash{5
 }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+.shop-section{margin-top:18px;padding:14px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
+.shop-section-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.shop-section-head h2,.shop-section-head p{margin-bottom:3px}
+.shop-tag{padding:6px 9px;border-radius:999px;font-size:10px;font-weight:1000;letter-spacing:.5px}
+.reset-tag{background:rgba(255,82,119,.14);color:#ffb7c7;border:1px solid rgba(255,82,119,.25)}
+.permanent-tag{background:rgba(77,255,173,.12);color:#aaffcf;border:1px solid rgba(77,255,173,.25)}
+.permanent-shop{background:linear-gradient(135deg,rgba(77,255,173,.045),rgba(54,231,255,.035))}
+.permanent-card{border-top:4px solid var(--green);box-shadow:0 0 20px rgba(77,255,173,.06)}
+.temporary-card{border-top:4px solid var(--pink)}
