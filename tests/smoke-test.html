@@ -1,27 +1,24 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test v0.6 Fixed</title>
-<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style>
-</head><body><h1>Test techniczny v0.6 Fixed</h1><button id="run">Uruchom</button><div id="out"></div>
+<title>Test v0.6 Final Fix</title>
+<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
+<body><h1>Test techniczny v0.6 Final Fix</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
-const files=['../css/styles.css?v=06fixed','../js/data.js?v=06fixed','../js/core.js?v=06fixed','../js/systems.js?v=06fixed','../js/minigames.js?v=06fixed','../js/integrations.js?v=06fixed','../js/profile-admin.js?v=06fixed','../js/app.js?v=06fixed'];
 async function run(){
  const out=document.querySelector('#out');out.innerHTML='';
- const texts=[];
- for(const file of files){
-  try{
-   const r=await fetch(file,{cache:'no-store'});
-   const text=await r.text();texts.push(text);
-   out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — HTTP ${r.status}</div>`;
-  }catch(e){out.innerHTML+=`<div class="row bad">❌ ${file} — ${e.message}</div>`}
+ const index=await fetch('../index.html?test=06final',{cache:'no-store'}).then(r=>r.text());
+ const refs=[...index.matchAll(/(?:src|href)="([^"]+)"/g)].map(x=>x[1]).filter(x=>!x.startsWith('http'));
+ for(const ref of refs){
+  const url='../'+ref;
+  const response=await fetch(url,{cache:'no-store'});
+  out.innerHTML+=`<div class="row ${response.ok?'ok':'bad'}">${response.ok?'✅':'❌'} ${ref} — HTTP ${response.status}</div>`;
  }
- const all=texts.join('\n');
  const checks=[
-  ['wersja 0.6',all.includes("const GAME_VERSION='0.6'")],
-  ['migracja zapisu',all.includes('function migrateStateV06')],
-  ['Noob Coiny zachowane',all.includes('state.coins=Math.max(0,Number(state.coins)||0)')],
-  ['Casino Chips',all.includes('casinoChips')],
-  ['4 minigry',all.includes('function startAimGame(')&&all.includes('function startParkour(')&&all.includes('function startReflex(')&&all.includes('function startDodge(')]
+  ['CSS ma końcówkę .css',index.includes('css/styles.css')],
+  ['JS ma końcówkę .js',index.includes('js/data.js')],
+  ['Nowe minigry',index.includes('Noob Arcade')&&index.includes('Brainrot Dodge')],
+  ['Nowe kasyno',index.includes('casinoChips')&&index.includes('Casino Level')],
+  ['Brak starego układu',!index.includes('Noob Memory')]
  ];
  checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`);
 }

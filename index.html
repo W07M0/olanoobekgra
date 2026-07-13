@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6</title>
-<link rel="stylesheet" href="css/styles.cs?v=06fixed">
+<link rel="stylesheet" href="css/styles.css?v=06final">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -24,7 +24,7 @@
  <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
  <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
  <button class="nav-btn hidden" id="adminNavBtn" data-view="admin">🛡️ <span class="label">Admin</span></button>
- <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5c</span></button>
+ <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.6</span></button>
  <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button></div>
 </nav>
 
@@ -89,83 +89,146 @@
 </section>
 
 
+
 <section class="view" id="view-minigames">
- <div class="section-title"><div><h1>🎯 Noobowe minigry</h1><p class="muted">Trzy zręcznościowe wyzwania z nagrodami.</p></div><div class="currency"><span class="chip">🏅 <b id="medals">0</b></span></div></div>
- <div class="grid">
-  <div class="card"><div class="big">🎯</div><h3>Noob Aim Lab</h3><p class="muted">Klikaj cele przez 20 sekund. Pudło zeruje combo.</p><p>Rekord: <b id="aimBest">0</b></p><button onclick="startAimGame()">Graj</button></div>
-  <div class="card"><div class="big">🧱</div><h3>Noob Parkour</h3><p class="muted">Skacz nad lagami spacją albo dotykiem.</p><p>Rekord: <b id="parkourBest">0 m</b></p><button onclick="startParkour()">Graj</button></div>
-  <div class="card"><div class="big">🧠</div><h3>Noob Memory</h3><p class="muted">Powtarzaj sekwencję świecących noobów.</p><p>Rekord: <b id="memoryBest">0</b></p><button onclick="startMemory()">Graj</button></div>
+ <div class="section-title">
+  <div><h1>🎮 Noob Arcade</h1><p class="muted">Wynik zależy od umiejętności. Każda gra ma osobny cooldown 30 sekund.</p></div>
+  <div class="currency"><span class="chip">⭐ EXP</span><span class="chip">💎 Diamenty</span></div>
  </div>
- <div class="minigame-stage hidden" id="aimStage"><div class="minigame-hud"><b>Wynik: <span id="aimScore">0</span></b><b>Combo: <span id="aimCombo">0</span></b><b>Czas: <span id="aimTime">20.0</span></b></div><div class="aim-field" id="aimField"><button class="aim-target" id="aimTarget">NOOB</button></div><button class="small-btn danger-btn" onclick="stopAimGame()">Zakończ</button></div>
- <div class="minigame-stage hidden" id="parkourStage"><div class="minigame-hud"><b>Dystans: <span id="parkourScore">0</span> m</b><b>Prędkość: <span id="parkourSpeed">1.0</span>x</b></div><canvas id="parkourCanvas" width="900" height="330"></canvas><p class="muted" style="text-align:center">SPACJA / kliknięcie / dotyk = skok</p><button class="small-btn danger-btn" onclick="stopParkour()">Zakończ</button></div>
- <div class="minigame-stage hidden" id="memoryStage"><div class="minigame-hud"><b>Runda: <span id="memoryRound">1</span></b><b id="memoryStatus">Patrz uważnie…</b></div><div class="memory-grid" id="memoryGrid"></div><button class="small-btn danger-btn" onclick="stopMemory()">Zakończ</button></div>
+
+ <div class="arcade-grid">
+  <article class="arcade-card aim-card">
+   <div class="arcade-icon">🎯</div><div><h3>Noob Aim Lab</h3><p>Ruchome cele, cele fałszywe, accuracy i combo.</p></div>
+   <div class="arcade-record">Rekord: <b id="aimBest">0%</b></div>
+   <button class="arcade-play" data-mini="aim" onclick="startAimGame()">Graj</button><small class="cooldown-label" id="cooldown-aim"></small>
+  </article>
+  <article class="arcade-card parkour-card">
+   <div class="arcade-icon">🛒</div><div><h3>Noob Rider</h3><p>Jedź wózkiem i skacz nad 💩, lagami i skrzynkami.</p></div>
+   <div class="arcade-record">Rekord: <b id="parkourBest">0 m</b></div>
+   <button class="arcade-play" data-mini="parkour" onclick="startParkour()">Graj</button><small class="cooldown-label" id="cooldown-parkour"></small>
+  </article>
+  <article class="arcade-card reflex-card">
+   <div class="arcade-icon">⚡</div><div><h3>Noob Reflex</h3><p>Naciskaj wskazane strzałki zanim znikną.</p></div>
+   <div class="arcade-record">Rekord: <b id="reflexBest">0</b></div>
+   <button class="arcade-play" data-mini="reflex" onclick="startReflex()">Graj</button><small class="cooldown-label" id="cooldown-reflex"></small>
+  </article>
+  <article class="arcade-card dodge-card">
+   <div class="arcade-icon">🧠</div><div><h3>Brainrot Dodge</h3><p>Unikaj spadających memów i zbieraj złote noobki.</p></div>
+   <div class="arcade-record">Rekord: <b id="dodgeBest">0</b></div>
+   <button class="arcade-play" data-mini="dodge" onclick="startDodge()">Graj</button><small class="cooldown-label" id="cooldown-dodge"></small>
+  </article>
+ </div>
+
+ <div class="mini-rankings card">
+  <div class="mini-rank-head"><div><h2>🏆 TOP 3 Arcade</h2><p class="muted">Najlepsze wyniki zapisane online.</p></div><button class="small-btn" onclick="loadMinigameLeaderboards()">Odśwież</button></div>
+  <div class="mini-rank-grid" id="minigameLeaderboards"></div>
+ </div>
+
+ <div class="minigame-stage hidden arcade-stage" id="aimStage">
+  <div class="minigame-hud"><b>Wynik <span id="aimScore">0</span></b><b>Combo <span id="aimCombo">0</span></b><b>Accuracy <span id="aimAccuracy">100%</span></b><b>Czas <span id="aimTime">20.0</span></b></div>
+  <div class="aim-field aim-v2" id="aimField"><button class="aim-target" id="aimTarget">NOOB</button></div>
+  <button class="small-btn danger-btn" onclick="stopAimGame(false)">Przerwij</button>
+ </div>
+
+ <div class="minigame-stage hidden arcade-stage" id="parkourStage">
+  <div class="minigame-hud"><b>Dystans <span id="parkourScore">0</span> m</b><b>Prędkość <span id="parkourSpeed">1.0</span>x</b></div>
+  <canvas id="parkourCanvas" width="900" height="330"></canvas>
+  <p class="muted center">SPACJA / kliknięcie = skok</p>
+  <button class="small-btn danger-btn" onclick="stopParkour(false)">Przerwij</button>
+ </div>
+
+ <div class="minigame-stage hidden arcade-stage" id="reflexStage">
+  <div class="minigame-hud"><b>Wynik <span id="reflexScore">0</span></b><b>Combo <span id="reflexCombo">0</span></b><b>Czas <span id="reflexTime">20.0</span></b></div>
+  <div class="reflex-zone"><div class="reflex-key" id="reflexKey">⬆️</div><p id="reflexStatus">Naciśnij właściwą strzałkę!</p></div>
+  <button class="small-btn danger-btn" onclick="stopReflex(false)">Przerwij</button>
+ </div>
+
+ <div class="minigame-stage hidden arcade-stage" id="dodgeStage">
+  <div class="minigame-hud"><b>Wynik <span id="dodgeScore">0</span></b><b>Życia <span id="dodgeLives">3</span></b><b>Czas <span id="dodgeTime">25.0</span></b></div>
+  <canvas id="dodgeCanvas" width="900" height="420"></canvas>
+  <p class="muted center">A/D lub ←/→. Na telefonie dotknij lewej albo prawej części planszy.</p>
+  <button class="small-btn danger-btn" onclick="stopDodge(false)">Przerwij</button>
+ </div>
+
+ <div class="overlay" id="miniResultOverlay">
+  <div class="modal mini-result-modal">
+   <div class="mini-grade" id="miniGrade">S</div>
+   <h2 id="miniResultTitle">Wynik</h2>
+   <div class="mini-result-score" id="miniResultScore">0</div>
+   <div class="mini-result-rewards" id="miniResultRewards"></div>
+   <button id="miniResultClose">Dalej</button>
+  </div>
+ </div>
 </section>
+
 <section class="view" id="view-skins">
  <div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
  <div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div><div class="grid" id="skinGrid"></div>
 </section>
 
+
 <section class="view" id="view-casino">
  <div class="section-title">
-  <div>
-   <h1>🎰 Noob Casino</h1>
-   <p class="muted">Wyłącznie wirtualne Noob Coiny. Bez wpłat i prawdziwych pieniędzy.</p>
-  </div>
-  <div class="currency"><span class="chip">🟡 <b id="casinoCoins">0</b></span></div>
+  <div><h1>🎰 Noob Casino</h1><p class="muted">Kasyno używa wyłącznie wirtualnych żetonów. Bez prawdziwych pieniędzy.</p></div>
+  <div class="casino-wallet"><span>🎲 <b id="casinoChips">0</b></span><span>🏨 Lv.<b id="casinoLevel">1</b></span></div>
  </div>
 
  <div id="casinoLocked" class="casino-lock">
-  <div class="casino-lock-icon">🔒</div>
-  <h2>Kasyno jest zamknięte</h2>
-  <p>Wymagania: poziom <b>8</b> oraz <b>75 🟡</b>.</p>
-  <p class="muted">Po odblokowaniu pozostaje dostępne na stałe.</p>
+  <div class="casino-lock-icon">🔒</div><h2>Kasyno jest zamknięte</h2>
+  <p>Odblokowanie: poziom <b>8</b>. Nie kosztuje waluty.</p>
   <button class="buy casino-unlock" id="unlockCasino">Odblokuj Noob Casino</button>
  </div>
 
  <div id="casinoContent" class="hidden">
-  <div class="casino-warning">⚠️ Gry mają niewielką przewagę kasyna. Najpewniejszy progres nadal daje clicker, minigry i rebirth.</div>
-  <div class="bet-selector">
-   <b>Stawka:</b>
-   <button class="bet-btn active" data-bet="5">5 🟡</button>
-   <button class="bet-btn" data-bet="25">25 🟡</button>
-   <button class="bet-btn" data-bet="100">100 🟡</button>
+  <div class="casino-progress card">
+   <div><b>Casino Level <span id="casinoLevelText">1</span></b><small id="casinoXpText">0 / 100 XP</small></div>
+   <div class="progress"><i id="casinoXpBar"></i></div>
   </div>
 
-  <div class="grid casino-grid">
-   <div class="card casino-card">
-    <div class="big">🎰</div><h3>Noob Slots</h3>
-    <p class="muted">Trzy takie symbole wygrywają. Dwa dają małą nagrodę.</p>
-    <div class="slots" id="slots"><span>🙂</span><span>🙂</span><span>🙂</span></div>
-    <button id="spinSlots">Zakręć</button>
-    <div class="casino-result" id="slotsResult">Wybierz stawkę i zakręć.</div>
-   </div>
+  <div class="casino-supply card">
+   <div><h3>🎁 Godzinowa paczka żetonów</h3><p id="casinoSupplyInfo">Paczka gotowa do odbioru.</p></div>
+   <button id="claimCasinoSupply">Odbierz</button>
+  </div>
 
-   <div class="card casino-card">
-    <div class="big">🎡</div><h3>Noob Ruletka</h3>
-    <p class="muted">Czerwone/czarne płaci x1,9, zielone x12.</p>
-    <div class="roulette-wheel" id="casinoWheel"><span id="wheelNumber">?</span></div>
-    <div class="roulette-choices">
-     <button class="red-choice" data-roulette="red">Czerwone</button>
-     <button class="black-choice" data-roulette="black">Czarne</button>
-     <button class="green-choice" data-roulette="green">Zielone</button>
-    </div>
-    <div class="casino-result" id="rouletteResult">Wybierz kolor.</div>
-   </div>
+  <div class="casino-tabs">
+   <button class="tab active" data-casino-tab="games">🎰 Gry</button>
+   <button class="tab" data-casino-tab="upgrades">🛒 Ulepszenia</button>
+   <button class="tab" data-casino-tab="cashier">💱 Kasjer</button>
+   <button class="tab" data-casino-tab="stats">📊 Statystyki</button>
+  </div>
 
-   <div class="card casino-card">
-    <div class="big">🃏</div><h3>Wyżej czy niżej</h3>
-    <p class="muted">Zgadnij, czy kolejna karta będzie wyższa czy niższa.</p>
-    <div class="card-display"><span id="currentCard">7</span><small id="cardSuit">♠</small></div>
-    <div class="higher-lower">
-     <button id="guessLower">⬇ Niżej</button>
-     <button id="guessHigher">⬆ Wyżej</button>
-    </div>
-    <div class="casino-result" id="cardsResult">Trafienie płaci x1,8. Remis zwraca stawkę.</div>
+  <div class="casino-panel active" id="casino-games">
+   <div class="bet-selector"><b>Stawka:</b><button class="bet-btn active" data-bet="10">10 🎲</button><button class="bet-btn" data-bet="25">25 🎲</button><button class="bet-btn" data-bet="50">50 🎲</button><button class="bet-btn" data-bet="100">100 🎲</button><button class="bet-btn" data-bet="250">250 🎲</button></div>
+   <div class="grid casino-grid">
+    <div class="card casino-card"><div class="big">🎰</div><h3>Noob Slots</h3><div class="slots" id="slots"><span>🙂</span><span>🍌</span><span>🤖</span></div><button id="spinSlots">Zakręć</button><div class="casino-result" id="slotsResult">Wybierz stawkę.</div></div>
+    <div class="card casino-card"><div class="big">🎡</div><h3>Noob Ruletka</h3><div class="roulette-wheel" id="casinoWheel"><span id="wheelNumber">?</span></div><div class="roulette-choices"><button class="red-choice" data-roulette="red">Czerwone</button><button class="black-choice" data-roulette="black">Czarne</button><button class="green-choice" data-roulette="green">Zielone</button></div><div class="casino-result" id="rouletteResult">Wybierz kolor.</div></div>
+    <div class="card casino-card"><div class="big">🃏</div><h3>Wyżej / Niżej</h3><div class="playing-card"><span id="currentCard">7</span><small id="cardSuit">♠</small></div><div class="higher-lower"><button data-higher="true">Wyżej</button><button data-higher="false">Niżej</button></div><div class="casino-result" id="cardsResult">Zgadnij następną kartę.</div></div>
+    <div class="card casino-card locked-game" id="fortuneGame"><div class="big">🎯</div><h3>Koło Nooba</h3><p class="muted">Odblokowanie: Casino Lv.5.</p><div class="fortune-wheel" id="fortuneWheel">🎲</div><button id="spinFortune">Zakręć kołem</button><div class="casino-result" id="fortuneResult">Nagrody od x0 do x5.</div></div>
    </div>
   </div>
 
-  <div class="casino-stats">
-   Rozegrane: <b id="casinoGames">0</b> • Wygrane: <b id="casinoWins">0</b> • Bilans: <b id="casinoProfit">0</b> 🟡
+  <div class="casino-panel" id="casino-upgrades"><div class="casino-upgrade-grid" id="casinoUpgradeGrid"></div></div>
+
+  <div class="casino-panel" id="casino-cashier">
+   <div class="cashier-grid">
+    <div class="card market-card"><h3>📈 Rynek Noob Coinów</h3><div class="market-value" id="casinoMarketValue">0%</div><p id="casinoMarketText">Rynek obserwuje noobów.</p><small>Następna zmiana: <span id="casinoMarketTimer">--:--</span></small></div>
+    <div class="card">
+     <h3>💱 Wymiana pakietowa</h3>
+     <div class="exchange-currency"><button class="active" data-exchange="coins">🟡 Noob Coiny</button><button data-exchange="gems">💎 Diamenty</button></div>
+     <div class="exchange-presets"><button data-exchange-amount="250">250</button><button data-exchange-amount="500">500</button><button data-exchange-amount="1000">1000</button><button data-exchange-amount="2500">2500</button><button data-exchange-amount="5000">5000</button><button data-exchange-amount="max">MAX</button></div>
+     <div class="exchange-preview">Oddajesz <b id="exchangeSpend">250</b> 🎲<br>Otrzymasz <b id="exchangeReceive">80</b> <span id="exchangeIcon">🟡</span></div>
+     <button id="confirmExchange">Wymień</button>
+    </div>
+   </div>
+  </div>
+
+  <div class="casino-panel" id="casino-stats">
+   <div class="stats-grid">
+    <div class="stat-card"><b id="casinoGames">0</b><span>Gier</span></div>
+    <div class="stat-card"><b id="casinoWins">0</b><span>Wygranych</span></div>
+    <div class="stat-card"><b id="casinoProfit">0</b><span>Bilans żetonów</span></div>
+    <div class="stat-card"><b id="casinoSupplyCount">0</b><span>Paczek odebranych</span></div>
+   </div>
   </div>
  </div>
 </section>
@@ -357,12 +420,12 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.j?v=06fixed"></script>
-<script defer src="js/core.j?v=06fixed"></script>
-<script defer src="js/systems.j?v=06fixed"></script>
-<script defer src="js/minigames.j?v=06fixed"></script>
-<script defer src="js/integrations.j?v=06fixed"></script>
-<script defer src="js/profile-admin.j?v=06fixed"></script>
-<script defer src="js/app.j?v=06fixed"></script>
+<script defer src="js/data.js?v=06final"></script>
+<script defer src="js/core.js?v=06final"></script>
+<script defer src="js/systems.js?v=06final"></script>
+<script defer src="js/minigames.js?v=06final"></script>
+<script defer src="js/integrations.js?v=06final"></script>
+<script defer src="js/profile-admin.js?v=06final"></script>
+<script defer src="js/app.js?v=06final"></script>
 </body>
 </html>
