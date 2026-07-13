@@ -164,6 +164,7 @@ function finishBoss(win){
   state.points+=defeated.rewardPoints;state.gems+=defeated.rewardGems;state.coins+=defeated.rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
   if(defeated.isWorldBoss)markWorldBossDefeated(defeated.worldId);
+  grantPetXp(70+Math.max(0,worldIndex(defeated.worldId))*18);
   sfx('good');confetti()
  }
  $('#bossResultIcon').textContent=win?'🏆':'💨';
@@ -198,11 +199,18 @@ function playWorldMusicNote(){
  };let arr=sets[w.id]||[220,277,330];tone(rand(arr),.24,w.id==='factory'||w.id==='dev'?'square':'triangle',.011)
 }
 
+
 function renderCollection(){
- let petCounts={};state.pets.forEach(id=>petCounts[id]=(petCounts[id]||0)+1);
- $('#petCollectionGrid').innerHTML=pets.map(p=>{let owned=(petCounts[p.id]||0)>0;return`<div class="card collection-card ${owned?'':'locked'}"><div class="big">${owned?p.emoji:'❓'}</div><h3>${owned?p.name:'Nieodkryty pet'}</h3><p class="chance">Szansa: ${p.chance}%</p><p class="${owned?'owned':'muted'}">${owned?'Posiadasz: '+petCounts[p.id]:'Nie zdobyto'}</p></div>`}).join('');
+ let petCounts={};state.pets.forEach(instance=>petCounts[instance.type]=(petCounts[instance.type]||0)+1);
+ $('#petCollectionGrid').innerHTML=pets.map(p=>{
+  let owned=(petCounts[p.id]||0)>0;
+  return`<div class="card collection-card ${owned?'':'locked'}">
+   <div class="big">${owned?p.emoji:'❓'}</div><h3>${owned?p.name:'Nieodkryty pet'}</h3>
+   <p class="chance">Szansa: ${p.chance}%</p><p class="${owned?'owned':'muted'}">${owned?'Posiadasz: '+petCounts[p.id]:'Nie zdobyto'}</p>
+  </div>`
+ }).join('');
  $('#skinCollectionGrid').innerHTML=skins.map(s=>{let owned=state.ownedSkins.includes(s.id);return`<div class="card collection-card ${owned?'':'locked'}" style="border-top:4px solid ${s.color}"><div class="big">${owned?s.emoji:'❓'}</div><h3>${owned?s.name:'Nieodkryty skin'}</h3><p class="chance">Waga losowania: ${s.weight}</p><p class="${owned?'owned':'muted'}">${owned?'Odblokowany':'Nie zdobyto'}</p></div>`}).join('');
- let ownedPets=new Set(state.pets).size,totalOwned=ownedPets+state.ownedSkins.length,total=pets.length+skins.length;
+ let ownedPets=new Set(state.pets.map(p=>p.type)).size,totalOwned=ownedPets+state.ownedSkins.length,total=pets.length+skins.length;
  $('#collectionProgress').textContent=Math.floor(totalOwned/total*100)+'%'
 }
 
@@ -312,15 +320,101 @@ function renderShop(){
  $('#permanentShopGrid').innerHTML=permanent.map(upgradeCard).join('')
 }
 function buyUpgrade(id){if(!featureUnlocked('shop'))return toast(lockedFeatureMessage('shop'));let u=upgrades.find(x=>x.id===id);if(!u||u.get()>=u.max)return;let c=cost(u);if(state[u.currency]<c)return;state[u.currency]-=c;u.buy();sfx('buy');render()}
-function renderPets(){
- let counts={};state.pets.forEach(id=>counts[id]=(counts[id]||0)+1);
- $('#petDot').textContent=state.pets.length;$('#equippedCount').textContent=state.equipped.length+'/'+maxPetSlots();$('#petBonus').textContent='x'+petMultiplier().toFixed(2);$('#petExpBonus').textContent='x'+petExpMultiplier().toFixed(2);
- $('#petOrbit').innerHTML=state.equipped.map(id=>{let p=pets.find(x=>x.id===id);return`<span class="orbit-pet rarity-${p?.rarity||'common'}">${p?.emoji||'🐾'}</span>`}).join('');
- $('#petGrid').innerHTML=pets.map(p=>`<div class="card pet-card rarity-${p.rarity} ${state.equipped.includes(p.id)?'equipped':''}"><div class="big">${p.emoji}</div><h3>${p.name}</h3><p class="muted">${p.rarity.toUpperCase()} • x${p.mult.toFixed(2)}${p.exp?' • EXP x'+p.exp.toFixed(2):''}</p><p>Posiadasz: <b>${counts[p.id]||0}</b></p><button onclick="togglePet('${p.id}')" ${(counts[p.id]||0)<1?'disabled':''}>${state.equipped.includes(p.id)?'Zdejmij':'Wyposaż'}</button></div>`).join('')
+
+function renderPetInstance(instance){
+ const base=getPetBase(instance),evo=PET_EVOLUTIONS[instance.evolution||0];
+ const equipped=state.equipped.includes(instance.uid);
+ const needed=instance.level>=50?1:petXpNeeded(instance.level);
+ const pct=instance.level>=50?100:Math.min(100,(instance.xp||0)/needed*100);
+ return`<div class="pet-instance ${equipped?'equipped':''}" style="--evo:${evo.color}">
+  <div class="pet-instance-icon">${base.emoji}</div>
+  <div class="pet-instance-main">
+   <div class="pet-instance-title"><b>${petDisplayName(instance)}</b><span>Lv.${instance.level}</span></div>
+   <div class="pet-instance-meta">${base.rarity.toUpperCase()} • ${evo.short} • x${petInstanceMultiplier(instance).toFixed(2)}</div>
+   <div class="pet-xp"><i style="width:${pct}%"></i></div>
+   <small>${instance.level>=50?'MAX LEVEL':`${Math.floor(instance.xp||0)}/${needed} EXP`}</small>
+  </div>
+  <div class="pet-instance-actions">
+   <button class="small-btn" onclick="togglePetInstance('${instance.uid}')">${equipped?'Zdejmij':'Wyposaż'}</button>
+   <button class="small-btn pet-delete" onclick="deletePetInstance('${instance.uid}')">Usuń</button>
+  </div>
+ </div>`
 }
-function togglePet(id){if(state.equipped.includes(id))state.equipped=state.equipped.filter(x=>x!==id);else if(state.equipped.length<maxPetSlots())state.equipped.push(id);else return toast('Brak wolnego slotu na peta');render()}
+function renderPets(){
+ $('#petDot').textContent=state.pets.length;
+ $('#equippedCount').textContent=state.equipped.length+'/'+maxPetSlots();
+ $('#petBonus').textContent='x'+petMultiplier().toFixed(2);
+ $('#petExpBonus').textContent='x'+petExpMultiplier().toFixed(2);
+
+ $('#petOrbit').innerHTML=state.equipped.map(uid=>{
+  const instance=getPetInstance(uid),base=getPetBase(instance),evo=PET_EVOLUTIONS[instance?.evolution||0];
+  return instance?`<span class="orbit-pet rarity-${base.rarity}" style="filter:drop-shadow(0 0 ${8+instance.evolution*5}px ${evo.color})">${base.emoji}</span>`:''
+ }).join('');
+
+ const groups=pets.map(base=>{
+  const instances=state.pets.filter(p=>p.type===base.id).sort((a,b)=>b.evolution-a.evolution||b.level-a.level);
+  if(!instances.length)return'';
+  const fusionButtons=[0,1,2].map(tier=>{
+   const available=instances.filter(p=>p.evolution===tier&&!state.equipped.includes(p.uid)).length;
+   const next=PET_EVOLUTIONS[tier+1];
+   return`<button class="small-btn fusion-btn" onclick="fusePets('${base.id}',${tier})" ${available<3?'disabled':''}>Połącz 3× ${PET_EVOLUTIONS[tier].short} → ${next.short} <small>(${available}/3)</small></button>`
+  }).join('');
+  return`<div class="pet-group card rarity-${base.rarity}">
+   <div class="pet-group-head"><div class="big">${base.emoji}</div><div><h3>${base.name}</h3><p class="muted">${base.rarity.toUpperCase()} • bazowo x${base.mult.toFixed(2)} • egzemplarze: ${instances.length}</p></div></div>
+   <div class="pet-instance-list">${instances.map(renderPetInstance).join('')}</div>
+   <div class="pet-fusions"><b>🧬 Ewolucja noobka</b>${fusionButtons}</div>
+  </div>`
+ }).join('');
+ $('#petGrid').innerHTML=groups||'<div class="card"><h3>Brak petów</h3><p class="muted">Otwórz pierwszą skrzynkę, aby zdobyć noobka.</p></div>'
+}
+function togglePetInstance(uid){
+ const instance=getPetInstance(uid);if(!instance)return;
+ if(state.equipped.includes(uid))state.equipped=state.equipped.filter(x=>x!==uid);
+ else if(state.equipped.length<maxPetSlots())state.equipped.push(uid);
+ else return toast('Brak wolnego slotu na peta');
+ render()
+}
+function deletePetInstance(uid){
+ const instance=getPetInstance(uid);if(!instance)return;
+ const name=petDisplayName(instance);
+ if(!confirm(`Na pewno usunąć peta „${name}” (Lv.${instance.level})? Tej operacji nie można cofnąć.`))return;
+ state.equipped=state.equipped.filter(x=>x!==uid);
+ state.pets=state.pets.filter(p=>p.uid!==uid);
+ toast('Pet został usunięty');render()
+}
+function fusePets(type,tier){
+ if(tier>=3)return;
+ const candidates=state.pets.filter(p=>p.type===type&&p.evolution===tier&&!state.equipped.includes(p.uid))
+  .sort((a,b)=>a.level-b.level||a.xp-b.xp).slice(0,3);
+ if(candidates.length<3)return toast('Potrzebujesz 3 niewyposażonych petów tego samego poziomu ewolucji');
+ const base=pets.find(p=>p.id===type),next=PET_EVOLUTIONS[tier+1];
+ if(!confirm(`Połączyć 3 pety „${base.name}” w formę ${next.name}? Zużyte pety znikną.`))return;
+ const ids=new Set(candidates.map(p=>p.uid));
+ const newPet={
+  uid:createPetUid(),type,evolution:tier+1,
+  level:Math.max(...candidates.map(p=>p.level)),
+  xp:Math.floor(candidates.reduce((s,p)=>s+(p.xp||0),0)/3)
+ };
+ state.pets=state.pets.filter(p=>!ids.has(p.uid));
+ state.pets.push(newPet);
+ confetti();sfx('good');toast(`Ewolucja udana: ${next.name}!`);render()
+}
 function weightedPet(){let adjusted=pets.map((p,i)=>({...p,w:p.chance*Math.pow(1+(state.luck||0)*.08,i/2)})),total=adjusted.reduce((a,p)=>a+p.w,0),r=Math.random()*total,sum=0;for(let p of adjusted){sum+=p.w;if(r<=sum)return p}return pets[0]}
-function openCrate(){if(!featureUnlocked('pets'))return toast(lockedFeatureMessage('pets'));if(state.coins<100)return toast('Potrzebujesz 100 Noob Coinów');state.coins-=100;state.eventStats.crates++;$('#crateOverlay').classList.add('show');$('#crateTitle').textContent='Otwieranie skrzynki…';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');sfx('buy');setTimeout(()=>{let p=weightedPet();state.pets.push(p.id);$('#crateTitle').textContent=p.emoji+' '+p.name;$('#crateResult').innerHTML=`Rzadkość: <b>${p.rarity.toUpperCase()}</b><br>Mnożnik: <b>x${p.mult}</b>`;$('#crateClose').classList.remove('hidden');sfx(p.rarity==='legendary'?'good':'buy');if(p.rarity==='legendary')confetti();render()},1700)}
+function openCrate(){
+ if(!featureUnlocked('pets'))return toast(lockedFeatureMessage('pets'));
+ if(state.coins<100)return toast('Potrzebujesz 100 Noob Coinów');
+ state.coins-=100;state.eventStats.crates++;
+ $('#crateOverlay').classList.add('show');$('#crateTitle').textContent='Otwieranie skrzynki…';$('#crateResult').textContent='';$('#crateClose').classList.add('hidden');sfx('buy');
+ setTimeout(()=>{
+  let base=weightedPet(),instance={uid:createPetUid(),type:base.id,level:1,xp:0,evolution:0};
+  state.pets.push(instance);
+  $('#crateTitle').textContent=base.emoji+' '+base.name;
+  $('#crateResult').innerHTML=`Rzadkość: <b>${base.rarity.toUpperCase()}</b><br>Mnożnik: <b>x${base.mult}</b><br>Nowy osobny egzemplarz`;
+  $('#crateClose').classList.remove('hidden');sfx(['legendary','mythic','secret'].includes(base.rarity)?'good':'buy');
+  if(['legendary','mythic','secret'].includes(base.rarity))confetti();render()
+ },1700)
+}
+
 function renderWorldPath(){
  $('#worldPath').innerHTML=worlds.map((w,i)=>{
   let done=worldBossDefeated(w.id),current=state.world===w.id;
@@ -418,7 +512,7 @@ function spawnSkinParticles(intensity=1){
 
 function doClick(e){
 let now=performance.now();combo=now-lastClick<470?Math.min(50,combo+1):1;lastClick=now;state.bestCombo=Math.max(state.bestCombo,combo);state.totalClicks++;
- let crit=Math.random()<Math.min(.32,.05+state.crit*.02),gain=clickValue()*(crit?5:1);addPoints(gain);if(boss)damageBoss(gain);addXp((1+Math.floor(combo/10))*(1+(state.comboExp||0)*Math.min(combo,25)*.006));
+ let crit=Math.random()<Math.min(.32,.05+state.crit*.02),gain=clickValue()*(crit?5:1);addPoints(gain);if(boss)damageBoss(gain);grantPetXp(.08);addXp((1+Math.floor(combo/10))*(1+(state.comboExp||0)*Math.min(combo,25)*.006));
  if(Math.random()<Math.min(.08,.004+state.gemChance*.004)){state.gems++;toast('Znalazłeś diament! 💎')}
  let r=$('#clicker').getBoundingClientRect();floating(e?.clientX||r.left+r.width/2,e?.clientY||r.top+r.height/2,crit?'KRYTYK x5':undefined,crit);
  let b=$('#clicker');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');if(crit)sfx('crit');else skinClickSound();spawnSkinParticles(crit?1.7:1);
@@ -435,6 +529,7 @@ function rebirth(){
 
  state.coins+=gain;
  state.rebirths++;
+ grantPetXp(100,true);
  Object.assign(state,{
   points:0,level:1,xp:0,
   perClick:1,auto:0,clickCost:20,autoCost:75,

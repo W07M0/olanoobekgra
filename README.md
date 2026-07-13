@@ -1,4 +1,4 @@
-# Ola to Noobek — wersja 0.5a
+# Ola to Noobek — wersja 0.5b
 
 Wersja techniczna. Rozgrywka i zapis graczy pozostają zgodne z wersją 0.4g.
 
@@ -42,3 +42,7 @@ Nie publikuj klucza Supabase `service_role`. Klucz publishable/anon używany prz
 - Ulepszenia podstawowe są kupowane za punkty i resetują się po rebirth.
 - Ulepszenia permanentne są kupowane za diamenty lub Noob Coiny.
 - Permanentne poziomy pozostają po rebirth.
+
+
+## System petów 0.5b
+Pety są zapisywane jako osobne egzemplarze z `uid`, poziomem, EXP i poziomem ewolucji. Stary zapis migruje automatycznie.

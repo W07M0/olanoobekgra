@@ -2,11 +2,11 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ola to Noobek — test techniczny 0.5a</title>
+<title>Ola to Noobek — test techniczny 0.5b</title>
 <style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.card{padding:16px;border-radius:14px;background:#261038;margin:10px 0}.ok{color:#4dffad}.bad{color:#ff718c}button{padding:10px 14px;border:0;border-radius:10px;font-weight:800}</style>
 </head>
 <body>
-<h1>Test techniczny v0.5a</h1><button id="run">Uruchom test</button><div id="results"></div>
+<h1>Test techniczny v0.5b</h1><button id="run">Uruchom test</button><div id="results"></div>
 <script>
 const files=['../css/styles.css','../js/data.js','../js/core.js','../js/systems.js','../js/minigames.js','../js/integrations.js','../js/app.js'];
 async function run(){
@@ -21,7 +21,9 @@ async function run(){
  const tests=[
   ['spawnSkinParticles',systems.includes('function spawnSkinParticles')],
   ['feedback RPC bez signature',!integrations.includes('p_game_version:GAME_VERSION,signature')],
-  ['dwie sekcje sklepu',index.includes('temporaryShopGrid')&&index.includes('permanentShopGrid')]
+  ['dwie sekcje sklepu',index.includes('temporaryShopGrid')&&index.includes('permanentShopGrid')],
+  ['instancje petów',systems.includes('function togglePetInstance')&&systems.includes('function fusePets')],
+  ['usuwanie petów',systems.includes('function deletePetInstance')]
  ];
  for(const [name,ok] of tests)box.innerHTML+=`<div class="card ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`
 }

@@ -397,3 +397,39 @@ body.world-switching .main{animation:worldFlash .7s ease}@keyframes worldFlash{5
 .permanent-shop{background:linear-gradient(135deg,rgba(77,255,173,.045),rgba(54,231,255,.035))}
 .permanent-card{border-top:4px solid var(--green);box-shadow:0 0 20px rgba(77,255,173,.06)}
 .temporary-card{border-top:4px solid var(--pink)}
+
+/* v0.5b: prawy panel przewija się razem ze stroną, bez własnych suwaków */
+.right{
+ position:static!important;
+ max-height:none!important;
+ overflow:visible!important;
+ min-width:0!important;
+}
+.right .panel{min-width:0!important;overflow:hidden!important}
+.right *{min-width:0}
+.board-row{grid-template-columns:25px minmax(0,1fr) auto!important}
+.board-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.name-save{min-width:0}.name-save input{width:0;min-width:0}.name-save button{flex:0 0 auto}
+.quest-top span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body{overflow-x:hidden}
+.shell{overflow:visible}
+.main{overflow:hidden}
+.pet-group{grid-column:1/-1}
+.pet-group-head{display:flex;align-items:center;gap:12px}
+.pet-group-head .big{font-size:48px}
+.pet-instance-list{display:grid;gap:8px;margin-top:12px}
+.pet-instance{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border-radius:14px;background:rgba(255,255,255,.045);border-left:4px solid var(--evo,#bbb)}
+.pet-instance.equipped{background:rgba(77,255,173,.08);box-shadow:0 0 0 1px rgba(77,255,173,.28)}
+.pet-instance-icon{font-size:32px;text-align:center}
+.pet-instance-title{display:flex;justify-content:space-between;gap:8px}.pet-instance-title span{color:var(--gold);font-weight:900}
+.pet-instance-meta{font-size:11px;color:var(--muted);margin:3px 0}
+.pet-xp{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.pet-xp i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.pet-instance-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.pet-delete{background:var(--red)!important}
+.pet-fusions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+.fusion-btn{background:linear-gradient(135deg,var(--purple),var(--pink))!important}.fusion-btn small{display:inline}
+@media(max-width:600px){
+ .pet-instance{grid-template-columns:42px minmax(0,1fr)}
+ .pet-instance-actions{grid-column:1/-1;justify-content:stretch}
+ .pet-instance-actions button{flex:1}
+}

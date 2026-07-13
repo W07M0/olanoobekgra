@@ -14,6 +14,44 @@ const defaults={
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
 
+const PET_INSTANCE_MIGRATION_KEY='olaPetInstances_v05b';
+function createPetUid(){
+ try{return crypto.randomUUID()}catch{return 'pet_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)}
+}
+function normalizePetInstance(value){
+ if(typeof value==='string')return{uid:createPetUid(),type:value,level:1,xp:0,evolution:0};
+ return{
+  uid:value?.uid||createPetUid(),
+  type:value?.type||value?.id||'dog',
+  level:Math.max(1,Math.min(50,Number(value?.level)||1)),
+  xp:Math.max(0,Number(value?.xp)||0),
+  evolution:Math.max(0,Math.min(3,Number(value?.evolution)||0))
+ }
+}
+function migratePetInstancesV05b(){
+ const oldPets=Array.isArray(state.pets)?state.pets:[];
+ const oldEquipped=Array.isArray(state.equipped)?state.equipped:[];
+ const instances=oldPets.map(normalizePetInstance);
+
+ let equippedUids=[];
+ for(const old of oldEquipped){
+  if(typeof old==='string'){
+   const direct=instances.find(p=>p.uid===old&&!equippedUids.includes(p.uid));
+   const byType=instances.find(p=>p.type===old&&!equippedUids.includes(p.uid));
+   const chosen=direct||byType;
+   if(chosen)equippedUids.push(chosen.uid)
+  }else if(old?.uid&&instances.some(p=>p.uid===old.uid)){
+   equippedUids.push(old.uid)
+  }
+ }
+ state.pets=instances;
+ state.equipped=[...new Set(equippedUids)].slice(0,Math.min(5,3+(state.petSlots||0)));
+ localStorage.setItem(PET_INSTANCE_MIGRATION_KEY,'done');
+ localStorage.setItem(SAVE_KEY,JSON.stringify(state))
+}
+migratePetInstancesV05b();
+
+
 const WORLD_RESET_MIGRATION_KEY='olaWorldReset_v04c';
 function applyWorldProgressResetV04c(){
  if(localStorage.getItem(WORLD_RESET_MIGRATION_KEY)==='done')return false;
@@ -72,7 +110,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.5a';
+const GAME_VERSION='0.5b';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -96,7 +134,21 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
-  version:'0.5a',date:'Aktualna wersja',title:'Economy & Progression Update',
+  version:'0.5b',date:'Aktualna wersja',title:'Pet Evolution Update',
+  summary:'Osobne egzemplarze petów, poziomy, ewolucje i porządki w panelu bocznym.',
+  changes:[
+   'Każdy zdobyty pet jest teraz osobnym egzemplarzem z unikalnym identyfikatorem.',
+   'Można wyposażyć kilka takich samych petów.',
+   'Pety zdobywają EXP za klikanie, minigry, bossów i rebirth.',
+   'Dodano poziomy petów oraz paski doświadczenia.',
+   'Trzy duplikaty można połączyć w Mega Nooba, Ultra Nooba lub Boskiego Nooba.',
+   'Dodano usuwanie petów z obowiązkowym potwierdzeniem.',
+   'Stare zapisy petów są automatycznie migrowane bez utraty kolekcji.',
+   'Usunięto wewnętrzne suwaki z prawego panelu.'
+  ]
+ },
+ {
+  version:'0.5a',date:'Poprzednia aktualizacja',title:'Economy & Progression Update',
   summary:'Naprawa klikera i feedbacku oraz nowy permanentny sklep.',
   changes:[
    'Naprawiono brakującą funkcję spawnSkinParticles.',
@@ -254,7 +306,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.5a';
+let selectedPatch='0.5b';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');

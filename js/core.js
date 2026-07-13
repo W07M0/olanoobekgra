@@ -12,12 +12,56 @@ function fmt(n){if(n>=1e12)return(n/1e12).toFixed(2)+'T';if(n>=1e9)return(n/1e9)
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function rand(a){return a[Math.floor(Math.random()*a.length)]}
 function world(){return worlds.find(w=>w.id===state.world)||worlds[0]}
+
 function maxPetSlots(){return Math.min(5,3+(state.petSlots||0))}
+const PET_EVOLUTIONS=[
+ {name:'Zwykły Noob',short:'Zwykły',mult:1,color:'#bbb'},
+ {name:'Mega Noob',short:'Mega',mult:1.35,color:'#36e7ff'},
+ {name:'Ultra Noob',short:'Ultra',mult:1.80,color:'#b25cff'},
+ {name:'Boski Noob',short:'Boski',mult:2.45,color:'#ffd34e'}
+];
+function getPetInstance(uid){return state.pets.find(p=>p.uid===uid)}
+function getPetBase(instance){return pets.find(p=>p.id===instance?.type)||pets[0]}
+function petXpNeeded(level){return Math.floor(24+level*level*7)}
+function petLevelMultiplier(instance){return 1+(Math.max(1,instance.level)-1)*.015}
+function petEvolutionMultiplier(instance){return PET_EVOLUTIONS[instance.evolution||0]?.mult||1}
+function petInstanceMultiplier(instance){
+ const base=getPetBase(instance);
+ return base.mult*petLevelMultiplier(instance)*petEvolutionMultiplier(instance)
+}
+function petDisplayName(instance){
+ const base=getPetBase(instance),tier=PET_EVOLUTIONS[instance.evolution||0];
+ return instance.evolution>0?`${tier.name} • ${base.name}`:base.name
+}
 function petMultiplier(){
- let base=state.equipped.reduce((m,id)=>m*(pets.find(p=>p.id===id)?.mult||1),1);
+ let base=state.equipped.reduce((m,uid)=>{
+  const instance=getPetInstance(uid);
+  return instance?m*petInstanceMultiplier(instance):m
+ },1);
  let upgrade=1+(state.petPower||0)*.06;
  return 1+(base-1)*upgrade
 }
+function petExpMultiplier(){
+ return state.equipped.reduce((m,uid)=>{
+  const instance=getPetInstance(uid),base=getPetBase(instance);
+  if(!instance)return m;
+  const levelBonus=1+(instance.level-1)*.003;
+  return m*(base.exp||1)*levelBonus
+ },1)*(1+(state.petExpBonus||0)*.035)
+}
+function grantPetXp(amount,allPets=false){
+ const targets=allPets?state.pets:state.equipped.map(getPetInstance).filter(Boolean);
+ if(!targets.length||amount<=0)return;
+ for(const pet of targets){
+  pet.xp=(pet.xp||0)+amount;
+  while(pet.level<50&&pet.xp>=petXpNeeded(pet.level)){
+   pet.xp-=petXpNeeded(pet.level);
+   pet.level++
+  }
+  if(pet.level>=50)pet.xp=0
+ }
+}
+
 function rebirthMultiplier(){
  const coins=Math.max(0,state.coins);
  const baseBonus=Math.log2(1+coins)*0.30+Math.sqrt(coins)*0.05;
@@ -29,7 +73,6 @@ function clickValue(){let comboBonus=Math.min(2.5,(combo-1)*state.comboPower*.03
 function pps(){let permanent=1+(state.permAutoPower||0)*.12;return state.auto*totalMultiplier()*(1+(state.autoBoost||0)*.2)*permanent}
 function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)*(1+(state.permGemIncome||0)*.08)}
 function coinRewardMultiplier(){return world().coinMult*(1+(state.petCoinBonus||0)*.04)}
-function petExpMultiplier(){return state.equipped.reduce((m,id)=>m*(pets.find(p=>p.id===id)?.exp||1),1)*(1+(state.petExpBonus||0)*.035)}
 function expMultiplier(){return (1+(state.expBoost||0)*.08)*(1+(state.worldExpBoost||0)*.04)*petExpMultiplier()}
 function cost(u){return Math.ceil(u.base*Math.pow(u.growth,u.get()))}
 function currencyIcon(c){return c==='points'?'⭐':c==='gems'?'💎':'🟡'}

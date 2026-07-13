@@ -14,7 +14,7 @@ function miniReward(score){
  let gems=Math.floor(score/52*gemRewardMultiplier());
  let coins=Math.floor(score/230*(1+(state.coinBoost||0)*.10)*coinRewardMultiplier());
  if(score>=24&&gems<1)gems=1;if(score>=85&&coins<1)coins=1;
- state.gems+=gems;state.coins+=coins;state.medals+=Math.max(0,Math.floor(score/80));
+ state.gems+=gems;state.coins+=coins;state.medals+=Math.max(0,Math.floor(score/80));grantPetXp(8+score*.12);
  toast(`Nagroda: +${gems} 💎, +${coins} 🟡`);if(gems+coins>0)sfx('good');render()
 }
 

@@ -1,5 +1,13 @@
 # Historia wersji
 
+## 0.5b — Pet Evolution Update
+- Osobne egzemplarze petów i migracja starego zapisu.
+- Poziomy oraz EXP petów.
+- Wyposażanie duplikatów.
+- Ewolucje Mega Noob, Ultra Noob i Boski Noob.
+- Usuwanie petów z potwierdzeniem.
+- Usunięto suwaki z prawego panelu.
+
 ## 0.5a — Economy & Progression Update
 - Naprawiono `spawnSkinParticles`.
 - Naprawiono RPC Player Feedback.
