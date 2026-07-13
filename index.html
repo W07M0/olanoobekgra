@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#130623">
+<title>Ola to Noobek v0.5 — Ultimate Clicker</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-world="neon"><div class="world-weather" id="worldWeather"></div>
+<div class="shell">
+<nav class="panel nav">
+ <div class="logo">OLA TO<br><span>NOOBEK</span><small class="version-badge">v0.5</small></div>
+ <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
+ <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
+ <button class="nav-btn" data-view="pets">🐾 <span class="label">Pety</span><span class="dot" id="petDot">0</span></button>
+ <button class="nav-btn" data-view="minigames">🎯 <span class="label">Minigry</span></button>
+ <button class="nav-btn" data-view="skins">🎨 <span class="label">Skiny</span><span class="dot" id="skinDot">1</span></button>
+ <button class="nav-btn" data-view="casino">🎰 <span class="label">Kasyno</span><span class="dot" id="casinoDot">🔒</span></button>
+ <button class="nav-btn" data-view="worlds">🌍 <span class="label">Światy</span></button>
+ <button class="nav-btn" data-view="rebirth">♻️ <span class="label">Rebirth</span></button>
+ <button class="nav-btn" data-view="awards">🏆 <span class="label">Nagrody</span></button>
+ <button class="nav-btn" data-view="collection">📚 <span class="label">Kolekcja</span></button>
+ <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
+ <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.5</span></button>
+ <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button><button class="icon-btn" id="resetBtn">↻</button></div>
+</nav>
+
+<main class="panel main" id="mainPanel">
+<section class="view active" id="view-game">
+ <div class="header">
+  <div><h1>ULTIMATE <span class="gradient">NOOB CLICKER</span></h1><p class="muted">Klikaj, zdobywaj pety, odblokowuj światy i zostań królem noobków.</p><div class="player-title" id="playerTitle">Tytuł: Początkujący Noob</div></div>
+  <div class="currency"><span class="chip">⭐ <b id="points">0</b></span><span class="chip">💎 <b id="gems">0</b></span><span class="chip">🟡 <b id="coins">0</b></span></div>
+ </div>
+ <div class="stats">
+  <div class="stat"><b id="perClick">1</b><small>ZA KLIK</small></div>
+  <div class="stat"><b id="pps">0</b><small>NA SEKUNDĘ</small></div>
+  <div class="stat"><b id="level">1</b><small>POZIOM</small></div>
+  <div class="stat"><b id="multiplier">x1.00</b><small>MNOŻNIK</small></div>
+ </div>
+ <div class="xp"><i id="xpBar"></i></div><div class="exp-row">📘 Mnożnik EXP: <b id="expMult">x1.00</b> • Do następnego poziomu: <b id="xpNeed">0</b> EXP</div>
+ <div class="world-banner" id="worldBanner"><span id="worldEmoji">🌃</span><div><b id="worldName">Neonowa Piwnica</b><small id="worldFlavor">Pierwszy krok każdego nooba.</small></div></div>
+ <div class="arena">
+  <div class="aura" id="aura"></div>
+  <div class="clicker-wrap" id="clickerWrap"><div class="skin-orbit-fx" id="skinOrbitFx"></div><button class="clicker" id="clicker"><span class="skin-fx"></span><img src="data:image/png;base64,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" alt="Główny przycisk"></button><div class="skin-particles" id="skinParticles"></div></div>
+  <div class="pet-orbit" id="petOrbit"></div>
+  <div class="combo" id="combo">COMBO x1</div>
+ </div>
+ 
+ <div class="endgame-boss-banner hidden" id="endgameBossBanner">🌌 W ostatnim świecie losowy boss może pojawić się co kilka minut.</div>
+ <div class="boss-panel hidden" id="bossPanel">
+  <div class="boss-top">
+   <div><b id="bossName">Boss Noob</b><small id="bossDesc">Pokonaj go kliknięciami zanim ucieknie.</small></div>
+   <div class="boss-time">⏱️ <span id="bossTime">30</span>s</div>
+  </div>
+  <div class="boss-health"><i id="bossHealthBar"></i></div><div class="boss-blocker-layer hidden" id="bossBlockerLayer"></div>
+  <div class="boss-meta"><span>HP: <b id="bossHp">0/0</b></span><span>Nagroda: <b id="bossReward">0</b></span></div>
+ </div>
+
+ <div class="quick-shop">
+  <button class="buy" id="quickClick">⚡ MOCNIEJSZY KLIK <small id="quickClickCost">Koszt: 20</small></button>
+  <button class="buy alt" id="quickAuto">🤖 AUTO-NOOB <small id="quickAutoCost">Koszt: 75</small></button>
+ </div>
+ <button class="small-btn" id="challengeBossBtn" style="display:block;margin:10px auto">⚔️ Zmierz się z bossem świata</button><div class="message" id="message">Klikaj myszką albo naciskaj SPACJĘ — combo x8 uruchamia deszcz noobków.</div>
+ <div class="space-hint"><kbd>SPACJA</kbd><span>kliknięcie z klawiatury</span></div>
+</section>
+
+<section class="view" id="view-shop">
+ <div class="section-title"><div><h1>🛒 Sklep ulepszeń</h1><p class="muted">Kupuj coraz mocniejsze bonusy.</p></div><div class="currency"><span class="chip">⭐ <b data-bind="points">0</b></span><span class="chip">💎 <b data-bind="gems">0</b></span></div></div>
+ <div class="grid" id="shopGrid"></div>
+</section>
+
+<section class="view" id="view-pets">
+ <div class="section-title"><div><h1>🐾 Pety i skrzynki</h1><p class="muted">Pety zwiększają mnożnik punktów, a ulepszenia mogą też wzmacniać gemy i Noob Coiny.</p></div><button class="small-btn" id="openCrate">Otwórz skrzynkę — 100 🟡</button></div>
+ <div class="inventory-info">Wyposażone: <b id="equippedCount">0/3</b> • Łączny bonus petów: <b id="petBonus">x1.00</b> • EXP z petów: <b id="petExpBonus">x1.00</b></div>
+ <div class="grid" id="petGrid"></div>
+</section>
+
+
+<section class="view" id="view-minigames">
+ <div class="section-title"><div><h1>🎯 Noobowe minigry</h1><p class="muted">Trzy zręcznościowe wyzwania z nagrodami.</p></div><div class="currency"><span class="chip">🏅 <b id="medals">0</b></span></div></div>
+ <div class="grid">
+  <div class="card"><div class="big">🎯</div><h3>Noob Aim Lab</h3><p class="muted">Klikaj cele przez 20 sekund. Pudło zeruje combo.</p><p>Rekord: <b id="aimBest">0</b></p><button onclick="startAimGame()">Graj</button></div>
+  <div class="card"><div class="big">🧱</div><h3>Noob Parkour</h3><p class="muted">Skacz nad lagami spacją albo dotykiem.</p><p>Rekord: <b id="parkourBest">0 m</b></p><button onclick="startParkour()">Graj</button></div>
+  <div class="card"><div class="big">🧠</div><h3>Noob Memory</h3><p class="muted">Powtarzaj sekwencję świecących noobów.</p><p>Rekord: <b id="memoryBest">0</b></p><button onclick="startMemory()">Graj</button></div>
+ </div>
+ <div class="minigame-stage hidden" id="aimStage"><div class="minigame-hud"><b>Wynik: <span id="aimScore">0</span></b><b>Combo: <span id="aimCombo">0</span></b><b>Czas: <span id="aimTime">20.0</span></b></div><div class="aim-field" id="aimField"><button class="aim-target" id="aimTarget">NOOB</button></div><button class="small-btn danger-btn" onclick="stopAimGame()">Zakończ</button></div>
+ <div class="minigame-stage hidden" id="parkourStage"><div class="minigame-hud"><b>Dystans: <span id="parkourScore">0</span> m</b><b>Prędkość: <span id="parkourSpeed">1.0</span>x</b></div><canvas id="parkourCanvas" width="900" height="330"></canvas><p class="muted" style="text-align:center">SPACJA / kliknięcie / dotyk = skok</p><button class="small-btn danger-btn" onclick="stopParkour()">Zakończ</button></div>
+ <div class="minigame-stage hidden" id="memoryStage"><div class="minigame-hud"><b>Runda: <span id="memoryRound">1</span></b><b id="memoryStatus">Patrz uważnie…</b></div><div class="memory-grid" id="memoryGrid"></div><button class="small-btn danger-btn" onclick="stopMemory()">Zakończ</button></div>
+</section>
+<section class="view" id="view-skins">
+ <div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
+ <div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div><div class="grid" id="skinGrid"></div>
+</section>
+
+<section class="view" id="view-casino">
+ <div class="section-title">
+  <div>
+   <h1>🎰 Noob Casino</h1>
+   <p class="muted">Wyłącznie wirtualne Noob Coiny. Bez wpłat i prawdziwych pieniędzy.</p>
+  </div>
+  <div class="currency"><span class="chip">🟡 <b id="casinoCoins">0</b></span></div>
+ </div>
+
+ <div id="casinoLocked" class="casino-lock">
+  <div class="casino-lock-icon">🔒</div>
+  <h2>Kasyno jest zamknięte</h2>
+  <p>Wymagania: poziom <b>8</b> oraz <b>75 🟡</b>.</p>
+  <p class="muted">Po odblokowaniu pozostaje dostępne na stałe.</p>
+  <button class="buy casino-unlock" id="unlockCasino">Odblokuj Noob Casino</button>
+ </div>
+
+ <div id="casinoContent" class="hidden">
+  <div class="casino-warning">⚠️ Gry mają niewielką przewagę kasyna. Najpewniejszy progres nadal daje clicker, minigry i rebirth.</div>
+  <div class="bet-selector">
+   <b>Stawka:</b>
+   <button class="bet-btn active" data-bet="5">5 🟡</button>
+   <button class="bet-btn" data-bet="25">25 🟡</button>
+   <button class="bet-btn" data-bet="100">100 🟡</button>
+  </div>
+
+  <div class="grid casino-grid">
+   <div class="card casino-card">
+    <div class="big">🎰</div><h3>Noob Slots</h3>
+    <p class="muted">Trzy takie symbole wygrywają. Dwa dają małą nagrodę.</p>
+    <div class="slots" id="slots"><span>🙂</span><span>🙂</span><span>🙂</span></div>
+    <button id="spinSlots">Zakręć</button>
+    <div class="casino-result" id="slotsResult">Wybierz stawkę i zakręć.</div>
+   </div>
+
+   <div class="card casino-card">
+    <div class="big">🎡</div><h3>Noob Ruletka</h3>
+    <p class="muted">Czerwone/czarne płaci x1,9, zielone x12.</p>
+    <div class="roulette-wheel" id="casinoWheel"><span id="wheelNumber">?</span></div>
+    <div class="roulette-choices">
+     <button class="red-choice" data-roulette="red">Czerwone</button>
+     <button class="black-choice" data-roulette="black">Czarne</button>
+     <button class="green-choice" data-roulette="green">Zielone</button>
+    </div>
+    <div class="casino-result" id="rouletteResult">Wybierz kolor.</div>
+   </div>
+
+   <div class="card casino-card">
+    <div class="big">🃏</div><h3>Wyżej czy niżej</h3>
+    <p class="muted">Zgadnij, czy kolejna karta będzie wyższa czy niższa.</p>
+    <div class="card-display"><span id="currentCard">7</span><small id="cardSuit">♠</small></div>
+    <div class="higher-lower">
+     <button id="guessLower">⬇ Niżej</button>
+     <button id="guessHigher">⬆ Wyżej</button>
+    </div>
+    <div class="casino-result" id="cardsResult">Trafienie płaci x1,8. Remis zwraca stawkę.</div>
+   </div>
+  </div>
+
+  <div class="casino-stats">
+   Rozegrane: <b id="casinoGames">0</b> • Wygrane: <b id="casinoWins">0</b> • Bilans: <b id="casinoProfit">0</b> 🟡
+  </div>
+ </div>
+</section>
+
+<section class="view" id="view-worlds">
+ <div class="section-title"><div><h1>🌍 Światy</h1><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
+ <div class="world-path"><b>Ścieżka bossów</b><div class="world-path-row" id="worldPath"></div></div><div class="grid" id="worldGrid"></div>
+</section>
+
+<section class="view" id="view-rebirth">
+ <div class="rebirth-box">
+  <div class="rebirth-icon">♻️</div><h1>Rebirth</h1>
+  <p class="muted">Zresetuj punkty, poziom i podstawowe ulepszenia. Zachowasz pety, diamenty, monety i otrzymasz trwałe Noob Coiny.</p>
+  <h2>Otrzymasz: <span id="rebirthGain" class="gradient">0 🟡</span></h2>
+  <p>Noob Coiny dają trwały mnożnik z malejącą skutecznością — kolejne monety są coraz słabsze.</p>
+  <button class="buy" id="rebirthBtn" style="max-width:360px;text-align:center">WYKONAJ REBIRTH</button>
+ </div>
+</section>
+
+
+
+<section class="view" id="view-collection">
+ <div class="section-title">
+  <div><h1>📚 Kolekcja</h1><p class="muted">Sprawdź wszystkie pety, skiny i ich szanse zdobycia.</p></div>
+  <div class="chip">Postęp: <b id="collectionProgress">0%</b></div>
+ </div>
+ <h2>🐾 Pety</h2><div class="grid" id="petCollectionGrid"></div>
+ <h2 style="margin-top:24px">🎨 Skiny</h2><div class="grid" id="skinCollectionGrid"></div>
+</section>
+
+
+<section class="view" id="view-feedback">
+ <div class="section-title">
+  <div><h1>💬 Player Feedback</h1><p class="muted">Napisz opinię, zgłoś błąd albo zaproponuj nową funkcję.</p></div>
+  <div class="chip">Online przez Supabase</div>
+ </div>
+
+ <div class="feedback-form card">
+  <label>Nazwa gracza</label>
+  <input id="feedbackName" maxlength="20" placeholder="Twój nick">
+  <label>Typ wiadomości</label>
+  <select id="feedbackType">
+   <option value="opinia">Opinia</option>
+   <option value="bug">Bug</option>
+   <option value="pomysl">Pomysł</option>
+   <option value="balans">Balans</option>
+  </select>
+  <label>Wiadomość</label>
+  <textarea id="feedbackText" maxlength="500" rows="5" placeholder="Napisz krótko i konkretnie..."></textarea>
+  <div class="feedback-actions">
+   <span class="muted"><span id="feedbackCount">0</span>/500</span>
+   <button class="small-btn" id="sendFeedback">Wyślij feedback</button>
+  </div>
+ </div>
+
+ <div class="feedback-toolbar">
+  <h2>Ostatnie komentarze</h2>
+  <button class="small-btn" id="refreshFeedback">Odśwież</button>
+ </div>
+ <div id="feedbackList"></div>
+
+ <div class="diagnostics card">
+  <div class="feedback-toolbar">
+   <div><h2>🧪 Diagnostyka</h2><p class="muted">Ostatnie błędy zapisane w tej przeglądarce.</p></div>
+   <button class="small-btn" id="clearDiagnostics">Wyczyść</button>
+  </div>
+  <div id="diagnosticsStatus" class="diagnostics-status">Brak wykrytych błędów.</div>
+  <pre id="diagnosticsLog" class="diagnostics-log"></pre>
+ </div>
+
+</section>
+
+<section class="view" id="view-patchnotes">
+ <div class="section-title">
+  <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ola to Noobek.</p></div>
+  <div class="chip">Aktualna wersja: <b>0.5</b></div>
+ </div>
+ <div class="patch-layout">
+  <aside class="patch-list" id="patchList"></aside>
+  <article class="patch-content" id="patchContent"></article>
+ </div>
+</section>
+
+<section class="view" id="view-awards">
+ <div class="section-title"><div><h1>🏆 Nagrody i osiągnięcia</h1><p class="muted">Codzienna nagroda, misje i kolekcja odznak.</p></div></div>
+ <h2>🎁 Nagroda dzienna</h2><div class="daily-grid" id="dailyGrid"></div><button class="small-btn" id="dailyBtn" style="margin:12px 0 24px">Odbierz nagrodę</button>
+ <h2>🎖️ Osiągnięcia</h2><div class="grid" id="achievementGrid"></div>
+</section>
+</main>
+
+<aside class="right">
+ <section class="panel event-box"><div class="event-title" id="eventTitle">✨ Następny event</div><div class="event-timer" id="eventTimer">00:45</div><div class="muted" id="eventDesc">Losowy bonus pojawi się za chwilę.</div></section>
+ <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
+ <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="global">Global</button><button class="tab" data-board="recent">Ostatnie</button></div><div id="leaderboard"></div><div class="name-save"><input id="playerName" maxlength="14" value="Gracz"><button class="small-btn" id="saveScore">Zapisz</button></div></section>
+ 
+ <section class="panel mini-patch-card">
+  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.5</span></div>
+  <p><b>Skin Renderer Hotfix</b></p>
+  <p class="muted">Naprawiony renderer skinów i blokowanie całego interfejsu.</p>
+  <button class="small-btn" onclick="showView('patchnotes')">Zobacz historię</button>
+ </section>
+
+<section class="panel"><h2>📊 Statystyki</h2><div id="statsBox" class="muted"></div></section>
+</aside>
+</div>
+
+<div class="overlay" id="crateOverlay"><div class="modal"><div class="crate">🎁</div><h2 style="text-align:center" id="crateTitle">Otwieranie skrzynki…</h2><p style="text-align:center" id="crateResult"></p><button class="small-btn hidden" id="crateClose" style="width:100%">Super!</button></div></div>
+
+<div class="overlay" id="goldCrateOverlay"><div class="modal gold-modal"><div class="gold-rays"></div><div class="gold-case">👑</div><h2 id="goldTitle" style="text-align:center">GOLD NOOB CASE</h2><div class="roulette-window"><div class="roulette-strip" id="rouletteStrip"></div><div class="roulette-marker"></div></div><p id="goldResult" style="text-align:center;min-height:28px;font-weight:900"></p><button class="small-btn gold-btn hidden" id="goldClose" style="width:100%">Załóż skin</button></div></div>
+
+<div class="overlay world-transition" id="worldTransition">
+ <div class="world-transition-card">
+  <div class="world-transition-emoji" id="transitionEmoji">🌍</div>
+  <h1 id="transitionName">Nowy świat</h1>
+  <p id="transitionDesc"></p>
+ </div>
+</div>
+<div class="overlay boss-result-overlay" id="bossResultOverlay">
+ <div class="modal">
+  <div class="boss-result-icon" id="bossResultIcon">🏆</div>
+  <h2 id="bossResultTitle">Boss pokonany!</h2>
+  <p id="bossResultText"></p>
+  <button class="small-btn" id="bossResultClose" style="width:100%">Dalej</button>
+ </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/data.js"></script>
+<script defer src="js/core.js"></script>
+<script defer src="js/systems.js"></script>
+<script defer src="js/minigames.js"></script>
+<script defer src="js/integrations.js"></script>
+<script defer src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ola to Noobek — test techniczny</title>
+<style>
+body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}
+.card{padding:16px;border-radius:14px;background:#261038;margin:10px 0}
+.ok{color:#4dffad}.bad{color:#ff718c}button{padding:10px 14px;border:0;border-radius:10px;font-weight:800}
+</style>
+</head>
+<body>
+<h1>Test techniczny v0.5</h1>
+<p>Ta strona sprawdza, czy GitHub Pages poprawnie udostępnia wszystkie pliki.</p>
+<button id="run">Uruchom test</button>
+<div id="results"></div>
+<script>
+const files=[
+ '../css/styles.css',
+ '../js/data.js',
+ '../js/core.js',
+ '../js/systems.js',
+ '../js/minigames.js',
+ '../js/integrations.js',
+ '../js/app.js'
+];
+async function run(){
+ const box=document.querySelector('#results');box.innerHTML='';
+ for(const file of files){
+  try{
+   const r=await fetch(file,{cache:'no-store'});
+   box.innerHTML+=`<div class="card ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — HTTP ${r.status}</div>`;
+  }catch(e){
+   box.innerHTML+=`<div class="card bad">❌ ${file} — ${e.message}</div>`;
+  }
+ }
+}
+document.querySelector('#run').onclick=run;
+</script>
+</body>
+</html>
