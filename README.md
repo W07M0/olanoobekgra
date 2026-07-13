@@ -48,5 +48,5 @@ Nie publikuj klucza Supabase `service_role`. Klucz publishable/anon używany prz
 Pety są zapisywane jako osobne egzemplarze z `uid`, poziomem, EXP i poziomem ewolucji. Stary zapis migruje automatycznie.
 
 
-## Profile i admin 0.5c
-Uruchom `supabase_profiles_admin_v0_5c.sql` i przeczytaj `ADMIN_SETUP.md`.
+## Poprawiona architektura 0.5c
+Profil i panel admina znajdują się w `js/profile-admin.js`. Systemy gry pozostały niezmienione względem stabilnej wersji 0.5b.

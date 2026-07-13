@@ -240,43 +240,68 @@
 
 
 <section class="view" id="view-settings">
- <div class="section-title"><div><h1>⚙️ Ustawienia i profil</h1><p class="muted">Nick, Player ID, wydajność oraz kopia zapisu.</p></div><span class="chip">Profil lokalny</span></div>
+ <div class="section-title">
+  <div><h1>⚙️ Ustawienia i profil</h1><p class="muted">Nick, Player ID, wydajność oraz kopia zapisu.</p></div>
+  <span class="chip">Profil lokalny</span>
+ </div>
  <div class="settings-grid">
-  <div class="card settings-card"><h2>👤 Profil gracza</h2>
-   <label>Nick na rankingu</label><div class="settings-row"><input id="settingsPlayerName" maxlength="16" placeholder="3–16 znaków"><button class="small-btn" id="savePlayerName">Zapisz</button></div>
+  <div class="card settings-card">
+   <h2>👤 Profil gracza</h2>
+   <label>Nick na rankingu</label>
+   <div class="settings-row"><input id="settingsPlayerName" maxlength="16" placeholder="3–16 znaków"><button class="small-btn" id="savePlayerName">Zapisz</button></div>
    <p class="muted">Nick można zmienić raz na godzinę.</p>
-   <label>Player ID</label><div class="settings-row"><input id="settingsPlayerId" readonly><button class="small-btn" id="copyPlayerId">Kopiuj</button></div>
-   <div class="profile-status" id="profileStatus">Profil nie został zapisany online.</div>
+   <label>Player ID</label>
+   <div class="settings-row"><input id="settingsPlayerId" readonly><button class="small-btn" id="copyPlayerId">Kopiuj</button></div>
+   <div class="profile-status" id="profileStatus">Ustaw nick, aby włączyć ranking online.</div>
   </div>
-  <div class="card settings-card"><h2>🎮 Gra i wydajność</h2>
+
+  <div class="card settings-card">
+   <h2>🎮 Gra i wydajność</h2>
    <label class="setting-toggle"><span>Dźwięki</span><input type="checkbox" id="settingsSound"></label>
    <label class="setting-toggle"><span>Muzyka</span><input type="checkbox" id="settingsMusic"></label>
    <label class="setting-toggle"><span>Automatyczny ranking</span><input type="checkbox" id="settingsAutoBoard"></label>
-   <label>Intensywność efektów</label><select id="settingsEffects"><option value="0">Niska</option><option value="1">Średnia</option><option value="2">Wysoka</option></select>
+   <label>Intensywność efektów</label>
+   <select id="settingsEffects"><option value="0">Niska</option><option value="1">Średnia</option><option value="2">Wysoka</option></select>
    <label class="setting-toggle"><span>Tryb oszczędny</span><input type="checkbox" id="settingsEco"></label>
   </div>
-  <div class="card settings-card"><h2>💾 Dane gry</h2>
+
+  <div class="card settings-card">
+   <h2>💾 Dane gry</h2>
    <button class="small-btn settings-button" id="manualSave">Zapisz teraz</button>
    <button class="small-btn settings-button" id="exportSave">Eksportuj zapis</button>
    <label class="small-btn settings-button import-label">Importuj zapis<input type="file" id="importSave" accept=".json,application/json" hidden></label>
    <button class="small-btn settings-button danger-btn" id="resetSave">Zresetuj całą grę</button>
   </div>
-  <div class="card settings-card"><h2>🛡️ Logowanie administratora</h2>
+
+  <div class="card settings-card">
+   <h2>🛡️ Logowanie administratora</h2>
    <input id="adminEmail" type="email" autocomplete="username" placeholder="E-mail administratora">
    <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Hasło">
    <div class="settings-row"><button class="small-btn" id="adminLogin">Zaloguj</button><button class="small-btn hidden" id="adminLogout">Wyloguj</button></div>
-   <p class="muted" id="adminLoginStatus">Panel pojawi się tylko dla konta administratora.</p>
+   <p class="muted" id="adminLoginStatus">Konto musi istnieć w Supabase Authentication i tabeli admin_users.</p>
   </div>
  </div>
 </section>
+
 <section class="view" id="view-admin">
- <div class="section-title"><div><h1>🛡️ Panel administratora</h1><p class="muted">Moderacja graczy, rankingu i komentarzy.</p></div><button class="small-btn" id="refreshAdmin">Odśwież</button></div>
+ <div class="section-title">
+  <div><h1>🛡️ Panel administratora</h1><p class="muted">Moderacja graczy, wyników i komentarzy.</p></div>
+  <button class="small-btn" id="refreshAdmin">Odśwież</button>
+ </div>
  <div class="admin-summary" id="adminSummary"></div>
- <div class="admin-tabs"><button class="tab active" data-admin-tab="players">Gracze</button><button class="tab" data-admin-tab="feedback">Feedback</button><button class="tab" data-admin-tab="actions">Historia</button></div>
- <div class="admin-panel active" id="admin-players"><div class="settings-row"><input id="adminPlayerSearch" placeholder="Nick lub Player ID"><button class="small-btn" id="adminSearchPlayers">Szukaj</button></div><div class="admin-list" id="adminPlayersList"></div></div>
+ <div class="admin-tabs">
+  <button class="tab active" data-admin-tab="players">Gracze</button>
+  <button class="tab" data-admin-tab="feedback">Feedback</button>
+  <button class="tab" data-admin-tab="actions">Historia</button>
+ </div>
+ <div class="admin-panel active" id="admin-players">
+  <div class="settings-row"><input id="adminPlayerSearch" placeholder="Nick lub Player ID"><button class="small-btn" id="adminSearchPlayers">Szukaj</button></div>
+  <div class="admin-list" id="adminPlayersList"></div>
+ </div>
  <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
  <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
 </section>
+
 <section class="view" id="view-patchnotes">
  <div class="section-title">
   <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ola to Noobek.</p></div>
@@ -339,6 +364,7 @@
 <script defer src="js/systems.js"></script>
 <script defer src="js/minigames.js"></script>
 <script defer src="js/integrations.js"></script>
+<script defer src="js/profile-admin.js"></script>
 <script defer src="js/app.js"></script>
 </body>
 </html>

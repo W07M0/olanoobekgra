@@ -1,10 +1,9 @@
 # Historia wersji
 
-## 0.5c — Player Profiles & Admin Tools
-- Profil gracza i Player ID.
-- Automatyczny ranking.
-- Ustawienia, eksport/import, tryb oszczędny.
-- Panel administratora z Supabase Auth.
+## 0.5c — Profiles & Ranking — Fixed
+- Przywrócono saveOnline i ranking.
+- Zachowano stabilne kasyno, skiny, pety i minigry z 0.5b.
+- Profil i admin działają w osobnym module.
 
 ## 0.5b — Pet Evolution Update
 - Osobne egzemplarze petów i migracja starego zapisu.

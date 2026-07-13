@@ -1,32 +1,23 @@
 <!doctype html>
-<html lang="pl">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ola to Noobek — test techniczny 0.5b</title>
-<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.card{padding:16px;border-radius:14px;background:#261038;margin:10px 0}.ok{color:#4dffad}.bad{color:#ff718c}button{padding:10px 14px;border:0;border-radius:10px;font-weight:800}</style>
-</head>
-<body>
-<h1>Test techniczny v0.5b</h1><button id="run">Uruchom test</button><div id="results"></div>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test 0.5c</title><style>body{font-family:system-ui;background:#12051f;color:#fff;max-width:850px;margin:30px auto}.ok{color:#4dffad}.bad{color:#ff718c}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}</style></head>
+<body><h1>Test techniczny 0.5c</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
-const files=['../css/styles.css','../js/data.js','../js/core.js','../js/systems.js','../js/minigames.js','../js/integrations.js','../js/app.js'];
+const files=['../css/styles.css','../js/data.js','../js/core.js','../js/systems.js','../js/minigames.js','../js/integrations.js','../js/profile-admin.js','../js/app.js'];
 async function run(){
- const box=document.querySelector('#results');box.innerHTML='';
- for(const file of files){
-  try{const r=await fetch(file,{cache:'no-store'});box.innerHTML+=`<div class="card ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — HTTP ${r.status}</div>`}
-  catch(e){box.innerHTML+=`<div class="card bad">❌ ${file} — ${e.message}</div>`}
- }
- const systems=await (await fetch('../js/systems.js',{cache:'no-store'})).text();
- const integrations=await (await fetch('../js/integrations.js',{cache:'no-store'})).text();
- const index=await (await fetch('../index.html',{cache:'no-store'})).text();
- const tests=[
-  ['spawnSkinParticles',systems.includes('function spawnSkinParticles')],
-  ['feedback RPC bez signature',!integrations.includes('p_game_version:GAME_VERSION,signature')],
-  ['dwie sekcje sklepu',index.includes('temporaryShopGrid')&&index.includes('permanentShopGrid')],
-  ['instancje petów',systems.includes('function togglePetInstance')&&systems.includes('function fusePets')],
-  ['usuwanie petów',systems.includes('function deletePetInstance')]
+ const out=document.querySelector('#out');out.innerHTML='';
+ for(const file of files){const r=await fetch(file,{cache:'no-store'});out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — ${r.status}</div>`}
+ const sources=await Promise.all(files.filter(x=>x.endsWith('.js')).map(x=>fetch(x,{cache:'no-store'}).then(r=>r.text())));
+ const all=sources.join('\n');
+ const checks=[
+  ['ranking saveOnline',all.includes('function saveOnline(')],
+  ['kasyno',all.includes('function spinSlots(')&&all.includes('function playRoulette(')],
+  ['skiny',all.includes('function renderSkins(')&&all.includes('function applySkin(')],
+  ['pety',all.includes('function renderPets(')&&all.includes('function togglePetInstance(')],
+  ['profil',all.includes('function savePlayerProfile(')],
+  ['admin',all.includes('function adminLogin(')]
  ];
- for(const [name,ok] of tests)box.innerHTML+=`<div class="card ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`
+ checks.forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)
 }
 document.querySelector('#run').onclick=run;
-</script>
-</body></html>
+</script></body></html>

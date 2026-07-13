@@ -295,7 +295,7 @@ function render(){
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
- renderFeatureLocks();applyFeatureViewLocks();renderPatchNotes();renderCollection();renderDiagnostics();renderSettings();renderPets();renderShop();renderWorlds();renderSkins();renderCasino();renderMiniStats();maybeSpawnBoss();renderAchievements();renderQuests();renderStats();renderDaily();renderBoard();applySkin();save()
+ renderFeatureLocks();applyFeatureViewLocks();renderPatchNotes();renderCollection();renderDiagnostics();renderPets();renderShop();renderWorlds();renderSkins();renderCasino();renderMiniStats();maybeSpawnBoss();renderAchievements();renderQuests();renderStats();renderDaily();renderBoard();applySkin();save()
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -538,7 +538,7 @@ function rebirth(){
  });
 
  confetti();sfx('good');
- toast('Rebirth wykonany! Permanentne ulepszenia zostały zachowane.');autoSaveLeaderboard();
+ toast('Rebirth wykonany! Permanentne ulepszenia zostały zachowane.');
  showView('game');render()
 }
 

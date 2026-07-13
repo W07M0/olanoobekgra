@@ -11,7 +11,6 @@ function showView(id){
 }
 
 $$('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.view));
-bindSettings();bindAdmin();
 $('#clicker').onclick=doClick;$('#unlockCasino').onclick=unlockCasino;$('#spinSlots').onclick=spinSlots;$('#guessLower').onclick=()=>playHigherLower(false);$('#guessHigher').onclick=()=>playHigherLower(true);$$('[data-roulette]').forEach(b=>b.onclick=()=>playRoulette(b.dataset.roulette));$$('.bet-btn').forEach(b=>b.onclick=()=>{casinoBet=+b.dataset.bet;$$('.bet-btn').forEach(x=>x.classList.toggle('active',x===b))});$('#openGoldCrate').onclick=openGoldCase;$('#goldClose').onclick=()=>{state.activeSkin=$('#goldClose').dataset.skin;$('#goldCrateOverlay').classList.remove('show');render()};$('#quickClick').onclick=()=>quickBuy('click');$('#quickAuto').onclick=()=>quickBuy('auto');$('#openCrate').onclick=openCrate;$('#crateClose').onclick=()=>$('#crateOverlay').classList.remove('show');$('#rebirthBtn').onclick=rebirth;$('#dailyBtn').onclick=claimDaily;$('#saveScore').onclick=saveOnline;
 $('#challengeBossBtn').onclick=spawnWorldBoss;$('#clearDiagnostics').onclick=clearDiagnostics;$('#sendFeedback').onclick=sendFeedback;$('#refreshFeedback').onclick=loadFeedback;$('#feedbackText').oninput=e=>$('#feedbackCount').textContent=e.target.value.length;$('#feedbackName').value=$('#playerName').value||'Gracz';$('#bossResultClose').onclick=()=>$('#bossResultOverlay').classList.remove('show');$('#soundBtn').onclick=()=>{state.sound=!state.sound;render()};$('#musicBtn').onclick=()=>setMusic(!state.music);$('#resetBtn').onclick=()=>{if(confirm('Usunąć cały lokalny postęp?')){localStorage.removeItem(SAVE_KEY);location.reload()}};
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');boardMode=b.dataset.board;loadBoard()});
@@ -25,9 +24,16 @@ document.addEventListener('keydown',e=>{
 
 setInterval(()=>{state.playSeconds++;state.lastSeen=Date.now();if(state.auto>0){state.points+=pps();addXp(Math.max(1,Math.floor(state.auto/3)))}if(state.playSeconds%10===0)render();else{renderHud();save()}},1000);
 setInterval(tickEvent,1000);setInterval(loadBoard,30000);
-applyOfflineEarnings();if(state.music)setMusic(true);renderSettings();render();loadBoard();loadFeedback();refreshAdminSession();tickEvent();
+applyOfflineEarnings();if(state.music)setMusic(true);render();loadBoard();loadFeedback();tickEvent();
 if(worldProgressWasReset){
  setTimeout(()=>toast('🌍 Postęp światów został zresetowany. Reszta zapisu została zachowana.'),700)
 }
 
-autoProfileTimer=setInterval(()=>autoSaveLeaderboard(),45000);document.addEventListener('visibilitychange',()=>{if(document.hidden)autoSaveLeaderboard()});
+
+/* 0.5c profile/admin initialization — isolated from gameplay bindings */
+bindProfileSettings();
+bindAdminPanel();
+renderProfileSettings();
+refreshAdminSession();
+profileAutoTimer=setInterval(automaticLeaderboardSave,45000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)automaticLeaderboardSave()});
