@@ -1,54 +1,127 @@
-let casinoBet=5,casinoBusy=false,currentCasinoCard=7;
-const slotSymbols=[
- {s:'🙂',w:28,p:2.5},{s:'🍌',w:24,p:3},{s:'🤖',w:19,p:4},{s:'💎',w:14,p:6},{s:'👑',w:9,p:10},{s:'GOLD',w:6,p:18}
+
+let casinoBet=10,casinoBusy=false,currentCasinoCard=7,exchangeCurrency='coins',exchangeAmount=250;
+const casinoUpgradeDefs=[
+ {id:'payout',icon:'💰',name:'Lepsze wypłaty',desc:'+2% do wypłat za poziom',max:20,base:450,growth:1.72},
+ {id:'supply',icon:'🎁',name:'Większa paczka',desc:'+7% żetonów z paczki godzinowej',max:20,base:600,growth:1.76},
+ {id:'luck',icon:'🍀',name:'Złota kostka',desc:'+0,5% szans na podwójną wygraną',max:15,base:900,growth:1.85},
+ {id:'limit',icon:'🎩',name:'High Roller',desc:'Większy dozwolony zakład',max:12,base:1200,growth:1.92},
+ {id:'xp',icon:'🏨',name:'Casino XP',desc:'+5% Casino XP za poziom',max:20,base:700,growth:1.78}
 ];
+const slotSymbols=[{s:'🙂',w:30,p:2.4},{s:'🍌',w:24,p:3},{s:'🤖',w:18,p:4},{s:'💎',w:13,p:6},{s:'👑',w:9,p:10},{s:'777',w:6,p:18}];
+
 function casinoAvailable(){return state.casinoUnlocked}
-function weightedSlot(){let total=slotSymbols.reduce((a,x)=>a+x.w,0),r=Math.random()*total,sum=0;for(let x of slotSymbols){sum+=x.w;if(r<=sum)return x}return slotSymbols[0]}
+function casinoXpNeed(level){return Math.floor(90+level*level*24)}
+function casinoPayoutMult(){return 1+(state.casinoUpgrades.payout||0)*.02}
+function casinoMaxBet(){return 100+(state.casinoLevel-1)*25+(state.casinoUpgrades.limit||0)*100}
+function casinoUpgradeCost(def){return Math.floor(def.base*Math.pow(def.growth,state.casinoUpgrades[def.id]||0))}
+function weightedSlot(){const total=slotSymbols.reduce((a,x)=>a+x.w,0),r=Math.random()*total;let s=0;for(const x of slotSymbols){s+=x.w;if(r<=s)return x}return slotSymbols[0]}
+function addCasinoXp(amount){
+ amount*=1+(state.casinoUpgrades.xp||0)*.05;state.casinoXp+=amount;
+ while(state.casinoXp>=casinoXpNeed(state.casinoLevel)){state.casinoXp-=casinoXpNeed(state.casinoLevel);state.casinoLevel++;toast(`Casino Level ${state.casinoLevel}!`);sfx('good')}
+}
 function casinoPay(cost,payout,label){
- state.coins-=cost;state.coins+=payout;state.casinoGames++;let profit=payout-cost;state.casinoProfit+=profit;
- if(profit>0){state.casinoWins++;sfx('good');if(payout>=cost*8)confetti()}else sfx('bad');
- toast(label);render()
+ state.casinoChips-=cost;
+ let final=Math.floor(payout*casinoPayoutMult());
+ if(final>0&&Math.random()<(state.casinoUpgrades.luck||0)*.005){final*=2;label+=' • ZŁOTA KOSTKA x2!'}
+ state.casinoChips+=final;state.casinoGames++;const profit=final-cost;state.casinoProfit=(state.casinoProfit||0)+profit;
+ addCasinoXp(8+cost*.08);
+ if(profit>0){state.casinoWins++;sfx('good');if(final>=cost*8)confetti()}else sfx('bad');
+ toast(label.replace('{payout}',final));render()
 }
-function unlockCasino(){if(!featureUnlocked('casino'))return toast(lockedFeatureMessage('casino'));
- if(state.casinoUnlocked)return;
- 
- if(state.coins<75)return toast('Potrzebujesz 75 Noob Coinów');
- state.coins-=75;state.casinoUnlocked=true;sfx('good');confetti();toast('Noob Casino odblokowane!');render()
+function unlockCasino(){
+ if(!featureUnlocked('casino'))return toast(lockedFeatureMessage('casino'));
+ if(state.level<8)return toast('Potrzebujesz poziomu 8');
+ state.casinoUnlocked=true;sfx('good');confetti();toast('Noob Casino odblokowane!');render()
 }
-function canCasinoPlay(){if(casinoBusy)return false;if(!state.casinoUnlocked)return false;if(state.coins<casinoBet){toast('Za mało Noob Coinów');return false}return true}
+function canCasinoPlay(){
+ if(casinoBusy||!state.casinoUnlocked)return false;
+ if(casinoBet>casinoMaxBet()){toast(`Maksymalna stawka: ${casinoMaxBet()} żetonów`);return false}
+ if(state.casinoChips<casinoBet){toast('Za mało żetonów');return false}
+ return true
+}
 function spinSlots(){
- if(!canCasinoPlay())return;casinoBusy=true;let box=$('#slots');box.classList.add('spinning');$('#slotsResult').textContent='Kręcenie…';sfx('buy');
- let result=[weightedSlot(),weightedSlot(),weightedSlot()];
- let ticks=0,timer=setInterval(()=>{$$('#slots span').forEach(x=>x.textContent=weightedSlot().s);if(++ticks>=12){clearInterval(timer);box.classList.remove('spinning');$$('#slots span').forEach((x,i)=>x.textContent=result[i].s);
-  let payout=0,label='Pudło — noob kasyno wygrywa.';
-  if(result.every(x=>x.s===result[0].s)){payout=Math.floor(casinoBet*result[0].p*.82);label='JACKPOT '+result[0].s+'! +'+payout+' 🟡'}
-  else{let pair=result.find(x=>result.filter(y=>y.s===x.s).length===2);if(pair){payout=Math.floor(casinoBet*1.12);label='Para '+pair.s+' — zwrot '+payout+' 🟡'}}
-  casinoBusy=false;$('#slotsResult').textContent=label;casinoPay(casinoBet,payout,label)
- }},80)
+ if(!canCasinoPlay())return;casinoBusy=true;const result=[weightedSlot(),weightedSlot(),weightedSlot()],box=$('#slots');box.classList.add('spinning');$('#slotsResult').textContent='Kręcenie…';
+ let ticks=0,timer=setInterval(()=>{$$('#slots span').forEach(x=>x.textContent=weightedSlot().s);if(++ticks>=14){clearInterval(timer);box.classList.remove('spinning');$$('#slots span').forEach((x,i)=>x.textContent=result[i].s);
+  let payout=0,label='Pudło.';
+  if(result.every(x=>x.s===result[0].s)){payout=Math.floor(casinoBet*result[0].p*.82);label='JACKPOT! +{payout} 🎲'}
+  else{const pair=result.find(x=>result.filter(y=>y.s===x.s).length===2);if(pair){payout=Math.floor(casinoBet*1.08);label='Para — +{payout} 🎲'}}
+  casinoBusy=false;$('#slotsResult').textContent=label.replace('{payout}',Math.floor(payout*casinoPayoutMult()));casinoPay(casinoBet,payout,label)
+ }},75)
 }
 function playRoulette(choice){
- if(!canCasinoPlay())return;casinoBusy=true;let n=Math.floor(Math.random()*37),color=n===0?'green':n%2===0?'black':'red',wheel=$('#casinoWheel');
- wheel.classList.remove('spin');void wheel.offsetWidth;wheel.classList.add('spin');$('#rouletteResult').textContent='Koło się kręci…';sfx('buy');
- setTimeout(()=>{wheel.classList.remove('spin');$('#wheelNumber').textContent=n;let win=choice===color,payout=win?Math.floor(casinoBet*(color==='green'?10:1.75)):0;
- let names={red:'czerwone',black:'czarne',green:'zielone'},label=`Wypadło ${n} — ${names[color]}. ${win?'Wygrana '+payout+' 🟡':'Przegrana.'}`;
- casinoBusy=false;$('#rouletteResult').textContent=label;casinoPay(casinoBet,payout,label)},1350)
+ if(!canCasinoPlay())return;casinoBusy=true;const n=Math.floor(Math.random()*37),color=n===0?'green':n%2===0?'black':'red',wheel=$('#casinoWheel');
+ wheel.classList.remove('spin');void wheel.offsetWidth;wheel.classList.add('spin');$('#rouletteResult').textContent='Koło się kręci…';
+ setTimeout(()=>{const win=choice===color,payout=win?Math.floor(casinoBet*(color==='green'?10:1.72)):0;casinoBusy=false;$('#wheelNumber').textContent=n;const label=win?'Wygrana +{payout} 🎲':'Przegrana.';$('#rouletteResult').textContent=label.replace('{payout}',Math.floor(payout*casinoPayoutMult()));casinoPay(casinoBet,payout,label)},1350)
 }
 function cardValue(){return 2+Math.floor(Math.random()*13)}
 function showCard(v){currentCasinoCard=v;$('#currentCard').textContent=v<=10?v:['J','Q','K','A'][v-11];$('#cardSuit').textContent=rand(['♠','♥','♣','♦'])}
 function playHigherLower(higher){
- if(!canCasinoPlay())return;casinoBusy=true;let old=currentCasinoCard,next=cardValue();$('#cardsResult').textContent='Odkrywanie karty…';sfx('buy');
- setTimeout(()=>{showCard(next);let payout=0,label;
- if(next===old){payout=casinoBet;label='Remis — stawka zwrócona.'}
- else{let win=higher?next>old:next<old;payout=win?Math.floor(casinoBet*1.68):0;label=win?'Dobrze! Wygrana '+payout+' 🟡':'Źle — noob kasyno zabiera stawkę.'}
- casinoBusy=false;$('#cardsResult').textContent=label;casinoPay(casinoBet,payout,label)},500)
+ if(!canCasinoPlay())return;casinoBusy=true;const old=currentCasinoCard,next=cardValue();$('#cardsResult').textContent='Odkrywanie…';
+ setTimeout(()=>{showCard(next);let payout=0,label;if(next===old){payout=casinoBet;label='Remis — zwrot {payout} 🎲'}else{const win=higher?next>old:next<old;payout=win?Math.floor(casinoBet*1.62):0;label=win?'Dobrze! +{payout} 🎲':'Źle.'}casinoBusy=false;$('#cardsResult').textContent=label.replace('{payout}',Math.floor(payout*casinoPayoutMult()));casinoPay(casinoBet,payout,label)},550)
+}
+function spinFortune(){
+ if(state.casinoLevel<5)return toast('Potrzebujesz Casino Level 5');
+ if(!canCasinoPlay())return;casinoBusy=true;const mult=rand([0,0,.5,1,1.2,1.5,2,3,5]),payout=Math.floor(casinoBet*mult);
+ $('#fortuneWheel').classList.add('spin');$('#fortuneResult').textContent='Koło się kręci…';
+ setTimeout(()=>{$('#fortuneWheel').classList.remove('spin');casinoBusy=false;const label=payout>0?`Mnożnik x${mult} — +{payout} 🎲`:'Puste pole.';$('#fortuneResult').textContent=label.replace('{payout}',Math.floor(payout*casinoPayoutMult()));casinoPay(casinoBet,payout,label)},1500)
+}
+function claimCasinoSupply(){
+ const hour=3600000,left=hour-(Date.now()-(state.lastCasinoSupply||0));if(left>0)return toast(`Paczka za ${Math.ceil(left/60000)} min`);
+ const roll=Math.random();let amount=roll<.60?80:roll<.85?120:roll<.95?180:roll<.99?300:777;
+ amount=Math.floor(amount*(1+(state.casinoUpgrades.supply||0)*.07));
+ state.casinoChips+=amount;state.lastCasinoSupply=Date.now();state.casinoSupplyCount=(state.casinoSupplyCount||0)+1;
+ sfx('good');if(amount>=300)confetti();toast(`Paczka: +${amount} żetonów`);render()
+}
+function updateCasinoMarket(){
+ if(Date.now()<(state.casinoMarketNext||0))return;
+ state.casinoMarket=Math.round((Math.random()*20-10)*10)/10;
+ state.casinoMarketNext=Date.now()+(10+Math.floor(Math.random()*6))*60000;
+}
+function coinExchange(amount){
+ const table={250:80,500:180,1000:400,2500:1100,5000:2500};
+ if(table[amount])return Math.floor(table[amount]*(1+state.casinoMarket/100));
+ return Math.floor(amount*.48*(1+state.casinoMarket/100))
+}
+function gemExchange(amount){
+ const table={250:15,500:35,1000:80,2500:220,5000:500};
+ if(table[amount])return table[amount];
+ return Math.floor(amount*.095)
+}
+function updateExchangePreview(){
+ let amount=exchangeAmount==='max'?Math.floor(state.casinoChips/250)*250:Number(exchangeAmount);
+ amount=Math.max(0,Math.min(amount,state.casinoChips));
+ const receive=exchangeCurrency==='coins'?coinExchange(amount):gemExchange(amount);
+ $('#exchangeSpend').textContent=fmt(amount);$('#exchangeReceive').textContent=fmt(receive);$('#exchangeIcon').textContent=exchangeCurrency==='coins'?'🟡':'💎'
+}
+function confirmExchange(){
+ let amount=exchangeAmount==='max'?Math.floor(state.casinoChips/250)*250:Number(exchangeAmount);
+ if(amount<250||state.casinoChips<amount)return toast('Potrzebujesz co najmniej 250 żetonów');
+ const receive=exchangeCurrency==='coins'?coinExchange(amount):gemExchange(amount);
+ state.casinoChips-=amount;if(exchangeCurrency==='coins')state.coins+=receive;else state.gems+=receive;
+ toast(`Wymieniono ${amount} żetonów`);render()
+}
+function buyCasinoUpgrade(id){
+ const def=casinoUpgradeDefs.find(x=>x.id===id),lvl=state.casinoUpgrades[id]||0;if(!def||lvl>=def.max)return;
+ const cost=casinoUpgradeCost(def);if(state.casinoChips<cost)return toast('Za mało żetonów');
+ state.casinoChips-=cost;state.casinoUpgrades[id]++;sfx('buy');render()
+}
+function renderCasinoUpgrades(){
+ const box=$('#casinoUpgradeGrid');if(!box)return;
+ box.innerHTML=casinoUpgradeDefs.map(def=>{const lvl=state.casinoUpgrades[def.id]||0,cost=casinoUpgradeCost(def);return`<div class="card casino-upgrade"><div class="big">${def.icon}</div><h3>${def.name}</h3><p>${def.desc}</p><b>Lv.${lvl}/${def.max}</b><button onclick="buyCasinoUpgrade('${def.id}')" ${lvl>=def.max||state.casinoChips<cost?'disabled':''}>${lvl>=def.max?'MAX':fmt(cost)+' 🎲'}</button></div>`}).join('')
 }
 function renderCasino(){
- $('#casinoCoins').textContent=fmt(state.coins);$('#casinoDot').textContent=state.casinoUnlocked?'🎰':'🔒';
+ updateCasinoMarket();
+ $('#casinoChips').textContent=fmt(state.casinoChips);$('#casinoLevel').textContent=state.casinoLevel;$('#casinoLevelText').textContent=state.casinoLevel;
  $('#casinoLocked').classList.toggle('hidden',state.casinoUnlocked);$('#casinoContent').classList.toggle('hidden',!state.casinoUnlocked);
- $('#casinoGames').textContent=state.casinoGames||0;$('#casinoWins').textContent=state.casinoWins||0;
- let p=state.casinoProfit||0;$('#casinoProfit').textContent=(p>=0?'+':'')+fmt(p);$('#casinoProfit').style.color=p>=0?'var(--green)':'var(--red)';
+ const need=casinoXpNeed(state.casinoLevel);$('#casinoXpText').textContent=`${Math.floor(state.casinoXp)} / ${need} XP`;$('#casinoXpBar').style.width=Math.min(100,state.casinoXp/need*100)+'%';
+ const left=Math.max(0,3600000-(Date.now()-(state.lastCasinoSupply||0)));$('#claimCasinoSupply').disabled=left>0;$('#casinoSupplyInfo').textContent=left>0?`Następna paczka za ${Math.ceil(left/60000)} min`:'Paczka jest gotowa.';
+ $('#casinoMarketValue').textContent=(state.casinoMarket>=0?'+':'')+state.casinoMarket.toFixed(1)+'%';$('#casinoMarketValue').className='market-value '+(state.casinoMarket>=0?'up':'down');
+ $('#casinoMarketText').textContent=state.casinoMarket>=0?'Nooby masowo kupują.':'Nooby panikują i sprzedają.';
+ const ml=Math.max(0,state.casinoMarketNext-Date.now());$('#casinoMarketTimer').textContent=`${String(Math.floor(ml/60000)).padStart(2,'0')}:${String(Math.floor(ml/1000)%60).padStart(2,'0')}`;
+ $('#casinoGames').textContent=state.casinoGames||0;$('#casinoWins').textContent=state.casinoWins||0;$('#casinoProfit').textContent=(state.casinoProfit>=0?'+':'')+fmt(state.casinoProfit||0);$('#casinoSupplyCount').textContent=state.casinoSupplyCount||0;
+ $('#fortuneGame').classList.toggle('locked-game',state.casinoLevel<5);
+ renderCasinoUpgrades();updateExchangePreview()
 }
-
 
 function spawnWorldParticle(){}
 

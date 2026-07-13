@@ -1,4 +1,4 @@
-# Ola to Noobek — wersja 0.5d
+# Ola to Noobek — wersja 0.6
 
 Wersja techniczna. Rozgrywka i zapis graczy pozostają zgodne z wersją 0.4g.
 
@@ -63,3 +63,19 @@ do nowej tabeli `players`.
 
 ## 0.5d — Polish & Overhaul
 Nowe UI, poprawiona orbita petów, ulepszone skiny i uproszczone ustawienia.
+
+
+## 0.6 — Minigames & Casino Rework
+
+Minigry:
+- Aim Lab, Noob Rider, Reflex i Brainrot Dodge,
+- cooldown 30 sekund,
+- nagrody zależne od wyniku,
+- TOP 3 online po uruchomieniu `supabase_minigames_v0_6.sql`.
+
+Kasyno:
+- osobne żetony,
+- paczka raz na godzinę,
+- poziom kasyna i drogie ulepszenia,
+- pakietowa wymiana na Noob Coiny lub diamenty,
+- kurs Noob Coinów zmienia się od -10% do +10%.

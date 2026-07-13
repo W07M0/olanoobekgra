@@ -37,3 +37,5 @@ renderProfileSettings();
 refreshAdminSession();
 profileAutoTimer=setInterval(automaticLeaderboardSave,45000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)automaticLeaderboardSave()});
+
+loadMinigameLeaderboards();setInterval(()=>{renderCasino();renderMiniCooldowns()},1000);

@@ -1,23 +1,4 @@
-<!doctype html>
-<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test 0.5c</title><style>body{font-family:system-ui;background:#12051f;color:#fff;max-width:850px;margin:30px auto}.ok{color:#4dffad}.bad{color:#ff718c}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}</style></head>
-<body><h1>Test techniczny 0.5c</h1><button id="run">Uruchom</button><div id="out"></div>
-<script>
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Test 0.6</title><style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head><body><h1>Test techniczny v0.6</h1><button id="run">Uruchom</button><div id="out"></div><script>
 const files=['../css/styles.css','../js/data.js','../js/core.js','../js/systems.js','../js/minigames.js','../js/integrations.js','../js/profile-admin.js','../js/app.js'];
-async function run(){
- const out=document.querySelector('#out');out.innerHTML='';
- for(const file of files){const r=await fetch(file,{cache:'no-store'});out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — ${r.status}</div>`}
- const sources=await Promise.all(files.filter(x=>x.endsWith('.js')).map(x=>fetch(x,{cache:'no-store'}).then(r=>r.text())));
- const all=sources.join('\n');
- const checks=[
-  ['ranking saveOnline',all.includes('function saveOnline(')],
-  ['kasyno',all.includes('function spinSlots(')&&all.includes('function playRoulette(')],
-  ['skiny',all.includes('function renderSkins(')&&all.includes('function applySkin(')],
-  ['pety',all.includes('function renderPets(')&&all.includes('function togglePetInstance(')],
-  ['profil',all.includes('function savePlayerProfile(')],
-  ['admin',all.includes('function adminLogin(')]
- ];
- checks.forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)
-}
-document.querySelector('#run').onclick=run;
-</script></body></html>
+async function run(){const out=document.querySelector('#out');out.innerHTML='';for(const f of files){const r=await fetch(f,{cache:'no-store'});out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${f} — ${r.status}</div>`}const all=(await Promise.all(files.filter(x=>x.endsWith('.js')).map(x=>fetch(x,{cache:'no-store'}).then(r=>r.text())))).join('\n');[['Aim',all.includes('function startAimGame(')],['Noob Rider',all.includes('function startParkour(')],['Reflex',all.includes('function startReflex(')],['Dodge',all.includes('function startDodge(')],['Casino Chips',all.includes('casinoChips')],['Kasjer',all.includes('function confirmExchange(')],['Paczka',all.includes('function claimCasinoSupply(')]].forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)}
+document.querySelector('#run').onclick=run;</script></body></html>
