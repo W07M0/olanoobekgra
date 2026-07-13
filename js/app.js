@@ -94,12 +94,17 @@ $$('[data-exchange]').forEach(button=>{
   updateExchangePreview()
  }
 });
-$$('[data-exchange-amount]').forEach(button=>{
- button.onclick=()=>{
-  exchangeAmount=button.dataset.exchangeAmount;
-  $$('[data-exchange-amount]').forEach(x=>x.classList.toggle('active',x===button));
-  updateExchangePreview()
- }
+
+
+
+const exchangeInput=$('#exchangeAmountInput');
+if(exchangeInput){
+ exchangeInput.addEventListener('input',updateExchangePreview);
+ exchangeInput.addEventListener('change',updateExchangePreview)
+}
+bindClick('#exchangeMax',setExchangeMaximum);
+$$('[data-exchange-percent]').forEach(button=>{
+ button.onclick=()=>setExchangePercent(Number(button.dataset.exchangePercent))
 });
 
 /* Feedback i diagnostyka */
@@ -216,13 +221,13 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 /* Minigry i kasyno */
-try{loadMinigameLeaderboards()}catch(error){console.error('Minigame boards:',error)}
-try{renderMiniCooldowns()}catch(error){console.error('Cooldowns:',error)}
+if(typeof loadMinigameLeaderboards==='function'){try{loadMinigameLeaderboards()}catch(error){console.error('Minigame boards:',error)}}
+if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('Cooldowns:',error)}}
 try{renderCasino()}catch(error){console.error('Casino:',error)}
 
 if(!window.__v06UiTimer){
  window.__v06UiTimer=setInterval(()=>{
   try{renderCasino()}catch(error){console.error('Casino render:',error)}
-  try{renderMiniCooldowns()}catch(error){console.error('Minigame cooldowns:',error)}
+  if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('Minigame cooldowns:',error)}}
  },1000)
 }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6</title>
-<link rel="stylesheet" href="css/styles.css?v=06interaction">
+<link rel="stylesheet" href="css/styles.css?v=06arcadecashier">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -215,7 +215,18 @@
     <div class="card">
      <h3>💱 Wymiana pakietowa</h3>
      <div class="exchange-currency"><button class="active" data-exchange="coins">🟡 Noob Coiny</button><button data-exchange="gems">💎 Diamenty</button></div>
-     <div class="exchange-presets"><button data-exchange-amount="250">250</button><button data-exchange-amount="500">500</button><button data-exchange-amount="1000">1000</button><button data-exchange-amount="2500">2500</button><button data-exchange-amount="5000">5000</button><button data-exchange-amount="max">MAX</button></div>
+     <div class="exchange-input-row">
+       <label for="exchangeAmountInput">Liczba żetonów</label>
+       <div class="exchange-input-controls">
+        <input id="exchangeAmountInput" type="number" min="1" step="1" value="250" inputmode="numeric">
+        <button type="button" id="exchangeMax">MAX</button>
+       </div>
+       <div class="exchange-quick">
+        <button type="button" data-exchange-percent="25">25%</button>
+        <button type="button" data-exchange-percent="50">50%</button>
+        <button type="button" data-exchange-percent="75">75%</button>
+       </div>
+      </div>
      <div class="exchange-preview">Oddajesz <b id="exchangeSpend">250</b> 🎲<br>Otrzymasz <b id="exchangeReceive">80</b> <span id="exchangeIcon">🟡</span></div>
      <button id="confirmExchange">Wymień</button>
     </div>
@@ -420,12 +431,12 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06interaction"></script>
-<script defer src="js/core.js?v=06interaction"></script>
-<script defer src="js/systems.js?v=06interaction"></script>
-<script defer src="js/minigames.js?v=06interaction"></script>
-<script defer src="js/integrations.js?v=06interaction"></script>
-<script defer src="js/profile-admin.js?v=06interaction"></script>
-<script defer src="js/app.js?v=06interaction"></script>
+<script defer src="js/data.js?v=06arcadecashier"></script>
+<script defer src="js/core.js?v=06arcadecashier"></script>
+<script defer src="js/systems.js?v=06arcadecashier"></script>
+<script defer src="js/arcade-v06-fix.js?v=06arcadecashier"></script>
+<script defer src="js/integrations.js?v=06arcadecashier"></script>
+<script defer src="js/profile-admin.js?v=06arcadecashier"></script>
+<script defer src="js/app.js?v=06arcadecashier"></script>
 </body>
 </html>

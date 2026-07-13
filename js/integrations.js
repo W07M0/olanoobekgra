@@ -77,28 +77,60 @@ function updateCasinoMarket(){
  state.casinoMarket=Math.round((Math.random()*20-10)*10)/10;
  state.casinoMarketNext=Date.now()+(10+Math.floor(Math.random()*6))*60000;
 }
+function exchangeBulkBonus(amount){
+ if(amount>=5000)return 1.12;
+ if(amount>=2500)return 1.08;
+ if(amount>=1000)return 1.04;
+ if(amount>=500)return 1.02;
+ return 1
+}
 function coinExchange(amount){
- const table={250:80,500:180,1000:400,2500:1100,5000:2500};
- if(table[amount])return Math.floor(table[amount]*(1+state.casinoMarket/100));
- return Math.floor(amount*.48*(1+state.casinoMarket/100))
+ amount=Math.max(0,Math.floor(Number(amount)||0));
+ const base=amount*.32;
+ return Math.floor(base*exchangeBulkBonus(amount)*(1+state.casinoMarket/100))
 }
 function gemExchange(amount){
- const table={250:15,500:35,1000:80,2500:220,5000:500};
- if(table[amount])return table[amount];
- return Math.floor(amount*.095)
+ amount=Math.max(0,Math.floor(Number(amount)||0));
+ const base=amount*.055;
+ return Math.floor(base*exchangeBulkBonus(amount))
+}
+function readExchangeAmount(){
+ const input=$('#exchangeAmountInput');
+ let amount=Math.floor(Number(input?.value ?? exchangeAmount)||0);
+ amount=Math.max(0,Math.min(amount,Math.floor(state.casinoChips)));
+ exchangeAmount=amount;
+ if(input&&Number(input.value)!==amount)input.value=String(amount);
+ return amount
 }
 function updateExchangePreview(){
- let amount=exchangeAmount==='max'?Math.floor(state.casinoChips/250)*250:Number(exchangeAmount);
- amount=Math.max(0,Math.min(amount,state.casinoChips));
+ const amount=readExchangeAmount();
  const receive=exchangeCurrency==='coins'?coinExchange(amount):gemExchange(amount);
- $('#exchangeSpend').textContent=fmt(amount);$('#exchangeReceive').textContent=fmt(receive);$('#exchangeIcon').textContent=exchangeCurrency==='coins'?'🟡':'💎'
+ if($('#exchangeSpend'))$('#exchangeSpend').textContent=fmt(amount);
+ if($('#exchangeReceive'))$('#exchangeReceive').textContent=fmt(receive);
+ if($('#exchangeIcon'))$('#exchangeIcon').textContent=exchangeCurrency==='coins'?'🟡':'💎';
+ if($('#confirmExchange'))$('#confirmExchange').disabled=amount<1||receive<1||amount>state.casinoChips
+}
+function setExchangeMaximum(){
+ const input=$('#exchangeAmountInput');
+ if(input)input.value=String(Math.floor(state.casinoChips));
+ updateExchangePreview()
+}
+function setExchangePercent(percent){
+ const input=$('#exchangeAmountInput');
+ if(input)input.value=String(Math.floor(state.casinoChips*percent/100));
+ updateExchangePreview()
 }
 function confirmExchange(){
- let amount=exchangeAmount==='max'?Math.floor(state.casinoChips/250)*250:Number(exchangeAmount);
- if(amount<250||state.casinoChips<amount)return toast('Potrzebujesz co najmniej 250 żetonów');
+ const amount=readExchangeAmount();
+ if(amount<1)return toast('Wpisz liczbę żetonów');
+ if(state.casinoChips<amount)return toast('Masz za mało żetonów');
  const receive=exchangeCurrency==='coins'?coinExchange(amount):gemExchange(amount);
- state.casinoChips-=amount;if(exchangeCurrency==='coins')state.coins+=receive;else state.gems+=receive;
- toast(`Wymieniono ${amount} żetonów`);render()
+ if(receive<1)return toast('Ta liczba żetonów jest zbyt mała na wymianę');
+ state.casinoChips-=amount;
+ if(exchangeCurrency==='coins')state.coins+=receive;
+ else state.gems+=receive;
+ toast(`Wymieniono ${fmt(amount)} żetonów na ${fmt(receive)} ${exchangeCurrency==='coins'?'Noob Coinów':'diamentów'}`);
+ save();render()
 }
 function buyCasinoUpgrade(id){
  const def=casinoUpgradeDefs.find(x=>x.id===id),lvl=state.casinoUpgrades[id]||0;if(!def||lvl>=def.max)return;

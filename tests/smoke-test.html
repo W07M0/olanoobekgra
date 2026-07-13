@@ -1,22 +1,26 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test v0.6 Interaction Fix</title>
-<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
-<body><h1>Test techniczny v0.6 Interaction Fix</h1><button id="run">Uruchom</button><div id="out"></div>
+<title>Test Arcade/Cashier Fix</title>
+<style>body{font-family:system-ui;background:#11051e;color:white;max-width:900px;margin:30px auto}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
+<body><h1>Test v0.6 Arcade/Cashier Fix</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
 async function run(){
  const out=document.querySelector('#out');out.innerHTML='';
- const index=await fetch('../index.html?v=06interaction',{cache:'no-store'}).then(r=>r.text());
- const app=await fetch('../js/app.js?v=06interaction',{cache:'no-store'}).then(r=>r.text());
+ const index=await fetch('../index.html?v=06arcadecashier',{cache:'no-store'}).then(r=>r.text());
+ const arcade=await fetch('../js/arcade-v06-fix.js?v=06arcadecashier',{cache:'no-store'}).then(r=>r.text());
+ const systems=await fetch('../js/systems.js?v=06arcadecashier',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Brak starego guessLower',!app.includes("$('#guessLower').onclick")],
-  ['Brak starego memoryRunning',!app.includes('memoryRunning')],
-  ['Kasyno v0.6',app.includes("bindClick('#spinSlots'")&&app.includes("bindClick('#claimCasinoSupply'")],
-  ['Minigry v0.6',index.includes('Noob Arcade')&&index.includes('Brainrot Dodge')],
-  ['Kliki odporne na brak elementu',app.includes('function bindClick')],
-  ['Eventy zabezpieczone',app.includes("try{tickEvent()}")]
+  ['Nowy plik Arcade',index.includes('arcade-v06-fix.js')],
+  ['Aim',arcade.includes('function startAimGame(')],
+  ['Reflex',arcade.includes('function startReflex(')],
+  ['Dodge',arcade.includes('function startDodge(')],
+  ['Rankingi minigier',arcade.includes('function loadMinigameLeaderboards(')],
+  ['Jawne funkcje globalne',arcade.includes('Object.assign(window')],
+  ['Bezpieczny render',systems.includes("typeof renderMiniCooldowns==='function'")],
+  ['Pole liczby żetonów',index.includes('exchangeAmountInput')],
+  ['Brak starych progów',!index.includes('data-exchange-amount="250"')]
  ];
- checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`);
+ checks.forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)
 }
 document.querySelector('#run').onclick=run;
 </script></body></html>

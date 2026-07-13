@@ -495,3 +495,16 @@ body{background:radial-gradient(circle at 15% 5%,rgba(129,92,255,.16),transparen
 .casino-upgrade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.casino-upgrade{text-align:center}.casino-upgrade p{min-height:38px;color:var(--muted)}.cashier-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:14px}.market-value{font-size:48px;font-weight:1000}.market-value.up{color:var(--green)}.market-value.down{color:var(--red)}.exchange-currency,.exchange-presets{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.exchange-currency button.active,.exchange-presets button.active{outline:2px solid var(--cyan)}.exchange-preview{padding:14px;border-radius:14px;background:rgba(255,255,255,.05);font-size:18px;line-height:1.6;margin:12px 0}.fortune-wheel{font-size:82px;display:grid;place-items:center;min-height:130px}.fortune-wheel.spin{animation:fortuneSpin 1.4s ease}@keyframes fortuneSpin{to{transform:rotate(1440deg)}}.locked-game{opacity:.55;filter:grayscale(.6)}
 @media(max-width:900px){.arcade-grid{grid-template-columns:1fr}.mini-rank-grid{grid-template-columns:1fr 1fr}.casino-upgrade-grid{grid-template-columns:1fr 1fr}.cashier-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.arcade-card{grid-template-columns:50px 1fr}.arcade-play,.cooldown-label{grid-column:1/-1;grid-row:auto}.mini-rank-grid,.casino-upgrade-grid{grid-template-columns:1fr}}
+
+/* v0.6 Arcade + cashier input fix */
+.exchange-input-row{display:grid;gap:9px;margin:12px 0}
+.exchange-input-row label{font-size:12px;font-weight:900;color:var(--muted)}
+.exchange-input-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.exchange-input-controls input{
+ width:100%;min-width:0;padding:12px 14px;border-radius:12px;
+ border:1px solid rgba(255,255,255,.14);
+ background:rgba(255,255,255,.065);color:#fff;font-size:18px;font-weight:900
+}
+.exchange-input-controls button{min-width:86px}
+.exchange-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+@media(max-width:520px){.exchange-input-controls{grid-template-columns:1fr}.exchange-input-controls button{width:100%}}
