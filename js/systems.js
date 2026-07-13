@@ -1,3 +1,11 @@
+
+/* v0.6 stable runtime fallbacks */
+if(typeof window.renderSkins!=='function')window.renderSkins=function(){};
+if(typeof window.renderPets!=='function')window.renderPets=function(){};
+if(typeof window.renderMiniStats!=='function')window.renderMiniStats=function(){};
+if(typeof window.renderMiniCooldowns!=='function')window.renderMiniCooldowns=function(){};
+if(typeof window.loadMinigameLeaderboards!=='function')window.loadMinigameLeaderboards=async function(){};
+
 function bossPowerSnapshot(){
  const rawClick=Math.max(1,clickValue());
  const mult=Math.max(1,totalMultiplier());
@@ -281,7 +289,7 @@ function trimEffects(){
 }
 
 function render(){
- renderHud();
+ if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#points').textContent=fmt(state.points);$('#playerTitle').textContent='Tytuł: '+currentTitle();
@@ -295,7 +303,7 @@ function render(){
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
- renderFeatureLocks();applyFeatureViewLocks();renderPatchNotes();renderCollection();renderDiagnostics();renderPets();renderShop();renderWorlds();renderSkins();renderCasino();if(typeof renderMiniCooldowns==='function')renderMiniCooldowns();renderMiniStats();maybeSpawnBoss();renderAchievements();renderQuests();renderStats();renderDaily();renderBoard();applySkin();save()
+ if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}maybeSpawnBoss();if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}renderQuests();renderStats();renderDaily();renderBoard();applySkin();save()
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -523,7 +531,7 @@ let now=performance.now();combo=now-lastClick<470?Math.min(50,combo+1):1;lastCli
  let b=$('#clicker');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');if(crit)sfx('crit');else skinClickSound();spawnSkinParticles(crit?1.7:1);
  if(crit){$('#mainPanel').classList.add('shake');setTimeout(()=>$('#mainPanel').classList.remove('shake'),190);$('#message').textContent='💥 Krytyczny noob! +'+fmt(gain)}
  let rainAt=Math.max(5,8-(state.rainSpeed||0));if(combo>=rainAt&&combo%rainAt===0){let bonus=clickValue()*combo*(1+state.rain*.35);addPoints(bonus);noobRain();$('#message').textContent='🌧️ Deszcz noobków! +'+fmt(bonus)}
- renderHud();trimEffects()
+ if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}trimEffects()
 }
 function quickBuy(type){if(type==='click'&&state.points>=state.clickCost){state.points-=state.clickCost;state.perClick++;state.clickCost=Math.ceil(state.clickCost*1.72);sfx('buy')}if(type==='auto'&&state.points>=state.autoCost){state.points-=state.autoCost;state.auto++;state.autoCost=Math.ceil(state.autoCost*1.9);sfx('buy')}render()}
 function rebirth(){

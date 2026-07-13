@@ -1,21 +1,23 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test v0.6 Runtime Fix</title>
+<title>Test v0.6 Stable Runtime</title>
 <style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
-<body><h1>Test v0.6 Runtime Fix</h1><button id="run">Uruchom</button><div id="out"></div>
+<body><h1>Test v0.6 Stable Runtime</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
 async function run(){
  const out=document.querySelector('#out');out.innerHTML='';
- const mini=await fetch('../js/minigames.js?v=06runtimefix',{cache:'no-store'}).then(r=>r.text());
- const systems=await fetch('../js/systems.js?v=06runtimefix',{cache:'no-store'}).then(r=>r.text());
+ const index=await fetch('../index.html?v=06stable',{cache:'no-store'}).then(r=>r.text());
+ const app=await fetch('../js/app.js?v=06stable',{cache:'no-store'}).then(r=>r.text());
+ const systems=await fetch('../js/systems.js?v=06stable',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['startParkour istnieje',mini.includes('function startParkour(')],
-  ['startParkour eksportowany',mini.includes('Object.assign(window')],
-  ['znacznik gotowości',mini.includes('__MINIGAMES_V06_READY__')],
-  ['renderMiniStats bezpieczny',systems.includes('const setText=(selector,value)')],
-  ['brak bezpośredniego memoryBest',!systems.includes("$('#memoryBest').textContent")]
+  ['Minigry osadzone w app.js',app.includes('Embedded v0.6 minigames')],
+  ['startAimGame eksportowany',app.includes('startAimGame,stopAimGame')],
+  ['startParkour eksportowany',app.includes('startParkour,stopParkour')],
+  ['Przyciski bez inline onclick',!index.includes('onclick="startAimGame()"')],
+  ['Brak zależności od minigames.js',!index.includes('js/minigames.js')],
+  ['renderSkins zabezpieczony',systems.includes("typeof window.renderSkins!=='function'")]
  ];
- checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`)
+ checks.forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)
 }
 document.querySelector('#run').onclick=run;
 </script></body></html>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6</title>
-<link rel="stylesheet" href="css/styles.css?v=06runtimefix">
+<link rel="stylesheet" href="css/styles.css?v=06stable">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -100,54 +100,54 @@
   <article class="arcade-card aim-card">
    <div class="arcade-icon">🎯</div><div><h3>Noob Aim Lab</h3><p>Ruchome cele, cele fałszywe, accuracy i combo.</p></div>
    <div class="arcade-record">Rekord: <b id="aimBest">0%</b></div>
-   <button class="arcade-play" data-mini="aim" onclick="startAimGame()">Graj</button><small class="cooldown-label" id="cooldown-aim"></small>
+   <button class="arcade-play" data-mini="aim" id="playAim">Graj</button><small class="cooldown-label" id="cooldown-aim"></small>
   </article>
   <article class="arcade-card parkour-card">
    <div class="arcade-icon">🛒</div><div><h3>Noob Rider</h3><p>Jedź wózkiem i skacz nad 💩, lagami i skrzynkami.</p></div>
    <div class="arcade-record">Rekord: <b id="parkourBest">0 m</b></div>
-   <button class="arcade-play" data-mini="parkour" onclick="startParkour()">Graj</button><small class="cooldown-label" id="cooldown-parkour"></small>
+   <button class="arcade-play" data-mini="parkour" id="playParkour">Graj</button><small class="cooldown-label" id="cooldown-parkour"></small>
   </article>
   <article class="arcade-card reflex-card">
    <div class="arcade-icon">⚡</div><div><h3>Noob Reflex</h3><p>Naciskaj wskazane strzałki zanim znikną.</p></div>
    <div class="arcade-record">Rekord: <b id="reflexBest">0</b></div>
-   <button class="arcade-play" data-mini="reflex" onclick="startReflex()">Graj</button><small class="cooldown-label" id="cooldown-reflex"></small>
+   <button class="arcade-play" data-mini="reflex" id="playReflex">Graj</button><small class="cooldown-label" id="cooldown-reflex"></small>
   </article>
   <article class="arcade-card dodge-card">
    <div class="arcade-icon">🧠</div><div><h3>Brainrot Dodge</h3><p>Unikaj spadających memów i zbieraj złote noobki.</p></div>
    <div class="arcade-record">Rekord: <b id="dodgeBest">0</b></div>
-   <button class="arcade-play" data-mini="dodge" onclick="startDodge()">Graj</button><small class="cooldown-label" id="cooldown-dodge"></small>
+   <button class="arcade-play" data-mini="dodge" id="playDodge">Graj</button><small class="cooldown-label" id="cooldown-dodge"></small>
   </article>
  </div>
 
  <div class="mini-rankings card">
-  <div class="mini-rank-head"><div><h2>🏆 TOP 3 Arcade</h2><p class="muted">Najlepsze wyniki zapisane online.</p></div><button class="small-btn" onclick="loadMinigameLeaderboards()">Odśwież</button></div>
+  <div class="mini-rank-head"><div><h2>🏆 TOP 3 Arcade</h2><p class="muted">Najlepsze wyniki zapisane online.</p></div><button class="small-btn" id="refreshMiniBoards">Odśwież</button></div>
   <div class="mini-rank-grid" id="minigameLeaderboards"></div>
  </div>
 
  <div class="minigame-stage hidden arcade-stage" id="aimStage">
   <div class="minigame-hud"><b>Wynik <span id="aimScore">0</span></b><b>Combo <span id="aimCombo">0</span></b><b>Accuracy <span id="aimAccuracy">100%</span></b><b>Czas <span id="aimTime">20.0</span></b></div>
   <div class="aim-field aim-v2" id="aimField"><button class="aim-target" id="aimTarget">NOOB</button></div>
-  <button class="small-btn danger-btn" onclick="stopAimGame(false)">Przerwij</button>
+  <button class="small-btn danger-btn" id="stopAim">Przerwij</button>
  </div>
 
  <div class="minigame-stage hidden arcade-stage" id="parkourStage">
   <div class="minigame-hud"><b>Dystans <span id="parkourScore">0</span> m</b><b>Prędkość <span id="parkourSpeed">1.0</span>x</b></div>
   <canvas id="parkourCanvas" width="900" height="330"></canvas>
   <p class="muted center">SPACJA / kliknięcie = skok</p>
-  <button class="small-btn danger-btn" onclick="stopParkour(false)">Przerwij</button>
+  <button class="small-btn danger-btn" id="stopParkourBtn">Przerwij</button>
  </div>
 
  <div class="minigame-stage hidden arcade-stage" id="reflexStage">
   <div class="minigame-hud"><b>Wynik <span id="reflexScore">0</span></b><b>Combo <span id="reflexCombo">0</span></b><b>Czas <span id="reflexTime">20.0</span></b></div>
   <div class="reflex-zone"><div class="reflex-key" id="reflexKey">⬆️</div><p id="reflexStatus">Naciśnij właściwą strzałkę!</p></div>
-  <button class="small-btn danger-btn" onclick="stopReflex(false)">Przerwij</button>
+  <button class="small-btn danger-btn" id="stopReflexBtn">Przerwij</button>
  </div>
 
  <div class="minigame-stage hidden arcade-stage" id="dodgeStage">
   <div class="minigame-hud"><b>Wynik <span id="dodgeScore">0</span></b><b>Życia <span id="dodgeLives">3</span></b><b>Czas <span id="dodgeTime">25.0</span></b></div>
   <canvas id="dodgeCanvas" width="900" height="420"></canvas>
   <p class="muted center">A/D lub ←/→. Na telefonie dotknij lewej albo prawej części planszy.</p>
-  <button class="small-btn danger-btn" onclick="stopDodge(false)">Przerwij</button>
+  <button class="small-btn danger-btn" id="stopDodgeBtn">Przerwij</button>
  </div>
 
  <div class="overlay" id="miniResultOverlay">
@@ -431,12 +431,11 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06runtimefix"></script>
-<script defer src="js/core.js?v=06runtimefix"></script>
-<script defer src="js/systems.js?v=06runtimefix"></script>
-<script defer src="js/minigames.js?v=06runtimefix"></script>
-<script defer src="js/integrations.js?v=06runtimefix"></script>
-<script defer src="js/profile-admin.js?v=06runtimefix"></script>
-<script defer src="js/app.js?v=06runtimefix"></script>
+<script defer src="js/data.js?v=06stable"></script>
+<script defer src="js/core.js?v=06stable"></script>
+<script defer src="js/systems.js?v=06stable"></script>
+<script defer src="js/integrations.js?v=06stable"></script>
+<script defer src="js/profile-admin.js?v=06stable"></script>
+<script defer src="js/app.js?v=06stable"></script>
 </body>
 </html>
