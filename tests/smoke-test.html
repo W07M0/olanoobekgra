@@ -1,1 +1,21 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Test minigier</title><style>body{font-family:system-ui;background:#12051f;color:#fff;max-width:800px;margin:30px auto}.row{padding:12px;margin:7px;background:#2b103f;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head><body><h1>Test v0.6 Minigames Existing File Fix</h1><button id="run">Uruchom</button><div id="out"></div><script>async function run(){const out=document.querySelector('#out');const index=await fetch('../index.html?v=06minifix2',{cache:'no-store'}).then(r=>r.text());const r=await fetch('../js/minigames.js?v=06minifix2',{cache:'no-store'});const text=await r.text();const checks=[['minigames.js HTTP 200',r.ok],['index ładuje minigames.js',index.includes('js/minigames.js?v=06minifix2')],['startAimGame',text.includes('function startAimGame(')],['startParkour',text.includes('function startParkour(')],['startReflex',text.includes('function startReflex(')],['startDodge',text.includes('function startDodge(')],['renderMiniCooldowns',text.includes('function renderMiniCooldowns(')],['global exports',text.includes('Object.assign(window')]];out.innerHTML=checks.map(([n,ok])=>`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`).join('')}document.querySelector('#run').onclick=run;</script></body></html>
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test v0.6 Runtime Fix</title>
+<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
+<body><h1>Test v0.6 Runtime Fix</h1><button id="run">Uruchom</button><div id="out"></div>
+<script>
+async function run(){
+ const out=document.querySelector('#out');out.innerHTML='';
+ const mini=await fetch('../js/minigames.js?v=06runtimefix',{cache:'no-store'}).then(r=>r.text());
+ const systems=await fetch('../js/systems.js?v=06runtimefix',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['startParkour istnieje',mini.includes('function startParkour(')],
+  ['startParkour eksportowany',mini.includes('Object.assign(window')],
+  ['znacznik gotowości',mini.includes('__MINIGAMES_V06_READY__')],
+  ['renderMiniStats bezpieczny',systems.includes('const setText=(selector,value)')],
+  ['brak bezpośredniego memoryBest',!systems.includes("$('#memoryBest').textContent")]
+ ];
+ checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`)
+}
+document.querySelector('#run').onclick=run;
+</script></body></html>

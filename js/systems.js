@@ -558,43 +558,21 @@ function startEvent(){
 function tickEvent(){let left=Math.max(0,Math.ceil((eventEnds-Date.now())/1000));$('#eventTimer').textContent='00:'+String(left).padStart(2,'0');if(left<=0){if(currentEvent){currentEvent=null;eventMultiplier=1;$('#eventTitle').textContent='✨ Następny event';$('#eventDesc').textContent='Losowy bonus pojawi się za chwilę.';eventEnds=Date.now()+45000;render()}else startEvent()}}
 
 
-function renderMiniStats(){$('#medals').textContent=state.medals;$('#aimBest').textContent=state.aimBest;$('#parkourBest').textContent=state.parkourBest+' m';$('#memoryBest').textContent=state.memoryBest}
-function renderSkins(){let a=skins.find(s=>s.id===state.activeSkin)||skins[0];$('#skinDot').textContent=state.ownedSkins.length;$('#ownedSkinCount').textContent=state.ownedSkins.length;$('#activeSkinName').textContent=a.name;$('#skinGrid').innerHTML=skins.map(s=>{let o=state.ownedSkins.includes(s.id),x=state.activeSkin===s.id;return `<div class="card skin-card ${x?'active':''}" style="--skinColor:${s.color}"><div class="skin-preview">${s.emoji}</div><h3>${s.name}</h3><p class="muted">${s.rarity.toUpperCase()} • ${s.desc}</p><button onclick="equipSkin('${s.id}')" ${!o?'disabled':''}>${x?'Aktywny':o?'Załóż':'Nieodblokowany'}</button></div>`}).join('')}
-
-function renderSkinOrbit(){
- const host=$('#skinOrbitFx');
- if(!host)return;
-
- const skin=skins.find(s=>s.id===state.activeSkin)||skins[0];
- host.innerHTML='';
-
- const ringCounts={
-  common:0,
-  rare:0,
-  epic:1,
-  legendary:2,
-  mythic:3,
-  secret:4
+function renderMiniStats(){
+ const setText=(selector,value)=>{
+  const el=$(selector);
+  if(el)el.textContent=value
  };
- const count=ringCounts[skin.rarity]||0;
 
- for(let i=0;i<count;i++){
-  const ring=document.createElement('i');
-  ring.className='skin-ring';
-  ring.style.setProperty('--ring',skin.color||'#fff');
-  ring.style.inset=`${3+i*12}px`;
-  ring.style.animationDelay=`${-i*.42}s`;
-  ring.style.animationDuration=`${1.7+i*.28}s`;
-  host.append(ring);
- }
+ const records=state.minigameRecords||{};
+ setText('#aimBest',((Number(records.aim)||0)/100).toFixed(1)+'%');
+ setText('#parkourBest',fmt(Number(records.parkour)||0)+' m');
+ setText('#reflexBest',fmt(Number(records.reflex)||0));
+ setText('#dodgeBest',fmt(Number(records.dodge)||0));
 
- if(['legendary','mythic','secret'].includes(skin.rarity)){
-  const symbol=document.createElement('span');
-  symbol.className='skin-orbit-symbol';
-  symbol.textContent=skin.emoji||'✨';
-  symbol.style.color=skin.color||'#fff';
-  host.append(symbol);
- }
+ // Zgodność ze starym interfejsem, jeśli któryś element nadal istnieje.
+ setText('#memoryBest',fmt(Number(state.memoryBest)||0));
+ setText('#medals',fmt(Number(state.medals)||0));
 }
 
 function applySkin(){

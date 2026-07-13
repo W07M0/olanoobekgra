@@ -103,13 +103,13 @@ function stopAimGame(reward=true){
  state.aimBest=Math.max(state.aimBest,raw);
  finishMini('aim','Noob Aim Lab',`${(accuracy*100).toFixed(1)}% accuracy`,normalized,raw)
 }
-$('#aimTarget').onclick=e=>{
+if($('#aimTarget'))$('#aimTarget').onclick=e=>{
  e.stopPropagation();if(!aimRunning)return;
  const fake=e.currentTarget.dataset.fake==='1';
  if(fake){aimMisses++;aimCombo=0;sfx('bad')}else{aimHits++;aimCombo++;aimScore+=10+Math.min(40,aimCombo*2);sfx('click')}
  updateAimHud();moveAim()
 };
-$('#aimField').onclick=e=>{if(!aimRunning||e.target===$('#aimTarget'))return;aimMisses++;aimCombo=0;updateAimHud();sfx('bad')};
+if($('#aimField'))$('#aimField').onclick=e=>{if(!aimRunning||e.target===$('#aimTarget'))return;aimMisses++;aimCombo=0;updateAimHud();sfx('bad')};
 
 /* NOOB RIDER */
 function startParkour(){
@@ -239,7 +239,7 @@ async function loadMinigameLeaderboards(){
  }
  box.innerHTML=Object.entries(names).map(([game,name])=>`<div class="mini-board"><h3>${name}</h3>${(minigameBoards[game]||[]).map((r,i)=>`<div><b>${i+1}.</b><span>${safeText(r.player_name)}</span><strong>${game==='aim'?(r.score/100).toFixed(1)+'%':fmt(r.score)}</strong></div>`).join('')||'<p class="muted">Brak wyników</p>'}<small>Twój rekord: ${game==='aim'?((state.minigameRecords.aim||0)/100).toFixed(1)+'%':fmt(state.minigameRecords[game]||0)}</small></div>`).join('')
 }
-if($('#miniResultClose'))$('#miniResultClose').onclick=()=>{$('#miniResultOverlay')?.classList.remove('show');hideGames()};
+if($('#miniResultClose'))if($('#miniResultClose'))$('#miniResultClose').onclick=()=>{$('#miniResultOverlay')?.classList.remove('show');hideGames()};
 renderMiniCooldowns();
 
 
@@ -255,3 +255,30 @@ Object.assign(window,{
  submitMinigameScore
 });
 window.__ARCADE_V06_READY__=true;
+
+
+/* v0.6 runtime fix: expose minigame API for inline onclick handlers */
+Object.assign(window,{
+ startAimGame,
+ stopAimGame,
+ startParkour,
+ stopParkour,
+ parkourJump,
+ startReflex,
+ stopReflex,
+ startDodge,
+ stopDodge,
+ renderMiniCooldowns,
+ loadMinigameLeaderboards,
+ stopAllMinigames,
+ hideGames
+});
+window.__MINIGAMES_V06_READY__=true;
+
+
+setTimeout(()=>{
+ if(typeof window.startParkour!=='function'){
+  console.error('Minigames v0.6 failed to initialize');
+  saveDiagnostic?.('Minigames startup','startParkour is not available','js/minigames.js')
+ }
+},0);
