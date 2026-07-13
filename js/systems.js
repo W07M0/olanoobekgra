@@ -251,8 +251,8 @@ function applyFeatureViewLocks(){
 
 function renderHud(){
  $('#points').textContent=fmt(state.points);
- $('#gems').textContent=fmt(state.gems);
- $('#coins').textContent=fmt(state.coins);
+ if($('#gems'))$('#gems').textContent=fmt(state.gems);
+ if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $$('[data-bind="points"]').forEach(e=>e.textContent=fmt(state.points));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#perClick').textContent=fmt(clickValue());
@@ -286,7 +286,7 @@ function render(){
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#points').textContent=fmt(state.points);$('#playerTitle').textContent='Tytuł: '+currentTitle();
  let wb=worldBossDefeated(world().id);$('#challengeBossBtn').textContent=wb&&state.world!=='dev'?'✅ Boss świata pokonany':'⚔️ Zmierz się z '+world().bossName;
- $('#challengeBossBtn').disabled=wb&&state.world!=='dev';$('#gems').textContent=fmt(state.gems);$('#coins').textContent=fmt(state.coins);
+ $('#challengeBossBtn').disabled=wb&&state.world!=='dev';if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
  $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent='COMBO x'+combo;$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);$('#quickClick').disabled=state.points<state.clickCost;$('#quickAuto').disabled=state.points<state.autoCost;

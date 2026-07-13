@@ -38,4 +38,10 @@ refreshAdminSession();
 profileAutoTimer=setInterval(automaticLeaderboardSave,45000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)automaticLeaderboardSave()});
 
-loadMinigameLeaderboards();setInterval(()=>{renderCasino();renderMiniCooldowns()},1000);
+loadMinigameLeaderboards();
+if(!window.__v06UiTimer){
+ window.__v06UiTimer=setInterval(()=>{
+  try{renderCasino()}catch(error){console.error('Casino render:',error)}
+  try{renderMiniCooldowns()}catch(error){console.error('Minigame cooldowns:',error)}
+ },1000)
+}

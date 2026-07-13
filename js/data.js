@@ -10,9 +10,46 @@ const defaults={
  perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,permRebirthPower:0,permGemIncome:0,permBossLoot:0,permClickPower:0,permAutoPower:0,
  rebirths:0,world:'neon',unlockedWorlds:['neon'],pets:[],equipped:[],
  sound:true,music:false,lastDaily:0,dailyStreak:0,claimedAchievements:[],quests:null,
- leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
+ leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
+
+const V06_MIGRATION_KEY='ultimateNoob_v06_migrated';
+function migrateStateV06(){
+ // Preserve all existing currencies and progression.
+ state.points=Math.max(0,Number(state.points)||0);
+ state.gems=Math.max(0,Number(state.gems)||0);
+ state.coins=Math.max(0,Number(state.coins)||0);
+
+ state.minigameCooldowns={
+  aim:0,parkour:0,reflex:0,dodge:0,
+  ...(state.minigameCooldowns||{})
+ };
+
+ state.minigameRecords={
+  aim:Number(state.minigameRecords?.aim ?? state.aimBest ?? 0)||0,
+  parkour:Number(state.minigameRecords?.parkour ?? state.parkourBest ?? 0)||0,
+  reflex:Number(state.minigameRecords?.reflex ?? state.reflexBest ?? 0)||0,
+  dodge:Number(state.minigameRecords?.dodge ?? state.dodgeBest ?? 0)||0
+ };
+
+ state.casinoChips=Math.max(0,Number(state.casinoChips)||0);
+ state.casinoLevel=Math.max(1,Number(state.casinoLevel)||1);
+ state.casinoXp=Math.max(0,Number(state.casinoXp)||0);
+ state.lastCasinoSupply=Math.max(0,Number(state.lastCasinoSupply)||0);
+ state.casinoSupplyCount=Math.max(0,Number(state.casinoSupplyCount)||0);
+ state.casinoMarket=Math.max(-10,Math.min(10,Number(state.casinoMarket)||0));
+ state.casinoMarketNext=Math.max(0,Number(state.casinoMarketNext)||0);
+ state.casinoUpgrades={
+  payout:0,supply:0,luck:0,limit:0,xp:0,
+  ...(state.casinoUpgrades||{})
+ };
+
+ localStorage.setItem(V06_MIGRATION_KEY,'done');
+ localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+}
+migrateStateV06();
+
 
 const PET_INSTANCE_MIGRATION_KEY='olaPetInstances_v05b';
 function createPetUid(){
@@ -110,7 +147,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.5d';
+const GAME_VERSION='0.6';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -134,7 +171,22 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
-  version:'0.5d',date:'Aktualna wersja',title:'Polish & Overhaul',
+  version:'0.6',date:'Aktualna wersja',title:'Minigames & Casino Rework',
+  summary:'Przebudowane minigry i osobna progresja kasyna.',
+  changes:[
+   'Dodano cztery zręcznościowe minigry.',
+   'Każda minigra ma osobny cooldown 30 sekund.',
+   'Nagrody zależą od osiągniętego wyniku.',
+   'Dodano rankingi TOP 3 minigier.',
+   'Kasyno korzysta z osobnych żetonów.',
+   'Dodano godzinową paczkę żetonów.',
+   'Dodano Casino Level, Casino XP i ulepszenia.',
+   'Dodano pakietową wymianę żetonów.',
+   'Kurs Noob Coinów zmienia się od -10% do +10%.'
+  ]
+ },
+ {
+  version:'0.5d',date:'Poprzednia aktualizacja',title:'Polish & Overhaul',
   summary:'Duże porządki interfejsu, petów, skinów i ustawień.',
   changes:[
    'Przebudowano wygląd menu bocznego i kart.',
@@ -360,7 +412,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.5d';
+let selectedPatch='0.6';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');

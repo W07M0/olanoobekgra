@@ -1,4 +1,29 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Test 0.6</title><style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head><body><h1>Test techniczny v0.6</h1><button id="run">Uruchom</button><div id="out"></div><script>
-const files=['../css/styles.css','../js/data.js','../js/core.js','../js/systems.js','../js/minigames.js','../js/integrations.js','../js/profile-admin.js','../js/app.js'];
-async function run(){const out=document.querySelector('#out');out.innerHTML='';for(const f of files){const r=await fetch(f,{cache:'no-store'});out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${f} — ${r.status}</div>`}const all=(await Promise.all(files.filter(x=>x.endsWith('.js')).map(x=>fetch(x,{cache:'no-store'}).then(r=>r.text())))).join('\n');[['Aim',all.includes('function startAimGame(')],['Noob Rider',all.includes('function startParkour(')],['Reflex',all.includes('function startReflex(')],['Dodge',all.includes('function startDodge(')],['Casino Chips',all.includes('casinoChips')],['Kasjer',all.includes('function confirmExchange(')],['Paczka',all.includes('function claimCasinoSupply(')]].forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)}
-document.querySelector('#run').onclick=run;</script></body></html>
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test v0.6 Fixed</title>
+<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style>
+</head><body><h1>Test techniczny v0.6 Fixed</h1><button id="run">Uruchom</button><div id="out"></div>
+<script>
+const files=['../css/styles.css?v=06fixed','../js/data.js?v=06fixed','../js/core.js?v=06fixed','../js/systems.js?v=06fixed','../js/minigames.js?v=06fixed','../js/integrations.js?v=06fixed','../js/profile-admin.js?v=06fixed','../js/app.js?v=06fixed'];
+async function run(){
+ const out=document.querySelector('#out');out.innerHTML='';
+ const texts=[];
+ for(const file of files){
+  try{
+   const r=await fetch(file,{cache:'no-store'});
+   const text=await r.text();texts.push(text);
+   out.innerHTML+=`<div class="row ${r.ok?'ok':'bad'}">${r.ok?'✅':'❌'} ${file} — HTTP ${r.status}</div>`;
+  }catch(e){out.innerHTML+=`<div class="row bad">❌ ${file} — ${e.message}</div>`}
+ }
+ const all=texts.join('\n');
+ const checks=[
+  ['wersja 0.6',all.includes("const GAME_VERSION='0.6'")],
+  ['migracja zapisu',all.includes('function migrateStateV06')],
+  ['Noob Coiny zachowane',all.includes('state.coins=Math.max(0,Number(state.coins)||0)')],
+  ['Casino Chips',all.includes('casinoChips')],
+  ['4 minigry',all.includes('function startAimGame(')&&all.includes('function startParkour(')&&all.includes('function startReflex(')&&all.includes('function startDodge(')]
+ ];
+ checks.forEach(([name,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</div>`);
+}
+document.querySelector('#run').onclick=run;
+</script></body></html>
