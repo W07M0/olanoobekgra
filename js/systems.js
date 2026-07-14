@@ -845,8 +845,9 @@ function openGoldCase(){
  }));
  setTimeout(()=>{
   if(!isDuplicate)state.ownedSkins.push(winner.id);
+  if(isDuplicate)state.gems+=10;
   $('#goldTitle').textContent=winner.emoji+' '+winner.name;
-  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}${isDuplicate?'<br><span class="skin-duplicate-zero">Powtórka — 0 💎</span>':''}`;
+  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}${isDuplicate?'<br><span class="skin-duplicate-reward">Powtórka — +10 💎</span>':''}`;
   $('#goldClose').classList.remove('hidden');$('#goldDismiss').classList.remove('hidden');$('#goldClose').dataset.skin=winner.id;
   if(winner.id==='gold'||['legendary','mythic','secret'].includes(winner.rarity))confetti();
   sfx('good');render()

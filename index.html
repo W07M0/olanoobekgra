@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6b</title>
-<link href="css/styles.css?v=06bpetskins" rel="stylesheet"/>
+<link href="css/styles.css?v=06bfulladmin" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -362,7 +362,86 @@
 </div>
 <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
 <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
-<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div><div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div id="adminEquippedPets" class="admin-equipped-pets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button></div><button id="adminSavePlayer">Zapisz zmiany profilu</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section><section class="view" id="view-patchnotes">
+<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div>
+<div class="admin-editor-section">
+ <h3>📈 Postęp i statystyki</h3>
+ <div class="admin-edit-grid admin-edit-grid-wide">
+  <label>EXP<input id="adminEditXp" type="number" min="0"></label>
+  <label>Łączne kliknięcia<input id="adminEditTotalClicks" type="number" min="0"></label>
+  <label>Najlepsze combo<input id="adminEditBestCombo" type="number" min="1"></label>
+  <label>Czas gry (sekundy)<input id="adminEditPlaySeconds" type="number" min="0"></label>
+  <label>Medale<input id="adminEditMedals" type="number" min="0"></label>
+  <label>Gold Case<input id="adminEditGoldCases" type="number" min="0"></label>
+  <label>Pokonani bossowie<input id="adminEditBossWins" type="number" min="0"></label>
+  <label>Dzienne logowanie<input id="adminEditDailyStreak" type="number" min="0"></label>
+ </div>
+</div>
+
+<div class="admin-editor-section">
+ <h3>🌍 Światy i skiny</h3>
+ <div class="admin-edit-grid admin-edit-grid-wide">
+  <label>Aktualny świat<input id="adminEditWorld" placeholder="np. neon"></label>
+  <label>Aktywny skin<input id="adminEditActiveSkin" placeholder="np. classic"></label>
+ </div>
+ <label>Odblokowane światy — ID oddzielone przecinkami
+  <textarea id="adminEditUnlockedWorlds" rows="2"></textarea>
+ </label>
+ <label>Pokonani bossowie światów — ID oddzielone przecinkami
+  <textarea id="adminEditWorldBosses" rows="2"></textarea>
+ </label>
+ <label>Posiadane skiny — ID oddzielone przecinkami
+  <textarea id="adminEditOwnedSkins" rows="2"></textarea>
+ </label>
+</div>
+
+<div class="admin-editor-section">
+ <h3>🎰 Kasyno</h3>
+ <div class="admin-edit-grid admin-edit-grid-wide">
+  <label>Żetony<input id="adminEditCasinoChips" type="number" min="0"></label>
+  <label>Poziom kasyna<input id="adminEditCasinoLevel" type="number" min="1"></label>
+  <label>EXP kasyna<input id="adminEditCasinoXp" type="number" min="0"></label>
+  <label>Gry w kasynie<input id="adminEditCasinoGames" type="number" min="0"></label>
+  <label>Wygrane w kasynie<input id="adminEditCasinoWins" type="number" min="0"></label>
+  <label>Zysk kasyna<input id="adminEditCasinoProfit" type="number"></label>
+ </div>
+</div>
+
+<div class="admin-editor-section">
+ <h3>🎮 Minigry</h3>
+ <div class="admin-edit-grid admin-edit-grid-wide">
+  <label>Aim — rekord<input id="adminEditAimRecord" type="number" min="0"></label>
+  <label>Aim — ocena<input id="adminEditAimGrade" maxlength="3"></label>
+  <label>Rider — rekord<input id="adminEditParkourRecord" type="number" min="0"></label>
+  <label>Rider — ocena<input id="adminEditParkourGrade" maxlength="3"></label>
+  <label>Reflex — rekord<input id="adminEditReflexRecord" type="number" min="0"></label>
+  <label>Reflex — ocena<input id="adminEditReflexGrade" maxlength="3"></label>
+  <label>Dodge — rekord<input id="adminEditDodgeRecord" type="number" min="0"></label>
+  <label>Dodge — ocena<input id="adminEditDodgeGrade" maxlength="3"></label>
+ </div>
+</div>
+
+<div class="admin-editor-section">
+ <h3>🐾 Wszystkie pety gracza</h3>
+ <p class="muted">Możesz zmienić poziom, EXP i ewolucję każdego egzemplarza. Usuwanie peta jest dostępne przy jego karcie.</p>
+ <div id="adminAllPets" class="admin-all-pets"></div>
+</div>
+<div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div id="adminEquippedPets" class="admin-equipped-pets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button></div>
+<div class="admin-editor-section admin-json-section">
+ <div class="admin-json-heading">
+  <div>
+   <h3>🧩 Pełny zapis JSON</h3>
+   <p class="muted">Tryb zaawansowany. Pozwala edytować każdą wartość zapisu, także niewidoczną w formularzu.</p>
+  </div>
+  <span id="adminJsonValidation" class="admin-json-status">Nie sprawdzono</span>
+ </div>
+ <textarea id="adminSaveJson" rows="18" spellcheck="false" placeholder="{ }"></textarea>
+ <div class="admin-json-actions">
+  <button id="adminJsonValidate" type="button">Sprawdź JSON</button>
+  <button id="adminJsonToForm" type="button">Wczytaj JSON do formularza</button>
+  <button id="adminFormToJson" type="button">Przepisz formularz do JSON</button>
+ </div>
+</div>
+<button id="adminSavePlayer">Zapisz zmiany profilu</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section><section class="view" id="view-patchnotes">
 <div class="section-title">
 <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ultimate Noob Clicker.</p></div>
 <div class="chip">Aktualna wersja: <b>0.6b</b></div>
@@ -401,11 +480,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06bpetskins"></script>
-<script defer="" src="js/core.js?v=06bpetskins"></script>
-<script defer="" src="js/systems.js?v=06bpetskins"></script>
-<script defer="" src="js/integrations.js?v=06bpetskins"></script>
-<script defer="" src="js/profile-admin.js?v=06bpetskins"></script>
-<script defer="" src="js/app.js?v=06bpetskins"></script>
+<script defer="" src="js/data.js?v=06bfulladmin"></script>
+<script defer="" src="js/core.js?v=06bfulladmin"></script>
+<script defer="" src="js/systems.js?v=06bfulladmin"></script>
+<script defer="" src="js/integrations.js?v=06bfulladmin"></script>
+<script defer="" src="js/profile-admin.js?v=06bfulladmin"></script>
+<script defer="" src="js/app.js?v=06bfulladmin"></script>
 </body>
 </html>

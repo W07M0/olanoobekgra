@@ -37,19 +37,39 @@ function renderProfileSettings(){
 }
 async function savePlayerProfile(showError=false){
  if(!db||!state.playerName)return false;
- const {error}=await db.rpc('save_player_profile',{
-  p_player_id:playerId,p_player_name:state.playerName,
-  p_best_score:Math.floor(state.points),p_level:state.level,
-  p_rebirths:state.rebirths,p_game_version:GAME_VERSION
+
+ let result=await db.rpc('save_player_full_profile',{
+  p_player_id:playerId,
+  p_player_name:state.playerName,
+  p_best_score:Math.floor(state.points),
+  p_level:state.level,
+  p_rebirths:state.rebirths,
+  p_game_version:GAME_VERSION,
+  p_save_data:state
  });
- if(error){
+
+ // Zgodność ze starszą konfiguracją do chwili uruchomienia nowego SQL.
+ if(result.error&&/save_player_full_profile|schema cache|function/i.test(result.error.message||'')){
+  result=await db.rpc('save_player_profile',{
+   p_player_id:playerId,
+   p_player_name:state.playerName,
+   p_best_score:Math.floor(state.points),
+   p_level:state.level,
+   p_rebirths:state.rebirths,
+   p_game_version:GAME_VERSION
+  })
+ }
+
+ if(result.error){
+  const error=result.error;
   console.error(error);
   saveDiagnostic?.('Profil',error.message,error.stack||'');
   $('#profileStatus')&&($('#profileStatus').textContent='Błąd profilu: '+error.message);
   if(showError)toast('Błąd profilu: '+error.message);
   return false
  }
- $('#profileStatus')&&($('#profileStatus').textContent='Profil zsynchronizowany: '+new Date().toLocaleTimeString('pl-PL'));
+
+ $('#profileStatus')&&($('#profileStatus').textContent='Pełny zapis zsynchronizowany: '+new Date().toLocaleTimeString('pl-PL'));
  return true
 }
 async function saveProfileName(){
@@ -275,52 +295,312 @@ function bindAdminPanel(){
 }
 
 let adminEditedProfile=null;
-async function adminLoadPlayerProfile(){
- if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
- const id=$('#adminEditPlayerId')?.value.trim();if(!id)return toast('Wpisz Player ID');
- const {data,error}=await db.from('players').select('*').eq('player_id',id).maybeSingle();
- if(error||!data){if($('#adminEditStatus'))$('#adminEditStatus').textContent='Nie znaleziono profilu.';return}
- adminEditedProfile=data;const save=data.save_data||data.game_state||{};
- $('#adminEditName').value=data.player_name||'';$('#adminEditPoints').value=Math.floor(save.points||0);$('#adminEditCoins').value=Math.floor(save.coins||0);$('#adminEditGems').value=Math.floor(save.gems||0);$('#adminEditLevel').value=Math.max(1,Math.floor(save.level||1));$('#adminEditRebirths').value=Math.max(0,Math.floor(save.rebirths||0));
- const equipped=Array.isArray(save.equipped)?save.equipped:[];
- [1,2,3].forEach((slot,index)=>{const input=$('#adminPetSlot'+slot);if(input)input.value=equipped[index]||''});
- renderAdminEquippedPets(save);$('#adminEditStatus').textContent='Profil pobrany.'
+function parseAdminSaveData(value){
+ if(value&&typeof value==='object')return value;
+ if(typeof value==='string'){
+  try{return JSON.parse(value)}catch(error){console.warn('Nieprawidłowy save_data:',error)}
+ }
+ return{}
 }
 
-function adminPetUid(pet){return pet?.uid||''}
-function renderAdminEquippedPets(save){
- const box=$('#adminEquippedPets');if(!box)return;
+
+function adminNumber(id,fallback=0,min=-Infinity,max=Infinity){
+ const value=Number($('#'+id)?.value);
+ if(!Number.isFinite(value))return fallback;
+ return Math.max(min,Math.min(max,value))
+}
+function adminText(id,fallback=''){
+ return ($('#'+id)?.value??fallback).trim()
+}
+function adminCsv(id,fallback=[]){
+ const value=$('#'+id)?.value;
+ if(value==null)return Array.isArray(fallback)?fallback:[];
+ return [...new Set(value.split(',').map(item=>item.trim()).filter(Boolean))]
+}
+function adminSetValue(id,value){
+ const element=$('#'+id);
+ if(element)element.value=value??''
+}
+function adminGrade(value){
+ const grade=String(value||'-').trim().toUpperCase();
+ return ['-','D','C','B','A','S','SS','SSS'].includes(grade)?grade:'-'
+}
+function adminPetUid(pet){
+ return pet?.uid||pet?.instanceId||pet?.id||''
+}
+function adminPetType(pet){
+ return pet?.type||pet?.petId||pet?.baseId||pet?.id||'unknown'
+}
+function adminBaseSave(){
+ if(!adminEditedProfile)return{};
+ const textarea=$('#adminSaveJson');
+ if(textarea?.value.trim()){
+  try{return JSON.parse(textarea.value)}
+  catch(error){throw new Error('JSON jest nieprawidłowy: '+error.message)}
+ }
+ return parseAdminSaveData(adminEditedProfile.save_data)
+}
+function adminSaveFromForm(baseSave=null){
+ const save={...(baseSave||adminBaseSave())};
+
+ save.playerName=adminText('adminEditName',save.playerName||adminEditedProfile?.player_name||'Gracz').slice(0,16);
+ save.points=adminNumber('adminEditPoints',Number(save.points)||0,0);
+ save.coins=adminNumber('adminEditCoins',Number(save.coins)||0,0);
+ save.gems=adminNumber('adminEditGems',Number(save.gems)||0,0);
+ save.level=Math.floor(adminNumber('adminEditLevel',Number(save.level)||1,1));
+ save.xp=adminNumber('adminEditXp',Number(save.xp)||0,0);
+ save.rebirths=Math.floor(adminNumber('adminEditRebirths',Number(save.rebirths)||0,0));
+ save.totalClicks=Math.floor(adminNumber('adminEditTotalClicks',Number(save.totalClicks)||0,0));
+ save.bestCombo=Math.floor(adminNumber('adminEditBestCombo',Number(save.bestCombo)||1,1));
+ save.playSeconds=Math.floor(adminNumber('adminEditPlaySeconds',Number(save.playSeconds)||0,0));
+ save.medals=Math.floor(adminNumber('adminEditMedals',Number(save.medals)||0,0));
+ save.goldCases=Math.floor(adminNumber('adminEditGoldCases',Number(save.goldCases)||0,0));
+ save.bossWins=Math.floor(adminNumber('adminEditBossWins',Number(save.bossWins)||0,0));
+ save.dailyStreak=Math.floor(adminNumber('adminEditDailyStreak',Number(save.dailyStreak)||0,0));
+
+ save.world=adminText('adminEditWorld',save.world||'neon')||'neon';
+ save.activeSkin=adminText('adminEditActiveSkin',save.activeSkin||'classic')||'classic';
+ save.unlockedWorlds=adminCsv('adminEditUnlockedWorlds',save.unlockedWorlds||['neon']);
+ if(!save.unlockedWorlds.includes(save.world))save.unlockedWorlds.unshift(save.world);
+ save.worldBossesDefeated=adminCsv('adminEditWorldBosses',save.worldBossesDefeated||[]);
+ save.ownedSkins=adminCsv('adminEditOwnedSkins',save.ownedSkins||['classic']);
+ if(!save.ownedSkins.includes('classic'))save.ownedSkins.unshift('classic');
+ if(!save.ownedSkins.includes(save.activeSkin))save.ownedSkins.push(save.activeSkin);
+
+ save.casinoChips=Math.floor(adminNumber('adminEditCasinoChips',Number(save.casinoChips)||0,0));
+ save.casinoLevel=Math.floor(adminNumber('adminEditCasinoLevel',Number(save.casinoLevel)||1,1));
+ save.casinoXp=Math.floor(adminNumber('adminEditCasinoXp',Number(save.casinoXp)||0,0));
+ save.casinoGames=Math.floor(adminNumber('adminEditCasinoGames',Number(save.casinoGames)||0,0));
+ save.casinoWins=Math.floor(adminNumber('adminEditCasinoWins',Number(save.casinoWins)||0,0));
+ save.casinoProfit=adminNumber('adminEditCasinoProfit',Number(save.casinoProfit)||0);
+
+ save.minigameRecords={
+  aim:adminNumber('adminEditAimRecord',Number(save.minigameRecords?.aim)||0,0),
+  parkour:adminNumber('adminEditParkourRecord',Number(save.minigameRecords?.parkour)||0,0),
+  reflex:adminNumber('adminEditReflexRecord',Number(save.minigameRecords?.reflex)||0,0),
+  dodge:adminNumber('adminEditDodgeRecord',Number(save.minigameRecords?.dodge)||0,0),
+  ...(save.minigameRecords||{})
+ };
+ // Nadpisanie po spreadzie, aby wartości formularza zawsze wygrywały.
+ save.minigameRecords.aim=adminNumber('adminEditAimRecord',Number(save.minigameRecords.aim)||0,0);
+ save.minigameRecords.parkour=adminNumber('adminEditParkourRecord',Number(save.minigameRecords.parkour)||0,0);
+ save.minigameRecords.reflex=adminNumber('adminEditReflexRecord',Number(save.minigameRecords.reflex)||0,0);
+ save.minigameRecords.dodge=adminNumber('adminEditDodgeRecord',Number(save.minigameRecords.dodge)||0,0);
+
+ save.minigameBestGrades={
+  ...(save.minigameBestGrades||{}),
+  aim:adminGrade(adminText('adminEditAimGrade',save.minigameBestGrades?.aim||'-')),
+  parkour:adminGrade(adminText('adminEditParkourGrade',save.minigameBestGrades?.parkour||'-')),
+  reflex:adminGrade(adminText('adminEditReflexGrade',save.minigameBestGrades?.reflex||'-')),
+  dodge:adminGrade(adminText('adminEditDodgeGrade',save.minigameBestGrades?.dodge||'-'))
+ };
+
+ const petRows=[...document.querySelectorAll('[data-admin-pet-uid]')];
+ if(petRows.length){
+  save.pets=petRows.filter(row=>row.dataset.deleted!=='1').map(row=>{
+   const uid=row.dataset.adminPetUid;
+   const original=(Array.isArray(save.pets)?save.pets:[]).find(pet=>adminPetUid(pet)===uid)||{};
+   return{
+    ...original,
+    uid,
+    type:row.querySelector('[data-pet-type]')?.value.trim()||adminPetType(original),
+    level:Math.floor(Math.max(1,Number(row.querySelector('[data-pet-level]')?.value)||1)),
+    xp:Math.max(0,Number(row.querySelector('[data-pet-xp]')?.value)||0),
+    evolution:Math.floor(Math.max(0,Math.min(3,Number(row.querySelector('[data-pet-evolution]')?.value)||0)))
+   }
+  })
+ }
+
+ const validPetIds=new Set((Array.isArray(save.pets)?save.pets:[]).map(adminPetUid).filter(Boolean));
+ save.equipped=[1,2,3]
+  .map(slot=>adminText('adminPetSlot'+slot))
+  .filter(uid=>uid&&validPetIds.has(uid))
+  .slice(0,3);
+
+ return save
+}
+function populateAdminForm(save,row={}){
+ adminSetValue('adminEditName',row.player_name||save.playerName||'');
+ adminSetValue('adminEditPoints',Math.floor(Number(save.points??row.best_score??0)));
+ adminSetValue('adminEditCoins',Math.floor(Number(save.coins)||0));
+ adminSetValue('adminEditGems',Math.floor(Number(save.gems)||0));
+ adminSetValue('adminEditLevel',Math.max(1,Math.floor(Number(save.level??row.level??1))));
+ adminSetValue('adminEditXp',Math.max(0,Number(save.xp)||0));
+ adminSetValue('adminEditRebirths',Math.max(0,Math.floor(Number(save.rebirths??row.rebirths??0))));
+ adminSetValue('adminEditTotalClicks',Math.max(0,Math.floor(Number(save.totalClicks)||0)));
+ adminSetValue('adminEditBestCombo',Math.max(1,Math.floor(Number(save.bestCombo)||1)));
+ adminSetValue('adminEditPlaySeconds',Math.max(0,Math.floor(Number(save.playSeconds)||0)));
+ adminSetValue('adminEditMedals',Math.max(0,Math.floor(Number(save.medals)||0)));
+ adminSetValue('adminEditGoldCases',Math.max(0,Math.floor(Number(save.goldCases)||0)));
+ adminSetValue('adminEditBossWins',Math.max(0,Math.floor(Number(save.bossWins)||0)));
+ adminSetValue('adminEditDailyStreak',Math.max(0,Math.floor(Number(save.dailyStreak)||0)));
+
+ adminSetValue('adminEditWorld',save.world||'neon');
+ adminSetValue('adminEditActiveSkin',save.activeSkin||'classic');
+ adminSetValue('adminEditUnlockedWorlds',(save.unlockedWorlds||[]).join(', '));
+ adminSetValue('adminEditWorldBosses',(save.worldBossesDefeated||[]).join(', '));
+ adminSetValue('adminEditOwnedSkins',(save.ownedSkins||[]).join(', '));
+
+ adminSetValue('adminEditCasinoChips',Math.max(0,Math.floor(Number(save.casinoChips)||0)));
+ adminSetValue('adminEditCasinoLevel',Math.max(1,Math.floor(Number(save.casinoLevel)||1)));
+ adminSetValue('adminEditCasinoXp',Math.max(0,Math.floor(Number(save.casinoXp)||0)));
+ adminSetValue('adminEditCasinoGames',Math.max(0,Math.floor(Number(save.casinoGames)||0)));
+ adminSetValue('adminEditCasinoWins',Math.max(0,Math.floor(Number(save.casinoWins)||0)));
+ adminSetValue('adminEditCasinoProfit',Number(save.casinoProfit)||0);
+
+ adminSetValue('adminEditAimRecord',Number(save.minigameRecords?.aim)||0);
+ adminSetValue('adminEditParkourRecord',Number(save.minigameRecords?.parkour)||0);
+ adminSetValue('adminEditReflexRecord',Number(save.minigameRecords?.reflex)||0);
+ adminSetValue('adminEditDodgeRecord',Number(save.minigameRecords?.dodge)||0);
+ adminSetValue('adminEditAimGrade',save.minigameBestGrades?.aim||'-');
+ adminSetValue('adminEditParkourGrade',save.minigameBestGrades?.parkour||'-');
+ adminSetValue('adminEditReflexGrade',save.minigameBestGrades?.reflex||'-');
+ adminSetValue('adminEditDodgeGrade',save.minigameBestGrades?.dodge||'-');
+
+ const equipped=Array.isArray(save.equipped)?save.equipped:[];
+ [1,2,3].forEach((slot,index)=>adminSetValue('adminPetSlot'+slot,equipped[index]||''));
+
+ renderAdminEquippedPets(save);
+ renderAdminAllPets(save);
+
+ const json=$('#adminSaveJson');
+ if(json)json.value=JSON.stringify(save,null,2);
+ setAdminJsonStatus(true,'JSON poprawny')
+}
+function setAdminJsonStatus(valid,text){
+ const status=$('#adminJsonValidation');
+ if(!status)return;
+ status.textContent=text;
+ status.classList.toggle('valid',valid);
+ status.classList.toggle('invalid',!valid)
+}
+function validateAdminJson(showToast=false){
+ const textarea=$('#adminSaveJson');
+ try{
+  const value=JSON.parse(textarea?.value||'{}');
+  if(!value||Array.isArray(value)||typeof value!=='object')throw new Error('Główny element musi być obiektem.');
+  setAdminJsonStatus(true,'JSON poprawny');
+  if(showToast)toast('JSON jest poprawny');
+  return value
+ }catch(error){
+  setAdminJsonStatus(false,'Błąd JSON');
+  if(showToast)toast('Błąd JSON: '+error.message);
+  return null
+ }
+}
+function renderAdminAllPets(save){
+ const box=$('#adminAllPets');
+ if(!box)return;
  const pets=Array.isArray(save?.pets)?save.pets:[];
- const equipped=Array.isArray(save?.equipped)?save.equipped:[];
- if(!equipped.length){box.innerHTML='<div class="admin-empty-pets">Brak wyposażonych petów.</div>';return}
- box.innerHTML=equipped.map((uid,index)=>{
-  const pet=pets.find(item=>adminPetUid(item)===uid);
+
+ if(!pets.length){
+  box.innerHTML='<div class="admin-empty-pets">Gracz nie posiada żadnych petów.</div>';
+  return
+ }
+
+ box.innerHTML=pets.map(pet=>{
+  const uid=adminPetUid(pet);
   const base=typeof getPetBase==='function'?getPetBase(pet):null;
-  const name=base?.name||pet?.type||'Pet widmo / nieznany';
-  const icon=base?.emoji||'👻';
-  return `<div class="admin-equipped-pet"><span>${icon} ${safeText(name)}</span><small>${safeText(uid)}</small><button type="button" data-admin-remove-pet="${index}">Usuń</button></div>`
+  const icon=base?.emoji||pet?.emoji||'🐾';
+  const name=base?.name||pet?.name||adminPetType(pet);
+  return `<article class="admin-pet-card" data-admin-pet-uid="${safeText(uid)}">
+   <div class="admin-pet-card-title">
+    <strong>${icon} ${safeText(name)}</strong>
+    <button type="button" class="danger-btn" data-delete-admin-pet>Usuń peta</button>
+   </div>
+   <small>UID: ${safeText(uid)}</small>
+   <div class="admin-pet-fields">
+    <label>Typ<input data-pet-type value="${safeText(adminPetType(pet))}"></label>
+    <label>Poziom<input data-pet-level type="number" min="1" value="${Math.max(1,Number(pet.level)||1)}"></label>
+    <label>EXP<input data-pet-xp type="number" min="0" value="${Math.max(0,Number(pet.xp)||0)}"></label>
+    <label>Ewolucja 0–3<input data-pet-evolution type="number" min="0" max="3" value="${Math.max(0,Math.min(3,Number(pet.evolution)||0))}"></label>
+   </div>
+  </article>`
  }).join('');
- box.querySelectorAll('[data-admin-remove-pet]').forEach(button=>button.onclick=()=>{
-  const slot=Number(button.dataset.adminRemovePet)+1;
-  const input=$('#adminPetSlot'+slot);if(input)input.value='';
-  const edited={...save,equipped:[1,2,3].map(n=>$('#adminPetSlot'+n)?.value.trim()).filter(Boolean)};
-  renderAdminEquippedPets(edited)
+
+ box.querySelectorAll('[data-delete-admin-pet]').forEach(button=>{
+  button.onclick=()=>{
+   const card=button.closest('[data-admin-pet-uid]');
+   const uid=card?.dataset.adminPetUid||'';
+   if(!card||!confirm(`Usunąć peta ${uid}?`))return;
+   card.dataset.deleted='1';
+   card.classList.add('deleted');
+   button.textContent='Oznaczony do usunięcia';
+   button.disabled=true;
+   [1,2,3].forEach(slot=>{
+    const input=$('#adminPetSlot'+slot);
+    if(input?.value.trim()===uid)input.value=''
+   })
+  }
  })
+}
+
+async function adminLoadPlayerProfile(){
+ if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
+
+ const id=$('#adminEditPlayerId')?.value.trim();
+ if(!id)return toast('Wpisz Player ID');
+
+ const status=$('#adminEditStatus');
+ if(status)status.textContent='Pobieranie pełnego zapisu...';
+
+ const result=await db.rpc('admin_get_player_full_profile',{p_player_id:id});
+
+ if(result.error){
+  if(status)status.textContent='Błąd Supabase: '+result.error.message;
+  toast('Nie udało się pobrać pełnego profilu');
+  return
+ }
+
+ const row=result.data;
+ if(!row){
+  if(status)status.textContent='Nie znaleziono profilu.';
+  return
+ }
+
+ adminEditedProfile=row;
+ const save=parseAdminSaveData(row.save_data);
+ populateAdminForm(save,row);
+
+ if(status){
+  status.textContent=Object.keys(save).length
+   ?`Pełny profil pobrany: ${Object.keys(save).length} pól, ${Array.isArray(save.pets)?save.pets.length:0} petów.`
+   :'Profil istnieje, ale nie ma pełnego zapisu. Gracz musi wejść do gry po aktualizacji.'
+ }
 }
 
 async function adminSavePlayerProfile(){
  if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
  if(!adminEditedProfile)return toast('Najpierw pobierz profil');
- const id=$('#adminEditPlayerId').value.trim(),existing=adminEditedProfile.save_data||adminEditedProfile.game_state||{};
- const pets=Array.isArray(existing.pets)?existing.pets:[];
- const validPetUids=new Set(pets.map(adminPetUid).filter(Boolean));
- const equipped=[1,2,3].map(slot=>$('#adminPetSlot'+slot)?.value.trim()).filter(uid=>uid&&validPetUids.has(uid)).slice(0,3);
- const updated={...existing,points:Math.max(0,Number($('#adminEditPoints').value)||0),coins:Math.max(0,Number($('#adminEditCoins').value)||0),gems:Math.max(0,Number($('#adminEditGems').value)||0),level:Math.max(1,Number($('#adminEditLevel').value)||1),rebirths:Math.max(0,Number($('#adminEditRebirths').value)||0),equipped};
- let payload={player_name:($('#adminEditName').value||'Gracz').trim().slice(0,16),save_data:updated,updated_at:new Date().toISOString()};
- let {error}=await db.from('players').update(payload).eq('player_id',id);
- if(error&&String(error.message).includes('save_data')){delete payload.save_data;payload.game_state=updated;({error}=await db.from('players').update(payload).eq('player_id',id))}
- $('#adminEditStatus').textContent=error?'Błąd: '+error.message:'Profil zapisany.'
+
+ let updated;
+ try{
+  updated=adminSaveFromForm()
+ }catch(error){
+  setAdminJsonStatus(false,'Błąd JSON');
+  toast(error.message);
+  return
+ }
+
+ const id=$('#adminEditPlayerId').value.trim();
+ const {error}=await db.rpc('admin_update_player_full_profile',{
+  p_player_id:id,
+  p_player_name:updated.playerName,
+  p_save_data:updated
+ });
+
+ const status=$('#adminEditStatus');
+ if(error){
+  if(status)status.textContent='Błąd: '+error.message;
+  return
+ }
+
+ adminEditedProfile={...adminEditedProfile,player_name:updated.playerName,save_data:updated};
+ populateAdminForm(updated,adminEditedProfile);
+ if(status)status.textContent=`Pełny profil zapisany. Pola: ${Object.keys(updated).length}, pety: ${updated.pets?.length||0}.`;
+ toast('Pełny profil gracza zaktualizowany')
 }
+
 setTimeout(()=>{if($('#adminLoadPlayer'))$('#adminLoadPlayer').onclick=adminLoadPlayerProfile;if($('#adminSavePlayer'))$('#adminSavePlayer').onclick=adminSavePlayerProfile},0);
 
 setTimeout(()=>{
@@ -329,4 +609,30 @@ setTimeout(()=>{
   [1,2,3].forEach(slot=>{const input=$('#adminPetSlot'+slot);if(input)input.value='' });
   const box=$('#adminEquippedPets');if(box)box.innerHTML='<div class="admin-empty-pets">Brak wyposażonych petów.</div>'
  }
+},0);
+
+
+setTimeout(()=>{
+ const validate=$('#adminJsonValidate');
+ const toForm=$('#adminJsonToForm');
+ const toJson=$('#adminFormToJson');
+ const json=$('#adminSaveJson');
+
+ if(validate)validate.onclick=()=>validateAdminJson(true);
+ if(toForm)toForm.onclick=()=>{
+  const parsed=validateAdminJson(true);
+  if(parsed)populateAdminForm(parsed,adminEditedProfile||{})
+ };
+ if(toJson)toJson.onclick=()=>{
+  try{
+   const updated=adminSaveFromForm();
+   if(json)json.value=JSON.stringify(updated,null,2);
+   setAdminJsonStatus(true,'JSON zaktualizowany');
+   toast('Formularz przepisany do JSON')
+  }catch(error){
+   setAdminJsonStatus(false,'Błąd JSON');
+   toast(error.message)
+  }
+ };
+ if(json)json.addEventListener('input',()=>setAdminJsonStatus(false,'Niezapisane zmiany'));
 },0);
