@@ -78,9 +78,9 @@ function updateCasinoMarket(){
  state.casinoMarketNext=Date.now()+(10+Math.floor(Math.random()*6))*60000;
 }
 function exchangeBulkBonus(amount){
- if(amount>=5000)return 1.12;
- if(amount>=2500)return 1.08;
- if(amount>=1000)return 1.04;
+ if(amount>=5000)return 1.16;
+ if(amount>=2500)return 1.11;
+ if(amount>=1000)return 1.06;
  if(amount>=500)return 1.02;
  return 1
 }
@@ -91,7 +91,7 @@ function coinExchange(amount){
 }
 function gemExchange(amount){
  amount=Math.max(0,Math.floor(Number(amount)||0));
- const base=amount*.052;
+ const base=amount*.075;
  return Math.floor(base*exchangeBulkBonus(amount))
 }
 function readExchangeAmount(){

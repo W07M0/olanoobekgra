@@ -170,6 +170,7 @@ window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error
 window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reason?.message||e.reason,e.reason?.stack||''));
 
 const patchNotes=[
+ {version:'0.6a-fix',date:'Poprawka 0.6a',title:'Aim, Skins & Exchange Fix',summary:'Ruchome cele, działające skiny i lepszy kurs diamentów.',changes:['Ruchome cele w Aim Lab.','Stałe 1,15 s na trafienie.','Fake cele podobne do normalnych.','Lepszy kurs diamentów.','Naprawiono renderSkinOrbit.']},
  {
   version:'0.6a',date:'Aktualna wersja',title:'Quality of Life',
   summary:'Dopracowanie minigier, kasyna, petów, skinów i wygody obsługi.',

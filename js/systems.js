@@ -1,6 +1,6 @@
 
 /* v0.6 stable runtime fallbacks */
-if(typeof window.renderSkins!=='function')window.renderSkins=function(){};
+
 if(typeof window.renderPets!=='function')window.renderPets=function(){};
 if(typeof window.renderMiniStats!=='function')window.renderMiniStats=function(){};
 if(typeof window.renderMiniCooldowns!=='function')window.renderMiniCooldowns=function(){};
@@ -583,6 +583,15 @@ function renderMiniStats(){
  setText('#medals',fmt(Number(state.medals)||0));
 }
 
+function renderSkinOrbit(){
+ const orbit=$('#skinOrbitFx');if(!orbit)return;
+ const skin=skins.find(item=>item.id===state.activeSkin)||skins[0];if(!skin){orbit.innerHTML='';return}
+ const counts={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ const count=counts[String(skin.rarity||'common').toLowerCase()]??1;
+ if(state.ecoMode||state.effectsLevel===0||count===0){orbit.innerHTML='';return}
+ const symbols={gold:['🪙','✨','💰'],matrix:['0','1','⌁'],void:['✦','◆','●'],dev:['</>','⚙','⌘'],classic:['✨']},pool=symbols[skin.id]||['✨','✦','•'];
+ orbit.innerHTML=Array.from({length:count},(_,i)=>`<span class="skin-orbit-particle" style="--delay:${-(i*(5.5/Math.max(1,count))).toFixed(2)}s;--radius:${118+(i%2)*18}px;--skin-color:${skin.color||'#fff'}">${pool[i%pool.length]}</span>`).join('')
+}
 function applySkin(){
  try{
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
@@ -594,7 +603,7 @@ function applySkin(){
   });
 
   if(skin.cls)button.classList.add(skin.cls);
-  renderSkinOrbit()
+  if(typeof renderSkinOrbit==='function')renderSkinOrbit()
  }catch(error){
   console.error('Skin render error:',error);
   saveDiagnostic?.('Skin render',error.message,error.stack||'')
@@ -628,3 +637,5 @@ function openGoldCase(){
  },4200)
 }
 
+
+if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};

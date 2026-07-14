@@ -556,3 +556,6 @@ body.eco-mode .skin-local-particle{
   gap:10px;
  }
 }
+
+.aim-target span{pointer-events:none;font-weight:1000;font-size:12px}.aim-target small{position:absolute;right:-5px;top:-6px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:11px;border:1px solid rgba(255,255,255,.25);pointer-events:none}.aim-target.fake{background:linear-gradient(145deg,#ff4b87,#b91f63)!important;color:#fff!important;border-color:#ffb0ce!important;min-width:0!important;padding:0!important;border-radius:50%!important}.aim-target.moving{box-shadow:0 0 18px rgba(54,231,255,.7),0 0 32px rgba(54,231,255,.25)}
+.skin-orbit-fx{position:absolute;inset:0;pointer-events:none;z-index:2}.skin-orbit-particle{position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px;display:grid;place-items:center;color:var(--skin-color);filter:drop-shadow(0 0 8px var(--skin-color));animation:skinOrbitLoop 5.5s linear infinite;animation-delay:var(--delay);font-size:18px}@keyframes skinOrbitLoop{from{transform:rotate(0deg) translateX(var(--radius)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--radius)) rotate(-360deg)}}body.eco-mode .skin-orbit-particle{display:none!important}

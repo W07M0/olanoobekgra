@@ -98,35 +98,26 @@ function finishMini(id,title,displayScore,normalized,rawScore){
 
 /* AIM LAB */
 let aimTargetTimeout=null;
+let aimMoveFrame=null;
 function moveAim(){
  if(!aimRunning)return;
- const f=$('#aimField'),t=$('#aimTarget');
- if(!f||!t)return;
- clearTimeout(aimTargetTimeout);
-
- const rect=f.getBoundingClientRect();
- const fake=Math.random()<.18;
- t.textContent=fake?'✖ NIE KLIKAJ':'NOOB';
- t.dataset.fake=fake?'1':'0';
- t.classList.toggle('fake',fake);
-
- const size=Math.max(38,68-aimHits*.35);
- t.style.width=size+'px';
- t.style.height=size+'px';
- t.style.left=Math.random()*Math.max(1,rect.width-size-8)+'px';
- t.style.top=Math.random()*Math.max(1,rect.height-size-8)+'px';
-
- // Fake cel znika sam. Nie trzeba go klikać.
- // Prawdziwy cel również zmienia pozycję po chwili, żeby gra się nie blokowała.
- aimTargetTimeout=setTimeout(()=>{
-  if(!aimRunning)return;
-  if(!fake){
-   aimMisses++;
-   aimCombo=0;
-   updateAimHud()
-  }
-  moveAim()
- },fake?850:1350)
+ const field=$('#aimField'),target=$('#aimTarget');if(!field||!target)return;
+ clearTimeout(aimTargetTimeout);cancelAnimationFrame(aimMoveFrame);
+ const rect=field.getBoundingClientRect(),fake=Math.random()<.20,moving=Math.random()<.38;
+ target.dataset.fake=fake?'1':'0';target.dataset.moving=moving?'1':'0';
+ target.classList.toggle('fake',fake);target.classList.toggle('moving',moving);
+ target.innerHTML=fake?'<span>NOOB</span><small>?</small>':'<span>NOOB</span>';
+ const size=Math.max(40,68-aimHits*.28),maxX=Math.max(1,rect.width-size-10),maxY=Math.max(1,rect.height-size-10);
+ let x=Math.random()*maxX,y=Math.random()*maxY;target.style.width=size+'px';target.style.height=size+'px';target.style.left=x+'px';target.style.top=y+'px';
+ if(moving){
+  const speed=40+Math.min(55,aimHits*1.1),angle=Math.random()*Math.PI*2;let vx=Math.cos(angle)*speed,vy=Math.sin(angle)*speed,last=performance.now();
+  const animate=now=>{if(!aimRunning||target.dataset.moving!=='1')return;const dt=Math.min(.03,(now-last)/1000);last=now;x+=vx*dt;y+=vy*dt;
+   if(x<=0||x>=maxX){vx*=-1;x=Math.max(0,Math.min(maxX,x))}if(y<=0||y>=maxY){vy*=-1;y=Math.max(0,Math.min(maxY,y))}
+   target.style.left=x+'px';target.style.top=y+'px';aimMoveFrame=requestAnimationFrame(animate)};
+  aimMoveFrame=requestAnimationFrame(animate)
+ }
+ const lifetime=1150;
+ aimTargetTimeout=setTimeout(()=>{if(!aimRunning)return;cancelAnimationFrame(aimMoveFrame);if(!fake){aimMisses++;aimCombo=0;updateAimHud();sfx('bad')}moveAim()},lifetime)
 }
 function updateAimHud(){
  const acc=aimHits+aimMisses?aimHits/(aimHits+aimMisses)*100:100;
@@ -139,11 +130,11 @@ function startAimGame(){
  aimLoop=setInterval(()=>{const now=performance.now();aimTimer-=Math.min(.2,(now-last)/1000);last=now;$('#aimTime').textContent=Math.max(0,aimTimer).toFixed(1);if(aimTimer<=0)stopAimGame(true)},100)
 }
 function stopAimGame(reward=true){
- if(!aimRunning)return;aimRunning=false;clearInterval(aimLoop);clearTimeout(aimTargetTimeout);$('#aimStage').classList.remove('running');
+ if(!aimRunning)return;aimRunning=false;clearInterval(aimLoop);clearTimeout(aimTargetTimeout);cancelAnimationFrame(aimMoveFrame);$('#aimStage').classList.remove('running');
  if(!reward)return hideGames();
  const accuracy=aimHits+aimMisses?aimHits/(aimHits+aimMisses):0;
  const comboFactor=Math.min(1,aimCombo/25);
- const normalized=Math.min(1,accuracy*.78+comboFactor*.22);
+ const normalized=Math.min(1,accuracy*.72+comboFactor*.28);
  const raw=Math.round(accuracy*10000);
  state.aimBest=Math.max(state.aimBest,raw);
  finishMini('aim','Noob Aim Lab',`${(accuracy*100).toFixed(1)}% accuracy`,normalized,raw)
@@ -154,7 +145,7 @@ if($('#aimTarget'))$('#aimTarget').onclick=e=>{
  if(fake){
   aimMisses++;
   aimCombo=0;
-  aimScore=Math.max(0,aimScore-15);
+  aimScore=Math.max(0,aimScore-12);
   sfx('bad')
  }else{
   aimHits++;
