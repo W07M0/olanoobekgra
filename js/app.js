@@ -1,3 +1,8 @@
+function ensureAchievementStats(){
+ state.achievementStats={arcadePlayed:0,casinoPlayed:0,casinoWins:0,maxCasinoChips:0,chipsToGems:0,chipsToCoins:0,portals:0,hospitals:0,aimTrueStreak:0,aimBestTrueStreak:0,reflexPerfectRun:false,dodgeNoLifeLost:false,...(state.achievementStats||{})}
+}
+ensureAchievementStats();
+
 
 
 function scrollToActiveMinigame(stageId){
@@ -7,7 +12,7 @@ function scrollToActiveMinigame(stageId){
    if(stage){
     stage.scrollIntoView({behavior:'smooth',block:'center'});
     stage.classList.add('stage-focus');
-    setTimeout(()=>stage.classList.remove('stage-focus'),900)
+    setTimeout(()=>{stage.focus({preventScroll:true});stage.classList.remove('stage-focus')},450)
    }
   })
  })
@@ -120,7 +125,7 @@ const miniGradeRank={D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7};
 function saveBestMinigameGrade(game,grade){state.minigameBestGrades={aim:'-',parkour:'-',reflex:'-',dodge:'-',...(state.minigameBestGrades||{})};const old=state.minigameBestGrades[game]||'-';if((miniGradeRank[grade]||0)>(miniGradeRank[old]||0))state.minigameBestGrades[game]=grade}
 function finishMini(id,title,displayScore,normalized,rawScore){
  startMiniCooldown(id);
- state.eventStats.minigames++;
+ state.eventStats.minigames++;ensureAchievementStats();state.achievementStats.arcadePlayed++;
  state.minigameRecords[id]=Math.max(state.minigameRecords[id]||0,rawScore);
  const grade=miniGrade(normalized);const rewards=miniRewards(normalized,rawScore,grade);
  state.points+=rewards.points;
@@ -157,7 +162,7 @@ function moveAim(){
   aimMoveFrame=requestAnimationFrame(animate)
  }
  const lifetime=fake?760:1150;
- aimTargetTimeout=setTimeout(()=>{if(!aimRunning)return;cancelAnimationFrame(aimMoveFrame);if(!fake){aimMisses++;aimCombo=0;updateAimHud();sfx('bad')}moveAim()},lifetime)
+ aimTargetTimeout=setTimeout(()=>{if(!aimRunning)return;cancelAnimationFrame(aimMoveFrame);if(!fake){aimMisses++;aimCombo=0;ensureAchievementStats();state.achievementStats.aimTrueStreak=0;updateAimHud();sfx('bad')}moveAim()},lifetime)
 }
 function updateAimHud(){
  const acc=aimHits+aimMisses?aimHits/(aimHits+aimMisses)*100:100;
@@ -185,11 +190,13 @@ if($('#aimTarget'))$('#aimTarget').onclick=e=>{
  if(fake){
   aimMisses++;
   aimCombo=0;
+  ensureAchievementStats();state.achievementStats.aimTrueStreak=0;
   aimScore=Math.max(0,aimScore-12);
   sfx('bad')
  }else{
   aimHits++;
   aimCombo++;
+  ensureAchievementStats();state.achievementStats.aimTrueStreak++;state.achievementStats.aimBestTrueStreak=Math.max(state.achievementStats.aimBestTrueStreak,state.achievementStats.aimTrueStreak);
   aimScore+=10+Math.min(40,aimCombo*2);
   sfx('click')
  }
@@ -283,12 +290,12 @@ function parkourLoop(){
    if(effect==='flip'){d.flipped=!d.flipped;toast('🙃 Portal: świat do góry nogami!')}
    if(effect==='boost'){d.speed=Math.min(20,d.speed+3);toast('⚡ Portal: turbo!')}
    const canvas=$('#parkourCanvas');if(canvas)canvas.classList.toggle('parkour-flipped',d.flipped);
-   d.portal=null;d.invuln=110;sfx('good')
+   d.portal=null;d.invuln=110;ensureAchievementStats();state.achievementStats.portals++;sfx('good')
   }else if(d.portal.x<-120||d.portal.x>c.width+120){d.portal=null}
  }
 
  if(hit&&collidedObstacle?.healing){
-  d.lives=Math.min(3,d.lives+1);d.obs=d.obs.filter(o=>o!==collidedObstacle);d.invuln=45;sfx('good')
+  d.lives=Math.min(3,d.lives+1);d.obs=d.obs.filter(o=>o!==collidedObstacle);d.invuln=45;ensureAchievementStats();state.achievementStats.hospitals++;sfx('good')
  }else if(hit&&d.invuln<=0){
   d.lives--;d.invuln=70;sfx('bad');
   d.obs=d.obs.filter(o=>!(playerHitbox.x<o.x+o.w&&playerHitbox.x+playerHitbox.w>o.x));
@@ -352,9 +359,9 @@ function updateReflexNotes(now){
  reflexAnimation=requestAnimationFrame(updateReflexNotes)
 }
 function startReflex(){
- if(!prepareMinigame('reflex','reflexStage'))return;
+ if(!prepareMinigame('reflex','reflexStage'))return;scrollToActiveMinigame('reflexStage');setTimeout(()=>scrollToActiveMinigame('reflexStage'),180);
  reflexRunning=true;
- reflexData={score:0,combo:0,misses:0,bombs:0,time:25,last:performance.now()};
+ reflexData={score:0,combo:0,misses:0,bombs:0,time:25,last:performance.now(),perfectRun:true};
  reflexNotes=[];$$('.reflex-note').forEach(x=>x.remove());
  spawnReflexNote();
  reflexAnimation=requestAnimationFrame(updateReflexNotes);
@@ -390,17 +397,17 @@ function reflexInput(code){
  if(!reflexRunning||!reflexData||!reflexKeys.includes(code))return false;
  const candidates=reflexNotes.filter(note=>note.key===code&&!note.hit);
  if(!candidates.length){
-  reflexData.misses++;reflexData.combo=0;showReflexFeedback('MISS','miss');sfx('bad');return true
+  reflexData.misses++;reflexData.combo=0;reflexData.perfectRun=false;showReflexFeedback('MISS','miss');sfx('bad');return true
  }
  const note=candidates.sort((a,b)=>Math.abs(.91-a.progress)-Math.abs(.91-b.progress))[0];
  const distance=Math.abs(.91-note.progress);
  if(distance>.105){
-  reflexData.misses++;reflexData.combo=0;showReflexFeedback('MISS','miss');sfx('bad');return true
+  reflexData.misses++;reflexData.combo=0;reflexData.perfectRun=false;showReflexFeedback('MISS','miss');sfx('bad');return true
  }
  note.hit=true;note.el.remove();
  if(note.bomb){
   reflexData.score=Math.max(0,reflexData.score-35);
-  reflexData.combo=0;reflexData.bombs++;showReflexFeedback('BOOM!','bomb');sfx('bad')
+  reflexData.combo=0;reflexData.bombs++;reflexData.perfectRun=false;showReflexFeedback('BOOM!','bomb');sfx('bad')
  }else{
   const perfect=distance<.035;
   reflexData.combo++;
@@ -419,7 +426,7 @@ function stopReflex(reward=true){
  reflexNotes.forEach(note=>note.el.remove());reflexNotes=[];
  $('#reflexStage').classList.remove('running');
  if(!reward){reflexData=null;return hideGames()}
- const score=reflexData.score;
+ const score=reflexData.score;ensureAchievementStats();if(reflexData.perfectRun&&reflexData.misses===0&&reflexData.bombs===0)state.achievementStats.reflexPerfectRun=true;
  const total=Math.max(1,score/20+reflexData.misses+reflexData.bombs);
  const accuracy=Math.max(0,1-(reflexData.misses+reflexData.bombs)/total);
  const normalized=Math.min(1,accuracy*.62+Math.min(1,score/800)*.38);
@@ -492,7 +499,7 @@ function dodgeLoop(){
 function stopDodge(reward=true){
  if(!dodgeRunning)return;dodgeRunning=false;cancelAnimationFrame(dodgeFrame);$('#dodgeStage').classList.remove('running');
  if(!reward){dodgeData=null;return hideGames()}
- const score=Math.floor(dodgeData.score),lives=dodgeData.lives,pickups=dodgeData.pickups||0,normalized=Math.min(1,(score/340)*.70+(lives/3)*.20+Math.min(1,pickups/8)*.10);dodgeData=null;
+ const score=Math.floor(dodgeData.score),lives=dodgeData.lives,pickups=dodgeData.pickups||0;ensureAchievementStats();if(lives===3)state.achievementStats.dodgeNoLifeLost=true;const normalized=Math.min(1,(score/340)*.70+(lives/3)*.20+Math.min(1,pickups/8)*.10);dodgeData=null;
  state.dodgeBest=Math.max(state.dodgeBest,score);finishMini('dodge','Brainrot Dodge',score+' pkt',normalized,score)
 }
 const dodgeKeys={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};

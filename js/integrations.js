@@ -23,9 +23,9 @@ function casinoPay(cost,payout,label){
  state.casinoChips-=cost;
  let final=Math.floor(payout*casinoPayoutMult());
  if(final>0&&Math.random()<(state.casinoUpgrades.luck||0)*.005){final*=2;label+=' • ZŁOTA KOSTKA x2!'}
- state.casinoChips+=final;state.casinoGames++;const profit=final-cost;state.casinoProfit=(state.casinoProfit||0)+profit;
+ state.casinoChips+=final;state.casinoGames++;ensureAchievementStats();state.achievementStats.casinoPlayed++;state.achievementStats.maxCasinoChips=Math.max(state.achievementStats.maxCasinoChips,state.casinoChips);const profit=final-cost;state.casinoProfit=(state.casinoProfit||0)+profit;
  addCasinoXp(8+cost*.08);
- if(profit>0){state.casinoWins++;sfx('good');if(final>=cost*8)confetti()}else sfx('bad');
+ if(profit>0){state.casinoWins++;state.achievementStats.casinoWins++;sfx('good');if(final>=cost*8)confetti()}else sfx('bad');
  toast(label.replace('{payout}',final));render()
 }
 function unlockCasino(){

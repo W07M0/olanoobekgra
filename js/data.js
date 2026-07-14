@@ -10,7 +10,7 @@ const defaults={
  perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,permRebirthPower:0,permGemIncome:0,permBossLoot:0,permClickPower:0,permAutoPower:0,
  rebirths:0,world:'neon',unlockedWorlds:['neon'],pets:[],equipped:[],
  sound:true,music:false,lastDaily:0,dailyStreak:0,claimedAchievements:[],quests:null,
- leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},minigameBestGrades:{aim:'-',parkour:'-',reflex:'-',dodge:'-'},arcadeCycle:{aim:false,parkour:false,reflex:false,dodge:false},arcadeBuffUntil:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
+ leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},minigameBestGrades:{aim:'-',parkour:'-',reflex:'-',dodge:'-'},arcadeCycle:{aim:false,parkour:false,reflex:false,dodge:false},arcadeBuffUntil:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0},achievementStats:{arcadePlayed:0,casinoPlayed:0,casinoWins:0,maxCasinoChips:0,chipsToGems:0,chipsToCoins:0,portals:0,hospitals:0,aimTrueStreak:0,aimBestTrueStreak:0,reflexPerfectRun:false,dodgeNoLifeLost:false}
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
 
@@ -147,7 +147,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.6a';
+const GAME_VERSION='0.6b';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -170,6 +170,7 @@ window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error
 window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reason?.message||e.reason,e.reason?.stack||''));
 
 const patchNotes=[
+ {version:'0.6b',date:'Aktualna wersja',title:'Achievements & Reflex Navigation',summary:'Nowe osiągnięcia minigier i kasyna oraz poprawione przewijanie Reflex.',changes:['Noob Reflex przewija ekran do planszy i ustawia fokus.','Dodano osiągnięcia minigier i kasyna.','Dodano paski postępu osiągnięć.']},
  {version:'0.6a-ui-boss-admin',date:'Rozszerzenie 0.6a',title:'UI, Boss & Admin Polish',summary:'Poprawki Ridera, bossów, statystyk i panelu administratora.',changes:['Portal Ridera jest nieunikniony.','Szpital Ridera działa jak przeszkoda na ziemi.','Naprawiono cooldown Aim.','Dodano dwa ulepszenia bossów.','Przeszkody bossów pojawiają się na klikerze.','Dodano prywatne najlepsze oceny minigier.','Usunięto panel Co nowego.','Statystyki przeniesiono do Ustawień.','Administrator może edytować podstawowe dane profilu.']},
  {
   version:'0.6a-readability',
@@ -474,7 +475,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.6a';
+let selectedPatch='0.6b';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');
@@ -549,6 +550,25 @@ const skins=[
 let aimRunning=false,aimTimer=0,aimScore=0,aimCombo=0,aimLoop,parkourRunning=false,parkourFrame,parkourData,memoryRunning=false,memorySequence=[],memoryInput=[],memoryRound=1;
 
 const achievements=[
+ {id:'arcade1',icon:'🎮',name:'Pierwszy krok',desc:'Ukończ 1 minigrę',test:()=>state.achievementStats.arcadePlayed>=1,progress:()=>state.achievementStats.arcadePlayed,target:1,reward:['gems',3]},
+ {id:'arcade25',icon:'🕹️',name:'Arcade Fan',desc:'Ukończ 25 minigier',test:()=>state.achievementStats.arcadePlayed>=25,progress:()=>state.achievementStats.arcadePlayed,target:25,reward:['coins',20]},
+ {id:'arcade100',icon:'🏆',name:'Arcade Master',desc:'Ukończ 100 minigier',test:()=>state.achievementStats.arcadePlayed>=100,progress:()=>state.achievementStats.arcadePlayed,target:100,reward:['gems',40]},
+ {id:'aim90',icon:'🎯',name:'Celny Noob',desc:'Zdobądź 90% accuracy w Aim',test:()=>Math.floor((state.minigameRecords.aim||0)/100)>=90,progress:()=>Math.floor((state.minigameRecords.aim||0)/100),target:90,reward:['gems',10]},
+ {id:'aim98',icon:'🔭',name:'Snajper',desc:'Zdobądź 98% accuracy w Aim',test:()=>Math.floor((state.minigameRecords.aim||0)/100)>=98,progress:()=>Math.floor((state.minigameRecords.aim||0)/100),target:98,reward:['gems',25]},
+ {id:'aimstreak100',icon:'👀',name:'Nie dałem się nabrać',desc:'Traf 100 prawdziwych celów z rzędu',test:()=>state.achievementStats.aimBestTrueStreak>=100,progress:()=>state.achievementStats.aimBestTrueStreak,target:100,reward:['coins',50]},
+ {id:'reflexs',icon:'⚡',name:'Reflex Pro',desc:'Zdobądź ocenę S w Reflex',test:()=>({D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7}[state.minigameBestGrades.reflex]||0)>=5,progress:()=>({D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7}[state.minigameBestGrades.reflex]||0),target:5,reward:['gems',15]},
+ {id:'reflexperfect',icon:'💥',name:'Perfekcyjny Reflex',desc:'Ukończ Reflex bez Miss i bomby',test:()=>state.achievementStats.reflexPerfectRun,progress:()=>state.achievementStats.reflexPerfectRun?1:0,target:1,reward:['coins',70]},
+ {id:'rider25k',icon:'🛒',name:'Maratończyk',desc:'Przejedź 25 000 m',test:()=>state.minigameRecords.parkour>=25000,progress:()=>state.minigameRecords.parkour,target:25000,reward:['gems',25]},
+ {id:'portal20',icon:'🌀',name:'Lucky Portal',desc:'Przejdź przez 20 portali',test:()=>state.achievementStats.portals>=20,progress:()=>state.achievementStats.portals,target:20,reward:['gems',20]},
+ {id:'hospital10',icon:'🏥',name:'Pierwsza pomoc',desc:'Zbierz 10 szpitali',test:()=>state.achievementStats.hospitals>=10,progress:()=>state.achievementStats.hospitals,target:10,reward:['gems',15]},
+ {id:'dodgeperfect',icon:'🧠',name:'Przetrwanie',desc:'Ukończ Dodge bez utraty życia',test:()=>state.achievementStats.dodgeNoLifeLost,progress:()=>state.achievementStats.dodgeNoLifeLost?1:0,target:1,reward:['coins',40]},
+ {id:'casino1',icon:'🎲',name:'Pierwszy zakład',desc:'Zagraj pierwszy raz w kasynie',test:()=>state.achievementStats.casinoPlayed>=1,progress:()=>state.achievementStats.casinoPlayed,target:1,reward:['gems',2]},
+ {id:'casino10new',icon:'🍀',name:'Szczęściarz',desc:'Wygraj 10 razy w kasynie',test:()=>state.achievementStats.casinoWins>=10,progress:()=>state.achievementStats.casinoWins,target:10,reward:['gems',10]},
+ {id:'casino100new',icon:'💰',name:'Hazardzista kasyna',desc:'Wygraj 100 razy w kasynie',test:()=>state.achievementStats.casinoWins>=100,progress:()=>state.achievementStats.casinoWins,target:100,reward:['coins',60]},
+ {id:'chips10k',icon:'🪙',name:'Milioner Żetonów',desc:'Posiadaj 10 000 żetonów',test:()=>state.achievementStats.maxCasinoChips>=10000,progress:()=>state.achievementStats.maxCasinoChips,target:10000,reward:['gems',50]},
+ {id:'cashgems5k',icon:'💎',name:'Diamentowy Kasjer',desc:'Wymień 5000 żetonów na diamenty',test:()=>state.achievementStats.chipsToGems>=5000,progress:()=>state.achievementStats.chipsToGems,target:5000,reward:['gems',30]},
+ {id:'cashcoins20k',icon:'🟡',name:'Bogaty Noob',desc:'Wymień 20 000 żetonów na Noob Coiny',test:()=>state.achievementStats.chipsToCoins>=20000,progress:()=>state.achievementStats.chipsToCoins,target:20000,reward:['coins',100]},
+
  {id:'click1',icon:'👆',name:'Pierwszy klik',desc:'Kliknij pierwszy raz',test:()=>state.totalClicks>=1,reward:['gems',1]},
  {id:'click100',icon:'💯',name:'Setka',desc:'Wykonaj 100 kliknięć',test:()=>state.totalClicks>=100,reward:['gems',3]},
  {id:'combo20',icon:'🔥',name:'Combo Master',desc:'Osiągnij combo x20',test:()=>state.bestCombo>=20,reward:['gems',5]},

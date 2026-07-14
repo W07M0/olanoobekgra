@@ -473,7 +473,15 @@ function selectWorld(id){
  }
  state.world=id;showWorldTransition(w,newlyUnlocked);render()
 }
-function renderAchievements(){$('#achievementGrid').innerHTML=achievements.map(a=>{let done=a.test(),claimed=state.claimedAchievements.includes(a.id);return`<div class="achievement ${done?'done':''}"><div class="badge">${a.icon}</div><div style="flex:1"><h3>${a.name}</h3><p class="muted">${a.desc}</p><button class="small-btn" onclick="claimAchievement('${a.id}')" ${!done||claimed?'disabled':''}>${claimed?'Odebrane':'Odbierz '+a.reward[1]+' '+(a.reward[0]==='gems'?'💎':'🟡')}</button></div></div>`}).join('')}
+function renderAchievements(){
+ const grid=$('#achievementGrid');if(!grid)return;
+ grid.innerHTML=achievements.map(a=>{
+  const current=Math.max(0,Number(typeof a.progress==='function'?a.progress():(a.test()?1:0))||0);
+  const target=Math.max(1,Number(a.target||1));
+  const done=a.test(),claimed=state.claimedAchievements.includes(a.id),pct=Math.min(100,current/target*100);
+  return`<div class="achievement ${done?'done':''}"><div class="badge">${a.icon}</div><div style="flex:1"><h3>${a.name}</h3><p class="muted">${a.desc}</p><div class="achievement-progress"><i style="width:${pct}%"></i></div><small>${fmt(Math.min(current,target))} / ${fmt(target)}</small><button class="small-btn" onclick="claimAchievement('${a.id}')" ${!done||claimed?'disabled':''}>${claimed?'Odebrane':'Odbierz '+a.reward[1]+' '+(a.reward[0]==='gems'?'💎':'🟡')}</button></div></div>`
+ }).join('')
+}
 function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;state[a.reward[0]]+=a.reward[1];state.claimedAchievements.push(id);sfx('good');render()}
 function renderDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000),can=today>last,rewards=[1,2,3,5,7,10,20];$('#dailyGrid').innerHTML=rewards.map((r,i)=>`<div class="daily ${i===state.dailyStreak%7?'today':''}"><b>Dzień ${i+1}</b><div>💎 ${r}</div></div>`).join('');$('#dailyBtn').disabled=!can;$('#dailyBtn').textContent=can?'Odbierz nagrodę':'Wróć jutro'}
 function claimDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000);if(today<=last)return;if(today-last>1)state.dailyStreak=0;let rewards=[1,2,3,5,7,10,20],r=rewards[state.dailyStreak%7];state.gems+=r;state.dailyStreak++;state.lastDaily=Date.now();confetti();sfx('good');toast('Dzienna nagroda: +'+r+' 💎');render()}
