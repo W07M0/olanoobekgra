@@ -10,7 +10,7 @@ const defaults={
  perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,permRebirthPower:0,permGemIncome:0,permBossLoot:0,permClickPower:0,permAutoPower:0,
  rebirths:0,world:'neon',unlockedWorlds:['neon'],pets:[],equipped:[],
  sound:true,music:false,lastDaily:0,dailyStreak:0,claimedAchievements:[],quests:null,
- leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
+ leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},arcadeCycle:{aim:false,parkour:false,reflex:false,dodge:false},arcadeBuffUntil:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0}
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
 
@@ -170,6 +170,23 @@ window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error
 window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reason?.message||e.reason,e.reason?.stack||''));
 
 const patchNotes=[
+ {
+  version:'0.6a-gameplay',
+  date:'Rozszerzenie 0.6a',
+  title:'Minigame mechanics rework',
+  summary:'Głębsze mechaniki wszystkich minigier i nowy balans nagród.',
+  changes:[
+   'Nowy Noob Reflex w stylu Guitar Hero.',
+   'Bomby w Reflex odejmują punkty, a combo daje dodatkowy czas.',
+   'Noob Rider przyspiesza i ma portale co 10 000 metrów.',
+   'Rider oraz Dodge korzystają z trzech żyć.',
+   'Brainrot Dodge przyspiesza i ma pozytywne oraz negatywne pickupy.',
+   'Ocena wpływa na mnożnik nagród.',
+   'Nagrody minigier zwiększono o 50%.',
+   'Zagranie we wszystkie minigry daje buff na 3 godziny.',
+   'Zmieniono bazowe kursy kasyna.'
+  ]
+ },
  {
   version:'0.6a-skinfix',
   date:'Poprawka 0.6a',

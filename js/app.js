@@ -45,6 +45,13 @@ function renderMiniCooldowns(){
  })
 }
 setInterval(renderMiniCooldowns,200);
+setInterval(()=>{
+ const box=$('#arcadeCycleStatus');if(!box)return;
+ ensureArcadeCycle();
+ const marks=id=>state.arcadeCycle[id]?'☑':'☐';
+ const left=Math.max(0,(state.arcadeBuffUntil||0)-Date.now());
+ box.textContent=left>0?`Aktywny buff x1.15 • ${Math.ceil(left/60000)} min`:`Aim ${marks('aim')} • Rider ${marks('parkour')} • Reflex ${marks('reflex')} • Dodge ${marks('dodge')}`
+},500);
 
 function hideGames(){
  ['aimStage','parkourStage','reflexStage','dodgeStage'].forEach(id=>{$('#'+id)?.classList.add('hidden');$('#'+id)?.classList.remove('running')})
@@ -62,37 +69,68 @@ function prepareMinigame(id,stage){
  el.classList.remove('hidden');el.classList.add('running');
  return true
 }
+
+function ensureArcadeCycle(){
+ state.arcadeCycle={aim:false,parkour:false,reflex:false,dodge:false,...(state.arcadeCycle||{})};
+ state.arcadeBuffUntil=Math.max(0,Number(state.arcadeBuffUntil)||0)
+}
+ensureArcadeCycle();
+
+function arcadeBuffActive(){
+ return Date.now()<(state.arcadeBuffUntil||0)
+}
+function arcadeRewardMultiplier(){
+ return arcadeBuffActive()?1.15:1
+}
+function registerArcadeCompletion(game){
+ ensureArcadeCycle();
+ state.arcadeCycle[game]=true;
+ const completed=['aim','parkour','reflex','dodge'].every(id=>state.arcadeCycle[id]);
+ if(completed){
+  state.arcadeBuffUntil=Date.now()+3*60*60*1000;
+  state.arcadeCycle={aim:false,parkour:false,reflex:false,dodge:false};
+  toast('🏆 Arcade Mastery: x1.15 nagród przez 3 godziny!');
+  confetti();
+  sfx('good')
+ }
+ save()
+}
+
 function miniGrade(normalized){
- if(normalized>=.92)return'S';
- if(normalized>=.78)return'A';
- if(normalized>=.62)return'B';
+ if(normalized>=.97)return'SSS';
+ if(normalized>=.91)return'SS';
+ if(normalized>=.83)return'S';
+ if(normalized>=.72)return'A';
+ if(normalized>=.58)return'B';
  if(normalized>=.42)return'C';
  return'D'
 }
-function miniRewards(normalized,rawScore){
- const quality=Math.max(.08,Math.min(1.15,normalized));
- const xp=Math.floor((35+quality*115)*expMultiplier());
- const points=Math.floor((150+quality*900)*Math.max(1,state.level*.35)*totalMultiplier()**.22);
- const gems=Math.max(1,Math.floor(1+quality*8*gemRewardMultiplier()));
- const coins=Math.max(1,Math.floor((2+quality*10)*coinRewardMultiplier()));
- return{xp,points,gems,coins}
+function miniRewards(normalized,rawScore,grade){
+ const quality=Math.max(.06,Math.min(1.2,normalized));
+ const gradeMult={D:.60,C:.80,B:1,A:1.18,S:1.38,SS:1.58,SSS:1.82}[grade]||1;
+ const globalMult=arcadeRewardMultiplier();
+ const baseBuff=1.5;
+ const xp=Math.floor((35+quality*115)*expMultiplier()*gradeMult*globalMult*baseBuff);
+ const points=Math.floor((150+quality*900)*Math.max(1,state.level*.35)*totalMultiplier()**.22*gradeMult*globalMult*baseBuff);
+ const gems=Math.max(1,Math.floor((1+quality*8*gemRewardMultiplier())*gradeMult*globalMult*baseBuff));
+ const coins=Math.max(1,Math.floor((2+quality*10)*coinRewardMultiplier()*gradeMult*globalMult*baseBuff));
+ return{xp,points,gems,coins,gradeMult,globalMult}
 }
 function finishMini(id,title,displayScore,normalized,rawScore){
  startMiniCooldown(id);
  state.eventStats.minigames++;
  state.minigameRecords[id]=Math.max(state.minigameRecords[id]||0,rawScore);
- const rewards=miniRewards(normalized,rawScore);
+ const grade=miniGrade(normalized);const rewards=miniRewards(normalized,rawScore,grade);
  state.points+=rewards.points;
  state.gems+=rewards.gems;
  state.coins+=rewards.coins;
  addXp(rewards.xp);
  grantPetXp(8+normalized*28);
- const grade=miniGrade(normalized);
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
- $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span>`;
+ $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
  $('#miniResultOverlay').classList.add('show');
- submitMinigameScore(id,rawScore);
+ registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
  render();loadMinigameLeaderboards()
 }
 
@@ -162,23 +200,36 @@ if($('#aimField'))$('#aimField').onclick=e=>{if(!aimRunning||e.target===$('#aimT
 function startParkour(){
  if(!prepareMinigame('parkour','parkourStage'))return;scrollToActiveMinigame('parkourStage');
  const c=$('#parkourCanvas'),ctx=c.getContext('2d');
- parkourData={ctx,p:{x:110,y:245,w:62,h:52,vy:0},obs:[],pickups:[],score:0,bonus:0,speed:5,last:performance.now(),spawn:0};
+ parkourData={ctx,p:{x:110,y:245,w:62,h:52,vy:0},obs:[],pickups:[],score:0,bonus:0,speed:5,last:performance.now(),spawn:0,lives:3,nextPortal:10000,reversed:false,flipped:false,invuln:0};
  parkourRunning=true;parkourLoop()
 }
 function parkourJump(){if(parkourRunning&&parkourData&&parkourData.p.y>=238)parkourData.p.vy=-13.5}
 function parkourLoop(){
  if(!parkourRunning)return;
  const d=parkourData,c=$('#parkourCanvas'),x=d.ctx,now=performance.now(),dt=Math.min(2,(now-d.last)/16.67);d.last=now;
- d.score+=d.speed*.09*dt;d.speed=5+Math.min(9,d.score/110);d.spawn-=dt;
+ d.score+=d.speed*.10*dt;
+ d.speed=Math.min(18,5+d.score/1350);
+ d.invuln=Math.max(0,d.invuln-dt);
+ if(d.score+d.bonus>=d.nextPortal){
+  d.nextPortal+=10000;
+  const effect=rand(['reverse','flip','boost']);
+  if(effect==='reverse'){d.reversed=!d.reversed;toast('🌀 Portal: zmiana kierunku!')}
+  if(effect==='flip'){d.flipped=!d.flipped;toast('🙃 Portal: świat do góry nogami!')}
+  if(effect==='boost'){d.speed=Math.min(20,d.speed+3);toast('⚡ Portal: turbo!')}
+  const canvas=$('#parkourCanvas');if(canvas)canvas.classList.toggle('parkour-flipped',d.flipped);
+ }
+ d.spawn-=dt;
  if(d.spawn<=0){
   const type=rand(['💩','📦','🧱','🌵']);
-  d.obs.push({x:c.width+30,y:255,w:42,h:46,type});
-  if(Math.random()<.35)d.pickups.push({x:c.width+100,y:180-Math.random()*80,r:20});
+  d.obs.push({x:d.reversed?-50:c.width+30,y:255,w:42,h:46,type});
+  if(Math.random()<.35)d.pickups.push({x:d.reversed?-90:c.width+100,y:180-Math.random()*80,r:20});
   d.spawn=Math.max(38,78-d.score/18)+Math.random()*26
  }
  d.p.vy+=.78*dt;d.p.y+=d.p.vy*dt;if(d.p.y>245){d.p.y=245;d.p.vy=0}
- d.obs.forEach(o=>o.x-=d.speed*dt);d.pickups.forEach(o=>o.x-=d.speed*dt);
- d.obs=d.obs.filter(o=>o.x>-80);d.pickups=d.pickups.filter(o=>o.x>-50);
+ const direction=d.reversed?1:-1;
+ d.obs.forEach(o=>o.x+=d.speed*dt*direction);
+ d.pickups.forEach(o=>o.x+=d.speed*dt*direction);
+ d.obs=d.obs.filter(o=>o.x>-100&&o.x<c.width+100);d.pickups=d.pickups.filter(o=>o.x>-100&&o.x<c.width+100);
  const p=d.p;
  const playerHitbox={
   x:p.x+10,
@@ -206,15 +257,20 @@ function parkourLoop(){
  d.obs.forEach(o=>{x.font='38px Arial';x.fillText(o.type,o.x,o.y+40)});
  d.pickups.forEach(o=>{x.font='30px Arial';x.fillText('⭐',o.x-15,o.y+12)});
  $('#parkourScore').textContent=Math.floor(d.score+d.bonus);$('#parkourSpeed').textContent=(d.speed/5).toFixed(1);
- if(hit){stopParkour(true);return}
+ if(hit&&d.invuln<=0){
+  d.lives--;d.invuln=70;sfx('bad');
+  d.obs=d.obs.filter(o=>!(playerHitbox.x<o.x+o.w&&playerHitbox.x+playerHitbox.w>o.x));
+  toast(`❤️ Noob Rider: ${d.lives} życia`);
+  if(d.lives<=0){stopParkour(true);return}
+ }
  parkourFrame=requestAnimationFrame(parkourLoop)
 }
 function stopParkour(reward=true){
  if(!parkourRunning)return;parkourRunning=false;cancelAnimationFrame(parkourFrame);$('#parkourStage').classList.remove('running');
  if(!reward){parkourData=null;return hideGames()}
- const score=Math.floor((parkourData?.score||0)+(parkourData?.bonus||0));parkourData=null;
+ const score=Math.floor((parkourData?.score||0)+(parkourData?.bonus||0));const lives=Math.max(0,parkourData?.lives||0);parkourData=null;
  state.parkourBest=Math.max(state.parkourBest,score);
- finishMini('parkour','Noob Rider',score+' m',Math.min(1,score/420),score)
+ finishMini('parkour','Noob Rider',score+' m',Math.min(1,(score/24000)*.82+(lives/3)*.18),score)
 }
 $('#parkourCanvas')?.addEventListener('pointerdown',e=>{e.preventDefault();parkourJump()});
 
@@ -226,83 +282,141 @@ if(!window.__parkourSpaceBound){window.__parkourSpaceBound=true;document.addEven
  }
 },{capture:true});}
 
-/* REFLEX */
-const reflexKeys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+/* REFLEX — Guitar Hero */
+const reflexKeys=['ArrowLeft','ArrowDown','ArrowUp','ArrowRight'];
 const reflexIcons={ArrowUp:'⬆️',ArrowDown:'⬇️',ArrowLeft:'⬅️',ArrowRight:'➡️'};
-function nextReflex(){
+let reflexNotes=[],reflexSpawnTimer=null,reflexAnimation=null;
+
+function spawnReflexNote(){
  if(!reflexRunning||!reflexData)return;
- reflexData.key=rand(reflexKeys);
- reflexData.accepted=false;
- // Wolniejszy i stabilniejszy timing.
- const windowMs=Math.max(820,1650-reflexData.score*1.7);
- reflexData.deadline=performance.now()+windowMs;
- const keyEl=$('#reflexKey');
- if(keyEl){
-  keyEl.textContent=reflexIcons[reflexData.key];
-  keyEl.classList.remove('pop');
-  void keyEl.offsetWidth;
-  keyEl.classList.add('pop')
- }
+ const key=rand(reflexKeys);
+ const bomb=Math.random()<.13;
+ const lane=$(`.reflex-lane[data-lane="${key}"]`);
+ if(!lane)return;
+ const note=document.createElement('div');
+ note.className='reflex-note '+(bomb?'bomb':'normal');
+ note.dataset.key=key;
+ note.dataset.bomb=bomb?'1':'0';
+ note.innerHTML=bomb?'💣':reflexIcons[key];
+ lane.appendChild(note);
+ const duration=Math.max(1100,2200-reflexData.score*1.4);
+ const obj={el:note,key,bomb,start:performance.now(),duration,hit:false};
+ reflexNotes.push(obj);
+ setTimeout(spawnReflexNote,Math.max(380,800-reflexData.score*.5))
+}
+function updateReflexNotes(now){
+ if(!reflexRunning)return;
+ reflexNotes.forEach(note=>{
+  const progress=(now-note.start)/note.duration;
+  note.progress=progress;
+  note.el.style.transform=`translateY(${Math.min(1.08,progress)*290}px)`;
+  if(progress>1.08&&!note.hit){
+   note.hit=true;
+   if(!note.bomb){reflexData.misses++;reflexData.combo=0;sfx('bad')}
+   note.el.remove()
+  }
+ });
+ reflexNotes=reflexNotes.filter(note=>!note.hit);
+ reflexAnimation=requestAnimationFrame(updateReflexNotes)
 }
 function startReflex(){
- if(!prepareMinigame('reflex','reflexStage'))return;scrollToActiveMinigame('reflexStage');
- reflexRunning=true;reflexData={score:0,combo:0,misses:0,time:20,key:null,deadline:0,last:performance.now()};nextReflex();
- clearInterval(reflexTimer);reflexTimer=setInterval(()=>{
+ if(!prepareMinigame('reflex','reflexStage'))return;
+ reflexRunning=true;
+ reflexData={score:0,combo:0,misses:0,bombs:0,time:25,last:performance.now()};
+ reflexNotes=[];$$('.reflex-note').forEach(x=>x.remove());
+ spawnReflexNote();
+ reflexAnimation=requestAnimationFrame(updateReflexNotes);
+ clearInterval(reflexTimer);
+ reflexTimer=setInterval(()=>{
   if(!reflexRunning)return;
-  const now=performance.now(),dt=(now-reflexData.last)/1000;reflexData.last=now;reflexData.time-=dt;
-  if(now>reflexData.deadline&&!reflexData.accepted){
-   reflexData.accepted=true;
-   reflexData.misses++;
-   reflexData.combo=0;
-   sfx('bad');
-   nextReflex()
-  }
-  $('#reflexScore').textContent=reflexData.score;$('#reflexCombo').textContent=reflexData.combo;$('#reflexTime').textContent=Math.max(0,reflexData.time).toFixed(1);
+  const now=performance.now(),dt=(now-reflexData.last)/1000;
+  reflexData.last=now;reflexData.time-=dt;
+  $('#reflexScore').textContent=reflexData.score;
+  $('#reflexCombo').textContent=reflexData.combo;
+  $('#reflexTime').textContent=Math.max(0,reflexData.time).toFixed(1);
   if(reflexData.time<=0)stopReflex(true)
  },50)
 }
 function reflexInput(code){
- if(!reflexRunning||!reflexData)return false;
- if(!reflexKeys.includes(code))return false;
- if(reflexData.accepted)return true;
-
- reflexData.accepted=true;
- if(code===reflexData.key){
-  const reaction=Math.max(0,reflexData.deadline-performance.now());
-  reflexData.combo++;
-  reflexData.score+=10+Math.floor(reaction/120)+Math.min(15,reflexData.combo);
-  sfx('click')
- }else{
-  reflexData.misses++;
-  reflexData.combo=0;
-  sfx('bad')
+ if(!reflexRunning||!reflexData||!reflexKeys.includes(code))return false;
+ const candidates=reflexNotes.filter(note=>note.key===code&&!note.hit);
+ if(!candidates.length){
+  reflexData.misses++;reflexData.combo=0;sfx('bad');return true
  }
- nextReflex();
+ const note=candidates.sort((a,b)=>Math.abs(.91-a.progress)-Math.abs(.91-b.progress))[0];
+ const distance=Math.abs(.91-note.progress);
+ if(distance>.18){
+  reflexData.misses++;reflexData.combo=0;sfx('bad');return true
+ }
+ note.hit=true;note.el.remove();
+ if(note.bomb){
+  reflexData.score=Math.max(0,reflexData.score-35);
+  reflexData.combo=0;reflexData.bombs++;sfx('bad')
+ }else{
+  const perfect=distance<.055;
+  reflexData.combo++;
+  reflexData.score+=perfect?32:20;
+  if(reflexData.combo%15===0){
+   reflexData.time+=1.5;
+   toast('⚡ Combo x15: +1.5 s!')
+  }
+  sfx(perfect?'good':'click')
+ }
  return true
 }
 function stopReflex(reward=true){
- if(!reflexRunning)return;reflexRunning=false;clearInterval(reflexTimer);$('#reflexStage').classList.remove('running');
+ if(!reflexRunning)return;
+ reflexRunning=false;clearInterval(reflexTimer);cancelAnimationFrame(reflexAnimation);
+ reflexNotes.forEach(note=>note.el.remove());reflexNotes=[];
+ $('#reflexStage').classList.remove('running');
  if(!reward){reflexData=null;return hideGames()}
- const score=reflexData.score,attempts=score/10+reflexData.misses;
- const normalized=Math.min(1,score/650);reflexData=null;
- state.reflexBest=Math.max(state.reflexBest,score);finishMini('reflex','Noob Reflex',score+' pkt',normalized,score)
+ const score=reflexData.score;
+ const total=Math.max(1,score/20+reflexData.misses+reflexData.bombs);
+ const accuracy=Math.max(0,1-(reflexData.misses+reflexData.bombs)/total);
+ const normalized=Math.min(1,accuracy*.62+Math.min(1,score/800)*.38);
+ reflexData=null;
+ state.reflexBest=Math.max(state.reflexBest,score);
+ finishMini('reflex','Noob Reflex',score+' pkt',normalized,score)
 }
 
 /* DODGE */
 function startDodge(){
  if(!prepareMinigame('dodge','dodgeStage'))return;scrollToActiveMinigame('dodgeStage');
  const c=$('#dodgeCanvas'),ctx=c.getContext('2d');
- dodgeData={ctx,p:{x:c.width/2,y:350,w:52,h:52,v:0},items:[],score:0,lives:3,time:25,last:performance.now(),spawn:0,left:false,right:false};
+ dodgeData={ctx,p:{x:c.width/2,y:350,w:52,h:52,v:0},items:[],score:0,lives:3,time:32,last:performance.now(),spawn:0,left:false,right:false,slow:0,shield:0,reverse:0,pickups:0};
  dodgeRunning=true;dodgeLoop()
 }
 function dodgeLoop(){
  if(!dodgeRunning)return;
  const d=dodgeData,c=$('#dodgeCanvas'),x=d.ctx,now=performance.now(),dt=Math.min(2,(now-d.last)/16.67);d.last=now;
  d.time-=dt/60;d.score+=.11*dt;d.spawn-=dt;
- if(d.spawn<=0){d.items.push({x:30+Math.random()*(c.width-60),y:-30,vy:3.5+Math.random()*3,type:Math.random()<.16?'gold':'bad',emoji:Math.random()<.16?'⭐':rand(['💀','🍌','🧻','🧠','🥔'])});d.spawn=Math.max(10,28-d.score/20)}
- if(d.left)d.p.x-=8*dt;if(d.right)d.p.x+=8*dt;d.p.x=Math.max(0,Math.min(c.width-d.p.w,d.p.x));
+ if(d.spawn<=0){
+  const roll=Math.random();
+  let type='bad',emoji=rand(['💀','🍌','🧻','🧠','🥔']);
+  if(roll<.08){type='heart';emoji='❤️'}
+  else if(roll<.15){type='shield';emoji='🛡️'}
+  else if(roll<.22){type='slow';emoji='⏳'}
+  else if(roll<.28){type='reverse';emoji='🔄'}
+  else if(roll<.38){type='gold';emoji='⭐'}
+  const difficulty=1+Math.min(1.8,d.score/180);
+  d.items.push({x:30+Math.random()*(c.width-60),y:-30,vy:(3.1+Math.random()*2.4)*difficulty,type,emoji});
+  d.spawn=Math.max(7,26-d.score/13)
+ }
+ d.slow=Math.max(0,d.slow-dt);d.shield=Math.max(0,d.shield-dt);d.reverse=Math.max(0,d.reverse-dt);
+ const moveSpeed=8*(d.slow>0?.62:1);
+ const left=d.reverse>0?d.right:d.left,right=d.reverse>0?d.left:d.right;
+ if(left)d.p.x-=moveSpeed*dt;if(right)d.p.x+=moveSpeed*dt;d.p.x=Math.max(0,Math.min(c.width-d.p.w,d.p.x));
  d.items.forEach(o=>o.y+=o.vy*dt);
- d.items=d.items.filter(o=>{const hit=d.p.x<o.x+32&&d.p.x+d.p.w>o.x&&d.p.y<o.y+32&&d.p.y+d.p.h>o.y;if(hit){if(o.type==='gold'){d.score+=25;sfx('good')}else{d.lives--;sfx('bad')}return false}return o.y<c.height+50});
+ d.items=d.items.filter(o=>{const hit=d.p.x<o.x+32&&d.p.x+d.p.w>o.x&&d.p.y<o.y+32&&d.p.y+d.p.h>o.y;if(hit){
+  if(o.type==='gold'){d.score+=28;d.pickups++;sfx('good')}
+  else if(o.type==='heart'){d.lives=Math.min(3,d.lives+1);d.pickups++;sfx('good')}
+  else if(o.type==='shield'){d.shield=150;d.pickups++;sfx('good')}
+  else if(o.type==='slow'){d.slow=150;d.pickups++;sfx('good')}
+  else if(o.type==='reverse'){d.reverse=180;sfx('bad')}
+  else if(d.shield>0){d.shield=0;sfx('click')}
+  else{d.lives--;sfx('bad')}
+  return false
+ }return o.y<c.height+50});
  x.clearRect(0,0,c.width,c.height);const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,'#0c173c');g.addColorStop(1,'#62175d');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
  x.font='44px Arial';x.fillText('🛡️',d.p.x,d.p.y+42);d.items.forEach(o=>{x.font='34px Arial';x.fillText(o.emoji,o.x,o.y)});
  $('#dodgeScore').textContent=Math.floor(d.score);$('#dodgeLives').textContent=d.lives;$('#dodgeTime').textContent=Math.max(0,d.time).toFixed(1);
@@ -312,7 +426,7 @@ function dodgeLoop(){
 function stopDodge(reward=true){
  if(!dodgeRunning)return;dodgeRunning=false;cancelAnimationFrame(dodgeFrame);$('#dodgeStage').classList.remove('running');
  if(!reward){dodgeData=null;return hideGames()}
- const score=Math.floor(dodgeData.score),normalized=Math.min(1,score/250);dodgeData=null;
+ const score=Math.floor(dodgeData.score),lives=dodgeData.lives,pickups=dodgeData.pickups||0,normalized=Math.min(1,(score/340)*.70+(lives/3)*.20+Math.min(1,pickups/8)*.10);dodgeData=null;
  state.dodgeBest=Math.max(state.dodgeBest,score);finishMini('dodge','Brainrot Dodge',score+' pkt',normalized,score)
 }
 const dodgeKeys={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};

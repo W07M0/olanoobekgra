@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6a</title>
-<link rel="stylesheet" href="css/styles.css?v=06ahitbox">
+<link rel="stylesheet" href="css/styles.css?v=06adeep">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -96,6 +96,11 @@
   <div class="currency"><span class="chip">⭐ EXP</span><span class="chip">💎 Diamenty</span></div>
  </div>
 
+ <div class="arcade-buff card" id="arcadeBuffPanel">
+   <div><b>🏆 Arcade Mastery</b><p class="muted">Zagraj we wszystkie cztery gry, aby dostać x1.15 nagród na 3 godziny.</p></div>
+   <div id="arcadeCycleStatus">Aim ☐ • Rider ☐ • Reflex ☐ • Dodge ☐</div>
+  </div>
+
  <div class="arcade-grid">
   <article class="arcade-card aim-card">
    <div class="arcade-icon">🎯</div><div><h3>Noob Aim Lab</h3><p>Ruchome cele, cele fałszywe, accuracy i combo.</p></div>
@@ -138,8 +143,15 @@
  </div>
 
  <div class="minigame-stage hidden arcade-stage" id="reflexStage">
-  <div class="minigame-hud"><b>Wynik <span id="reflexScore">0</span></b><b>Combo <span id="reflexCombo">0</span></b><b>Czas <span id="reflexTime">20.0</span></b></div>
-  <div class="reflex-zone"><div class="reflex-key" id="reflexKey">⬆️</div><p id="reflexStatus">Naciśnij właściwą strzałkę!</p></div>
+  <div class="minigame-hud"><b>Wynik <span id="reflexScore">0</span></b><b>Combo <span id="reflexCombo">0</span></b><b>Czas <span id="reflexTime">25.0</span></b></div>
+  <div class="reflex-highway" id="reflexHighway">
+   <div class="reflex-lane" data-lane="ArrowLeft"><span>⬅️</span></div>
+   <div class="reflex-lane" data-lane="ArrowDown"><span>⬇️</span></div>
+   <div class="reflex-lane" data-lane="ArrowUp"><span>⬆️</span></div>
+   <div class="reflex-lane" data-lane="ArrowRight"><span>➡️</span></div>
+   <div class="reflex-hit-line"></div>
+  </div>
+  <p class="muted center">Naciśnij strzałkę, gdy symbol dotrze do dolnej linii. Nie klikaj bomb.</p>
   <button class="small-btn danger-btn" id="stopReflexBtn">Przerwij</button>
  </div>
 
@@ -431,11 +443,11 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06ahitbox"></script>
-<script defer src="js/core.js?v=06ahitbox"></script>
-<script defer src="js/systems.js?v=06ahitbox"></script>
-<script defer src="js/integrations.js?v=06ahitbox"></script>
-<script defer src="js/profile-admin.js?v=06ahitbox"></script>
-<script defer src="js/app.js?v=06ahitbox"></script>
+<script defer src="js/data.js?v=06adeep"></script>
+<script defer src="js/core.js?v=06adeep"></script>
+<script defer src="js/systems.js?v=06adeep"></script>
+<script defer src="js/integrations.js?v=06adeep"></script>
+<script defer src="js/profile-admin.js?v=06adeep"></script>
+<script defer src="js/app.js?v=06adeep"></script>
 </body>
 </html>

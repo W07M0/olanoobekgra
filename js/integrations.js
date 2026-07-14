@@ -86,12 +86,12 @@ function exchangeBulkBonus(amount){
 }
 function coinExchange(amount){
  amount=Math.max(0,Math.floor(Number(amount)||0));
- const base=amount*.30;
+ const base=amount*.10;
  return Math.floor(base*exchangeBulkBonus(amount)*(1+state.casinoMarket/100))
 }
 function gemExchange(amount){
  amount=Math.max(0,Math.floor(Number(amount)||0));
- const base=amount*.075;
+ const base=amount*.30;
  return Math.floor(base*exchangeBulkBonus(amount))
 }
 function readExchangeAmount(){

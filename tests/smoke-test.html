@@ -1,16 +1,2 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Test 0.6a Hitbox/Aim</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
-<script>
-run.onclick=async()=>{
- const app=await fetch('../js/app.js?v=06ahitbox',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['Fake znika szybciej',app.includes('const lifetime=fake?760:1150')],
-  ['Mniejszy hitbox gracza',app.includes('x:p.x+10')&&app.includes('w:p.w-20')],
-  ['Mniejszy hitbox przeszkód',app.includes('x:o.x+7')&&app.includes('o.w-14')]
- ];
- out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset="utf-8"><button id="run">Test</button><div id="out"></div><script>
+run.onclick=async()=>{const a=await fetch('../js/app.js?v=06adeep').then(r=>r.text()),i=await fetch('../js/integrations.js?v=06adeep').then(r=>r.text()),h=await fetch('../index.html?v=06adeep').then(r=>r.text());const c=[['Kurs Coinów',i.includes('const base=amount*.10')],['Kurs diamentów',i.includes('const base=amount*.30')],['Arcade buff',a.includes('registerArcadeCompletion')],['Reflex Guitar Hero',h.includes('reflex-highway')&&a.includes('spawnReflexNote')],['Bomby',a.includes('note.bomb')],['Portale Ridera',a.includes('nextPortal:10000')],['Pickupy Dodge',a.includes("type='heart'")],['+50% nagród',a.includes('const baseBuff=1.5')]];out.innerHTML=c.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')}</script>
