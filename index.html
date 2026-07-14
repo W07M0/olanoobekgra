@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6b</title>
-<link rel="stylesheet" href="css/styles.css?v=06bpolish">
+<link rel="stylesheet" href="css/styles.css?v=06bbossstats">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -75,23 +75,30 @@
  <div class="shop-section temporary-shop">
   <div class="shop-section-head"><div><h2>⚡ Ulepszenia podstawowe</h2><p class="muted">Kupowane za punkty. Resetują się podczas rebirthu.</p></div><span class="shop-tag reset-tag">RESETOWANE</span></div>
   <div class="grid" id="temporaryShopGrid">
-   <article class="upgrade-card standard-upgrade boss-standard-upgrade">
+   
+   
+
+   <article class="upgrade-card boss-standard-upgrade">
     <div class="upgrade-icon">💥</div>
     <div class="upgrade-info">
      <h3>Siła przeciw bossom</h3>
      <p>+12% obrażeń zadawanych bossom za poziom.</p>
      <small>Poziom <b id="bossDamageUpgradeLevel">0</b></small>
     </div>
-    <button class="buy-upgrade-btn" id="bossDamageUpgradeBtn">Kup — <span id="bossDamageUpgradeCost">0</span></button>
+    <button class="buy-upgrade-btn" id="bossDamageUpgradeBtn">
+     Kup — <span id="bossDamageUpgradeCost">0</span>
+    </button>
    </article>
-   <article class="upgrade-card standard-upgrade boss-standard-upgrade">
+   <article class="upgrade-card boss-standard-upgrade">
     <div class="upgrade-icon">⏳</div>
     <div class="upgrade-info">
      <h3>Opóźnienie blokad</h3>
      <p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p>
      <small>Poziom <b id="bossBlockerUpgradeLevel">0</b></small>
     </div>
-    <button class="buy-upgrade-btn" id="bossBlockerUpgradeBtn">Kup — <span id="bossBlockerUpgradeCost">0</span></button>
+    <button class="buy-upgrade-btn" id="bossBlockerUpgradeBtn">
+     Kup — <span id="bossBlockerUpgradeCost">0</span>
+    </button>
    </article>
 </div>
  </div>
@@ -384,7 +391,27 @@
    <p class="muted" id="adminLoginStatus">Konto musi istnieć w Supabase Authentication i tabeli admin_users.</p>
   </div>
  </div>
-<div class="card settings-card full-width-settings"><h2>📊 Statystyki</h2><div class="settings-statistics"><div class="stats-grid"><div class="stat-card"><b id="settingsTotalClicks">0</b><span>Kliknięć</span></div><div class="stat-card"><b id="settingsPlayTime">0</b><span>Czas gry</span></div><div class="stat-card"><b id="settingsBossWins">0</b><span>Pokonanych bossów</span></div><div class="stat-card"><b id="settingsMinigames">0</b><span>Minigier</span></div></div></div></div></section>
+</div></div>
+ <div class="card settings-card full-width-settings">
+  <h2>📊 Statystyki</h2>
+  <div class="settings-stats-grid">
+   <div><span>Kliknięcia</span><b id="settingsStatClicks">0</b></div>
+   <div><span>Najlepsze combo</span><b id="settingsStatCombo">x0</b></div>
+   <div><span>Rebirthy</span><b id="settingsStatRebirths">0</b></div>
+   <div><span>Czas gry</span><b id="settingsStatPlaytime">0 min</b></div>
+   <div><span>Skrzynki</span><b id="settingsStatCrates">0</b></div>
+   <div><span>Minigry</span><b id="settingsStatMinigames">0</b></div>
+   <div><span>Skiny</span><b id="settingsStatSkins">0</b></div>
+   <div><span>Światy</span><b id="settingsStatWorlds">0</b></div>
+   <div><span>Bonus petów</span><b id="settingsStatPetBonus">x1.00</b></div>
+   <div><span>Mnożnik EXP</span><b id="settingsStatExp">x1.00</b></div>
+   <div><span>Mnożnik rebirth</span><b id="settingsStatRebirthMult">x1.00</b></div>
+   <div><span>Bossy światów</span><b id="settingsStatWorldBosses">0</b></div>
+   <div><span>Bossy razem</span><b id="settingsStatBosses">0</b></div>
+   <div><span>Kasyno</span><b id="settingsStatCasino">0 / 0 wygranych</b></div>
+  </div>
+ </div>
+</section>
 
 <section class="view" id="view-admin">
  <div class="section-title">
@@ -427,7 +454,7 @@
  <section class="panel event-box"><div class="event-title" id="eventTitle">✨ Następny event</div><div class="event-timer" id="eventTimer">00:45</div><div class="muted" id="eventDesc">Losowy bonus pojawi się za chwilę.</div></section>
  <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
  <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="compact-profile"><span id="rankingProfileName">Ustaw nick w profilu</span><input id="playerName" hidden></div></section>
-<section class="panel"><h2>📊 Statystyki</h2><div id="statsBox" class="muted"></div></section>
+
 </aside>
 </div>
 
@@ -454,11 +481,11 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06bpolish"></script>
-<script defer src="js/core.js?v=06bpolish"></script>
-<script defer src="js/systems.js?v=06bpolish"></script>
-<script defer src="js/integrations.js?v=06bpolish"></script>
-<script defer src="js/profile-admin.js?v=06bpolish"></script>
-<script defer src="js/app.js?v=06bpolish"></script>
+<script defer src="js/data.js?v=06bbossstats"></script>
+<script defer src="js/core.js?v=06bbossstats"></script>
+<script defer src="js/systems.js?v=06bbossstats"></script>
+<script defer src="js/integrations.js?v=06bbossstats"></script>
+<script defer src="js/profile-admin.js?v=06bbossstats"></script>
+<script defer src="js/app.js?v=06bbossstats"></script>
 </body>
 </html>

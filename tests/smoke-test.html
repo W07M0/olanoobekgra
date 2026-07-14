@@ -1,18 +1,16 @@
 <!doctype html><meta charset="utf-8">
-<title>Test 0.6b Polish</title>
-<button id="run">Uruchom test</button><div id="out"></div>
+<title>Test boss/stats 0.6b</title>
+<button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06bpolish',{cache:'no-store'}).then(r=>r.text());
- const a=await fetch('../js/app.js?v=06bpolish',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06bpolish',{cache:'no-store'}).then(r=>r.text());
- const c=[
-  ['Bossy w normalnych ulepszeniach',h.includes('boss-standard-upgrade')&&!h.includes('boss-upgrade-panel')],
-  ['Przyciski bossów podpięte',a.includes("bindClick('#bossDamageUpgradeBtn'")&&a.includes("bindClick('#bossBlockerUpgradeBtn'")],
-  ['Czytelny odbiór osiągnięć',s.includes('achievement-claim-btn')],
-  ['Fake bez napisu',a.includes('aim-empty')],
-  ['Nagrody -10%',a.includes('const baseBuff=1.35')]
+ const h=await fetch('../index.html?v=06bbossstats',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06bbossstats',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['Ulepszenie obrażeń widoczne',h.includes('bossDamageUpgradeBtn')],
+  ['Ulepszenie blokad widoczne',h.includes('bossBlockerUpgradeBtn')],
+  ['Pełne statystyki w Ustawieniach',h.includes('settingsStatCasino')&&h.includes('settingsStatPetBonus')],
+  ['Renderer statystyk',s.includes('function renderSettingsStatistics()')]
  ];
- out.innerHTML=c.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>

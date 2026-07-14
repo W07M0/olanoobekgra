@@ -760,3 +760,28 @@ function renderBossUpgrades(){
  const d=$('#bossBlockerUpgradeLevel'),e=$('#bossBlockerUpgradeCost'),f=$('#bossBlockerUpgradeBtn');
  if(d)d.textContent=state.bossBlockerDelayLevel||0;if(e)e.textContent=fmt(bossBlockerUpgradeCost());if(f)f.disabled=state.points<bossBlockerUpgradeCost()
 }
+
+
+function renderSettingsStatistics(){
+ const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
+ const playedMinutes=Math.floor((state.playSeconds||0)/60);
+ const petBonus=typeof petMultiplier==='function'?petMultiplier():1;
+ const expBonus=typeof expMultiplier==='function'?expMultiplier():1;
+ const rebirthBonus=typeof rebirthMultiplier==='function'?rebirthMultiplier():1;
+ const worldBossCount=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated.length:0;
+
+ set('#settingsStatClicks',fmt(state.totalClicks||0));
+ set('#settingsStatCombo','x'+fmt(state.bestCombo||0));
+ set('#settingsStatRebirths',fmt(state.rebirths||0));
+ set('#settingsStatPlaytime',fmt(playedMinutes)+' min');
+ set('#settingsStatCrates',fmt(state.eventStats?.crates||0));
+ set('#settingsStatMinigames',fmt(state.eventStats?.minigames||0));
+ set('#settingsStatSkins',fmt(state.ownedSkins?.length||0));
+ set('#settingsStatWorlds',fmt(state.unlockedWorlds?.length||0));
+ set('#settingsStatPetBonus','x'+Number(petBonus).toFixed(2));
+ set('#settingsStatExp','x'+Number(expBonus).toFixed(2));
+ set('#settingsStatRebirthMult','x'+Number(rebirthBonus).toFixed(2));
+ set('#settingsStatWorldBosses',fmt(worldBossCount));
+ set('#settingsStatBosses',fmt(state.bossWins||0));
+ set('#settingsStatCasino',`${fmt(state.casinoGames||0)} / ${fmt(state.casinoWins||0)} wygranych`);
+}
