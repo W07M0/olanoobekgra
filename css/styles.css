@@ -1131,3 +1131,21 @@ body.eco-mode .skin-local-particle{
  .admin-json-actions{grid-template-columns:1fr}
  .admin-json-heading{flex-direction:column}
 }
+
+.admin-section-save{
+ width:100%;
+ margin-top:12px;
+ min-height:42px;
+ border-radius:11px!important;
+ background:linear-gradient(135deg,#37daf0,#6d68ff)!important;
+ color:#07121a!important;
+ font-weight:1000!important;
+}
+.admin-section-save:disabled{
+ opacity:.65;
+ cursor:wait;
+}
+.json-save-button{
+ background:linear-gradient(135deg,#b35cff,#ff4c9b)!important;
+ color:#fff!important;
+}

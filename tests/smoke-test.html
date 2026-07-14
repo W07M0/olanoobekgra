@@ -1,19 +1,20 @@
 <!doctype html><meta charset="utf-8">
-<title>Test pełnego admina 0.6b</title>
+<title>Test zapisu sekcji admina</title>
 <button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06bfulladmin',{cache:'no-store'}).then(r=>r.text());
- const p=await fetch('../js/profile-admin.js?v=06bfulladmin',{cache:'no-store'}).then(r=>r.text());
+ const h=await fetch('../index.html?v=06badminsections',{cache:'no-store'}).then(r=>r.text());
+ const p=await fetch('../js/profile-admin.js?v=06badminsections',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Edytor JSON',h.includes('adminSaveJson')&&p.includes('validateAdminJson')],
-  ['Postęp gracza',h.includes('adminEditXp')&&h.includes('adminEditTotalClicks')],
-  ['Kasyno',h.includes('adminEditCasinoChips')],
-  ['Światy i skiny',h.includes('adminEditUnlockedWorlds')&&h.includes('adminEditOwnedSkins')],
-  ['Minigry',h.includes('adminEditAimRecord')&&h.includes('adminEditDodgeGrade')],
-  ['Wszystkie pety',h.includes('adminAllPets')&&p.includes('renderAdminAllPets')],
-  ['Pełny zapis',p.includes('adminSaveFromForm')]
+  ['Timeout pobierania',p.includes('function adminWithTimeout')],
+  ['Zapis pojedynczej sekcji',p.includes('async function adminSaveSection')],
+  ['Podstawowe dane',h.includes('data-admin-save-section="basic"')],
+  ['Kasyno',h.includes('data-admin-save-section="casino"')],
+  ['Minigry',h.includes('data-admin-save-section="minigames"')],
+  ['Pety',h.includes('data-admin-save-section="pets"')],
+  ['Wyposażone pety',h.includes('data-admin-save-section="equipped"')],
+  ['JSON',h.includes('data-admin-save-section="json"')]
  ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>
