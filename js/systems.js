@@ -583,6 +583,81 @@ function renderMiniStats(){
  setText('#medals',fmt(Number(state.medals)||0));
 }
 
+
+function renderSkins(){
+ const grid=$('#skinGrid');
+ const activeName=$('#activeSkinName');
+ const ownedCount=$('#ownedSkinCount');
+ const navDot=$('#skinDot');
+
+ if(!Array.isArray(state.ownedSkins)){
+  state.ownedSkins=['classic']
+ }
+ if(!state.ownedSkins.includes('classic')){
+  state.ownedSkins.unshift('classic')
+ }
+
+ const active=skins.find(s=>s.id===state.activeSkin)||skins[0];
+ if(!state.ownedSkins.includes(active.id)){
+  state.activeSkin='classic'
+ }
+
+ const selected=skins.find(s=>s.id===state.activeSkin)||skins[0];
+
+ if(activeName)activeName.textContent=selected.name;
+ if(ownedCount)ownedCount.textContent=state.ownedSkins.length;
+ if(navDot)navDot.textContent=state.ownedSkins.length;
+ if(!grid)return;
+
+ const rarityOrder={
+  common:0,
+  uncommon:1,
+  rare:2,
+  epic:3,
+  legendary:4,
+  mythic:5,
+  secret:6
+ };
+
+ const ordered=[...skins].sort((a,b)=>{
+  const ownedA=state.ownedSkins.includes(a.id)?0:1;
+  const ownedB=state.ownedSkins.includes(b.id)?0:1;
+  if(ownedA!==ownedB)return ownedA-ownedB;
+  return (rarityOrder[a.rarity]??0)-(rarityOrder[b.rarity]??0)
+ });
+
+ grid.innerHTML=ordered.map(skin=>{
+  const owned=state.ownedSkins.includes(skin.id);
+  const equipped=state.activeSkin===skin.id;
+
+  return `
+   <article class="card skin-card ${equipped?'active':''} ${owned?'owned':'locked'}"
+    style="--skinColor:${skin.color||'#fff'}">
+    <div class="skin-preview" aria-hidden="true">${skin.emoji||'🙂'}</div>
+    <div class="skin-rarity rarity-${skin.rarity}">${String(skin.rarity||'common').toUpperCase()}</div>
+    <h3>${safeText(skin.name)}</h3>
+    <p class="muted">${safeText(skin.desc||'')}</p>
+    <div class="skin-card-status">
+     ${equipped?'✅ Aktywny':owned?'🔓 Posiadany':'🔒 Nieodblokowany'}
+    </div>
+    <button class="skin-equip-btn"
+     data-skin-id="${skin.id}"
+     ${!owned||equipped?'disabled':''}>
+     ${equipped?'Aktywny':owned?'Załóż':'Zablokowany'}
+    </button>
+   </article>`
+ }).join('');
+
+ grid.querySelectorAll('[data-skin-id]').forEach(button=>{
+  button.onclick=()=>{
+   const id=button.dataset.skinId;
+   if(state.ownedSkins.includes(id)){
+    equipSkin(id)
+   }
+  }
+ })
+}
+
 function renderSkinOrbit(){
  const orbit=$('#skinOrbitFx');if(!orbit)return;
  const skin=skins.find(item=>item.id===state.activeSkin)||skins[0];if(!skin){orbit.innerHTML='';return}

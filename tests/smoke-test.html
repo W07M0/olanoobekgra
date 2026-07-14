@@ -1,1 +1,17 @@
-<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>r.onclick=async()=>{let a=await fetch('../js/app.js?v=06aimskins').then(x=>x.text()),s=await fetch('../js/systems.js?v=06aimskins').then(x=>x.text()),i=await fetch('../js/integrations.js?v=06aimskins').then(x=>x.text());let c=[['Ruchome cele',a.includes('target.dataset.moving')],['1.15 s',a.includes('const lifetime=1150')],['Kurs diamentów',i.includes('const base=amount*.075')],['Skin orbit',s.includes('function renderSkinOrbit()')]];o.innerHTML=c.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Skin Grid Test</title>
+<button id="run">Uruchom test</button>
+<div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const systems=await fetch('../js/systems.js?v=06skingrid',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['renderSkins istnieje',systems.includes('function renderSkins()')],
+  ['Wstawianie kart',systems.includes('grid.innerHTML=ordered.map')],
+  ['Przyciski wyposażania',systems.includes('data-skin-id')],
+  ['Posiadane skiny',systems.includes("state.ownedSkins.includes")]
+ ];
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
+}
+</script>
