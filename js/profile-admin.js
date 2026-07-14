@@ -311,6 +311,38 @@ function parseAdminSaveData(value){
 }
 
 
+
+function adminInteger(id,fallback=0,min=0,max=Number.MAX_SAFE_INTEGER){
+ return Math.trunc(adminNumber(id,fallback,min,max))
+}
+function normalizeAdminSaveIntegers(save){
+ const integerKeys=[
+  'points','coins','gems','level','xp','rebirths','totalClicks','bestCombo',
+  'playSeconds','medals','goldCases','bossWins','dailyStreak','casinoChips',
+  'casinoLevel','casinoXp','casinoGames','casinoWins'
+ ];
+ integerKeys.forEach(key=>{
+  if(key in save)save[key]=Math.trunc(Number(save[key])||0)
+ });
+
+ if(save.minigameRecords&&typeof save.minigameRecords==='object'){
+  Object.keys(save.minigameRecords).forEach(key=>{
+   save.minigameRecords[key]=Math.trunc(Number(save.minigameRecords[key])||0)
+  })
+ }
+
+ if(Array.isArray(save.pets)){
+  save.pets=save.pets.map(pet=>({
+   ...pet,
+   level:Math.max(1,Math.trunc(Number(pet.level)||1)),
+   xp:Math.max(0,Math.trunc(Number(pet.xp)||0)),
+   evolution:Math.max(0,Math.min(3,Math.trunc(Number(pet.evolution)||0)))
+  }))
+ }
+
+ return save
+}
+
 function adminNumber(id,fallback=0,min=-Infinity,max=Infinity){
  const value=Number($('#'+id)?.value);
  if(!Number.isFinite(value))return fallback;
@@ -424,8 +456,20 @@ function adminSaveFromForm(baseSave=null){
   .filter(uid=>uid&&validPetIds.has(uid))
   .slice(0,3);
 
- return save
+ return normalizeAdminSaveIntegers(save)
 }
+
+function safeAdminRender(name,callback){
+ try{
+  if(typeof callback==='function')callback()
+ }catch(error){
+  console.error(`Admin renderer ${name}:`,error);
+  if(typeof saveDiagnostic==='function'){
+   saveDiagnostic('Admin renderer',`${name}: ${error.message}`,error.stack||'')
+  }
+ }
+}
+
 function populateAdminForm(save,row={}){
  adminSetValue('adminEditName',row.player_name||save.playerName||'');
  adminSetValue('adminEditPoints',Math.floor(Number(save.points??row.best_score??0)));
@@ -467,8 +511,8 @@ function populateAdminForm(save,row={}){
  const equipped=Array.isArray(save.equipped)?save.equipped:[];
  [1,2,3].forEach((slot,index)=>adminSetValue('adminPetSlot'+slot,equipped[index]||''));
 
- renderAdminEquippedPets(save);
- renderAdminAllPets(save);
+ safeAdminRender('equipped pets',()=>renderAdminEquippedPets(save));
+ safeAdminRender('all pets',()=>renderAdminAllPets(save));
 
  const json=$('#adminSaveJson');
  if(json)json.value=JSON.stringify(save,null,2);
@@ -495,6 +539,53 @@ function validateAdminJson(showToast=false){
   return null
  }
 }
+
+function renderAdminEquippedPets(save){
+ const box=$('#adminEquippedPets');
+ if(!box)return;
+
+ const pets=Array.isArray(save?.pets)?save.pets:[];
+ const equipped=Array.isArray(save?.equipped)?save.equipped:[];
+
+ if(!equipped.length){
+  box.innerHTML='<div class="admin-empty-pets">Brak wyposażonych petów.</div>';
+  return
+ }
+
+ box.innerHTML=equipped.map((uid,index)=>{
+  const pet=pets.find(item=>adminPetUid(item)===uid);
+  const base=pet&&typeof getPetBase==='function'?getPetBase(pet):null;
+  const icon=base?.emoji||pet?.emoji||'👻';
+  const name=base?.name||pet?.name||adminPetType(pet||{id:uid});
+
+  return `<div class="admin-equipped-pet">
+   <div>
+    <strong>${icon} ${safeText(name)}</strong>
+    <small>Slot ${index+1}</small>
+   </div>
+   <small class="admin-pet-uid">${safeText(uid)}</small>
+   <button type="button" data-admin-remove-equipped="${index}">Usuń ze slotu</button>
+  </div>`
+ }).join('');
+
+ box.querySelectorAll('[data-admin-remove-equipped]').forEach(button=>{
+  button.onclick=()=>{
+   const slot=Number(button.dataset.adminRemoveEquipped);
+   const input=$('#adminPetSlot'+(slot+1));
+   if(input)input.value='';
+
+   const previewSave={
+    ...save,
+    equipped:[1,2,3]
+     .map(number=>$('#adminPetSlot'+number)?.value.trim())
+     .filter(Boolean)
+   };
+
+   renderAdminEquippedPets(previewSave)
+  }
+ })
+}
+
 function renderAdminAllPets(save){
  const box=$('#adminAllPets');
  if(!box)return;
@@ -574,7 +665,7 @@ async function adminLoadPlayerProfile(){
 
  adminEditedProfile=row;
  const save=parseAdminSaveData(row.save_data);
- populateAdminForm(save,row);
+ safeAdminRender('form',()=>populateAdminForm(save,row));
 
  if(status){
   status.textContent=Object.keys(save).length
@@ -678,7 +769,7 @@ function adminApplySection(base,section){
   return parsed
  }
 
- return save
+ return normalizeAdminSaveIntegers(save)
 }
 async function adminSaveSection(section){
  if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
@@ -691,19 +782,19 @@ async function adminSaveSection(section){
 
  try{
   const base=adminCurrentRemoteSave();
-  const updated=adminApplySection(base,section);
+  const updated=normalizeAdminSaveIntegers(adminApplySection(base,section));
   const id=$('#adminEditPlayerId')?.value.trim();
 
   const result=await adminWithTimeout(db.rpc('admin_update_player_full_profile',{
    p_player_id:id,
    p_player_name:updated.playerName||adminEditedProfile.player_name||'Gracz',
-   p_save_data:updated
+   p_save_data:normalizeAdminSaveIntegers(updated)
   }),12000);
 
   if(result.error)throw result.error;
 
   adminEditedProfile={...adminEditedProfile,player_name:updated.playerName||adminEditedProfile.player_name,save_data:updated};
-  populateAdminForm(updated,adminEditedProfile);
+  safeAdminRender('form',()=>populateAdminForm(updated,adminEditedProfile));
   if(status)status.textContent=`Zapisano sekcję: ${section}.`;
   toast('Sekcja zapisana')
  }catch(error){
@@ -720,7 +811,7 @@ async function adminSavePlayerProfile(){
 
  let updated;
  try{
-  updated=adminSaveFromForm()
+  updated=normalizeAdminSaveIntegers(adminSaveFromForm())
  }catch(error){
   setAdminJsonStatus(false,'Błąd JSON');
   toast(error.message);
@@ -731,7 +822,7 @@ async function adminSavePlayerProfile(){
  const {error}=await adminWithTimeout(db.rpc('admin_update_player_full_profile',{
   p_player_id:id,
   p_player_name:updated.playerName,
-  p_save_data:updated
+  p_save_data:normalizeAdminSaveIntegers(updated)
  }),12000);
 
  const status=$('#adminEditStatus');
@@ -741,7 +832,7 @@ async function adminSavePlayerProfile(){
  }
 
  adminEditedProfile={...adminEditedProfile,player_name:updated.playerName,save_data:updated};
- populateAdminForm(updated,adminEditedProfile);
+ safeAdminRender('form',()=>populateAdminForm(updated,adminEditedProfile));
  if(status)status.textContent=`Pełny profil zapisany. Pola: ${Object.keys(updated).length}, pety: ${updated.pets?.length||0}.`;
  toast('Pełny profil gracza zaktualizowany')
 }
@@ -766,11 +857,11 @@ setTimeout(()=>{
  if(validate)validate.onclick=()=>validateAdminJson(true);
  if(toForm)toForm.onclick=()=>{
   const parsed=validateAdminJson(true);
-  if(parsed)populateAdminForm(parsed,adminEditedProfile||{})
+  if(parsed)safeAdminRender('form',()=>populateAdminForm(parsed,adminEditedProfile||{}))
  };
  if(toJson)toJson.onclick=()=>{
   try{
-   const updated=adminSaveFromForm();
+   const updated=normalizeAdminSaveIntegers(adminSaveFromForm());
    if(json)json.value=JSON.stringify(updated,null,2);
    setAdminJsonStatus(true,'JSON zaktualizowany');
    toast('Formularz przepisany do JSON')
@@ -787,3 +878,11 @@ setTimeout(()=>{
   button.onclick=()=>adminSaveSection(button.dataset.adminSaveSection)
  })
 },0);
+
+
+if(typeof renderAdminEquippedPets==='function'){
+ window.renderAdminEquippedPets=renderAdminEquippedPets
+}
+if(typeof renderAdminAllPets==='function'){
+ window.renderAdminAllPets=renderAdminAllPets
+}

@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6b</title>
-<link href="css/styles.css?v=06badminsections" rel="stylesheet"/>
+<link href="css/styles.css?v=06badminrenderfix" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -128,13 +128,13 @@
 <div class="minigame-stage hidden arcade-stage" id="aimStage">
 <div class="minigame-hud"><b>Wynik <span id="aimScore">0</span></b><b>Combo <span id="aimCombo">0</span></b><b>Accuracy <span id="aimAccuracy">100%</span></b><b>Czas <span id="aimTime">20.0</span></b></div>
 <div class="aim-field aim-v2" id="aimField"><button class="aim-target" id="aimTarget">NOOB</button></div>
-<button class="small-btn danger-btn" id="stopAim">Przerwij</button>
+<button class="small-btn danger-btn" id="stopAim">Zakończ i odbierz nagrody</button>
 </div>
 <div class="minigame-stage hidden arcade-stage" id="parkourStage">
 <div class="minigame-hud"><b>Dystans <span id="parkourScore">0</span> m</b><b>Prędkość <span id="parkourSpeed">1.0</span>x</b><b>Życia <span id="parkourLives">❤️❤️❤️</span></b></div>
 <canvas height="330" id="parkourCanvas" width="900"></canvas>
 <p class="muted center">SPACJA / kliknięcie = skok</p>
-<button class="small-btn danger-btn" id="stopParkourBtn">Przerwij</button>
+<button class="small-btn danger-btn" id="stopParkourBtn">Zakończ i odbierz nagrody</button>
 </div>
 <div class="minigame-stage hidden arcade-stage" id="reflexStage">
 <div class="minigame-hud"><b>Wynik <span id="reflexScore">0</span></b><b>Combo <span id="reflexCombo">0</span></b><b>Czas <span id="reflexTime">25.0</span></b></div>
@@ -146,13 +146,13 @@
 <div class="reflex-hit-line"></div>
 </div>
 <p class="muted center">Naciśnij strzałkę, gdy symbol dotrze do dolnej linii. Nie klikaj bomb.</p>
-<button class="small-btn danger-btn" id="stopReflexBtn">Przerwij</button>
+<button class="small-btn danger-btn" id="stopReflexBtn">Zakończ i odbierz nagrody</button>
 </div>
 <div class="minigame-stage hidden arcade-stage" id="dodgeStage">
 <div class="minigame-hud"><b>Wynik <span id="dodgeScore">0</span></b><b>Życia <span id="dodgeLives">❤️❤️❤️</span></b><b>Czas <span id="dodgeTime">32.0</span></b><b id="dodgeEffects">Brak efektów</b></div>
 <canvas height="420" id="dodgeCanvas" width="900"></canvas>
 <p class="muted center">A/D lub ←/→. Na telefonie dotknij lewej albo prawej części planszy.</p>
-<button class="small-btn danger-btn" id="stopDodgeBtn">Przerwij</button>
+<button class="small-btn danger-btn" id="stopDodgeBtn">Zakończ i odbierz nagrody</button>
 </div>
 <div class="overlay" id="miniResultOverlay">
 <div class="modal mini-result-modal">
@@ -480,11 +480,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06badminsections"></script>
-<script defer="" src="js/core.js?v=06badminsections"></script>
-<script defer="" src="js/systems.js?v=06badminsections"></script>
-<script defer="" src="js/integrations.js?v=06badminsections"></script>
-<script defer="" src="js/profile-admin.js?v=06badminsections"></script>
-<script defer="" src="js/app.js?v=06badminsections"></script>
+<script defer="" src="js/data.js?v=06badminrenderfix"></script>
+<script defer="" src="js/core.js?v=06badminrenderfix"></script>
+<script defer="" src="js/systems.js?v=06badminrenderfix"></script>
+<script defer="" src="js/integrations.js?v=06badminrenderfix"></script>
+<script defer="" src="js/profile-admin.js?v=06badminrenderfix"></script>
+<script defer="" src="js/app.js?v=06badminrenderfix"></script>
 </body>
 </html>

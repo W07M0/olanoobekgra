@@ -1149,3 +1149,10 @@ body.eco-mode .skin-local-particle{
  background:linear-gradient(135deg,#b35cff,#ff4c9b)!important;
  color:#fff!important;
 }
+
+.admin-pet-uid{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ max-width:240px;
+}

@@ -221,14 +221,14 @@ function parkourLoop(){
  d.invuln=Math.max(0,d.invuln-dt);
  if(d.score+d.bonus>=d.nextPortal&&!d.portal){
   d.nextPortal+=10000;
-  d.portal={x:d.reversed?-55:c.width+55,y:238,w:96,h:140,effect:rand(['reverse','flip','boost'])}
+  d.portal={x:d.reversed?-70:c.width+70,y:238,w:96,h:140,effect:rand(['reverse','flip','boost'])}
  }
  d.spawn-=dt;
  if(d.spawn<=0){
   const type=rand(['💩','📦','🧱','🌵']);
-  d.obs.push({x:d.reversed?-50:c.width+30,y:255,w:42,h:46,type});
-  if(Math.random()<.35)d.pickups.push({x:d.reversed?-90:c.width+100,y:180-Math.random()*80,r:20,type:'star'});
- if(Math.random()<.035&&d.lives<3)d.obs.push({x:d.reversed?-70:c.width+50,y:244,w:48,h:56,type:'hospital',healing:true});
+  d.obs.push({x:d.reversed?-60:c.width+30,y:255,w:42,h:46,type});
+  if(Math.random()<.35)d.pickups.push({x:d.reversed?-70:c.width+100,y:180-Math.random()*80,r:20,type:'star'});
+ if(Math.random()<.035&&d.lives<3)d.obs.push({x:d.reversed?-65:c.width+50,y:244,w:48,h:56,type:'hospital',healing:true});
   d.spawn=Math.max(38,78-d.score/18)+Math.random()*26
  }
  d.p.vy+=.78*dt;d.p.y+=d.p.vy*dt;if(d.p.y>245){d.p.y=245;d.p.vy=0}
@@ -294,7 +294,13 @@ function parkourLoop(){
    d.obs=d.obs.filter(o=>Math.abs(o.x-p.x)>260);
    d.pickups=d.pickups.filter(o=>Math.abs(o.x-p.x)>190);
    d.speed=Math.max(5,d.speed*.78);
-   if(effect==='reverse'){d.reversed=!d.reversed;toast('🌀 Portal: zmiana kierunku!')}
+   if(effect==='reverse'){
+    d.reversed=!d.reversed;
+    d.obs=[];
+    d.pickups=[];
+    d.spawn=8;
+    toast('🌀 Portal: zmiana kierunku!')
+   }
    if(effect==='flip'){d.flipped=!d.flipped;toast('🙃 Portal: świat do góry nogami!')}
    if(effect==='boost'){d.speed=Math.min(20,d.speed+3);toast('⚡ Portal: turbo!')}
    const canvas=$('#parkourCanvas');if(canvas)canvas.classList.toggle('parkour-flipped',d.flipped);

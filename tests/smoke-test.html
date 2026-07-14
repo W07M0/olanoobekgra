@@ -1,19 +1,14 @@
 <!doctype html><meta charset="utf-8">
-<title>Test zapisu sekcji admina</title>
+<title>Test admin render fix 0.6b</title>
 <button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06badminsections',{cache:'no-store'}).then(r=>r.text());
- const p=await fetch('../js/profile-admin.js?v=06badminsections',{cache:'no-store'}).then(r=>r.text());
+ const p=await fetch('../js/profile-admin.js?v=06badminrenderfix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Timeout pobierania',p.includes('function adminWithTimeout')],
-  ['Zapis pojedynczej sekcji',p.includes('async function adminSaveSection')],
-  ['Podstawowe dane',h.includes('data-admin-save-section="basic"')],
-  ['Kasyno',h.includes('data-admin-save-section="casino"')],
-  ['Minigry',h.includes('data-admin-save-section="minigames"')],
-  ['Pety',h.includes('data-admin-save-section="pets"')],
-  ['Wyposażone pety',h.includes('data-admin-save-section="equipped"')],
-  ['JSON',h.includes('data-admin-save-section="json"')]
+  ['Renderer wyposażonych petów',p.includes('function renderAdminEquippedPets(')],
+  ['Bezpieczny renderer',p.includes('function safeAdminRender(')],
+  ['Bezpieczny zapis formularza',p.includes("safeAdminRender('form'")],
+  ['Eksport funkcji',p.includes('window.renderAdminEquippedPets=renderAdminEquippedPets')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
