@@ -508,3 +508,51 @@ body{background:radial-gradient(circle at 15% 5%,rgba(129,92,255,.16),transparen
 .exchange-input-controls button{min-width:86px}
 .exchange-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 @media(max-width:520px){.exchange-input-controls{grid-template-columns:1fr}.exchange-input-controls button{width:100%}}
+
+/* v0.6a Quality of Life */
+.arcade-stage{
+ scroll-margin-top:24px;
+ transition:box-shadow .25s ease,transform .25s ease;
+}
+.arcade-stage.stage-focus{
+ box-shadow:0 0 0 2px var(--cyan),0 0 35px rgba(54,231,255,.28)!important;
+ transform:translateY(-2px);
+}
+.aim-target.fake{
+ min-width:92px!important;
+ width:auto!important;
+ padding:0 10px!important;
+ border-radius:16px!important;
+ font-size:11px!important;
+ letter-spacing:.4px;
+}
+.pet-instance,.skin-card{
+ contain:layout paint;
+}
+.pet-instance-icon,.skin-preview{
+ will-change:transform;
+}
+body.eco-mode .skin-preview,
+body.eco-mode .orbit-pet,
+body.eco-mode .weather-particle,
+body.eco-mode .skin-local-particle{
+ animation:none!important;
+}
+.exchange-input-controls input:focus{
+ outline:2px solid var(--cyan);
+ box-shadow:0 0 0 4px rgba(54,231,255,.12);
+}
+@media(max-width:760px){
+ .arcade-stage{
+  scroll-margin-top:12px;
+ }
+ .minigame-hud{
+  position:sticky;
+  top:0;
+  z-index:5;
+  backdrop-filter:blur(10px);
+ }
+ .arcade-card{
+  gap:10px;
+ }
+}

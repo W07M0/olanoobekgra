@@ -1,21 +1,21 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test v0.6 Stable Runtime</title>
-<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto;padding:20px}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
-<body><h1>Test v0.6 Stable Runtime</h1><button id="run">Uruchom</button><div id="out"></div>
+<title>Test v0.6a</title>
+<style>body{font-family:system-ui;background:#11051e;color:#fff;max-width:900px;margin:30px auto}.row{padding:12px;background:#29103b;margin:7px;border-radius:10px}.ok{color:#4dffad}.bad{color:#ff718c}</style></head>
+<body><h1>Test techniczny v0.6a</h1><button id="run">Uruchom</button><div id="out"></div>
 <script>
 async function run(){
  const out=document.querySelector('#out');out.innerHTML='';
- const index=await fetch('../index.html?v=06stable',{cache:'no-store'}).then(r=>r.text());
- const app=await fetch('../js/app.js?v=06stable',{cache:'no-store'}).then(r=>r.text());
- const systems=await fetch('../js/systems.js?v=06stable',{cache:'no-store'}).then(r=>r.text());
+ const app=await fetch('../js/app.js?v=06a',{cache:'no-store'}).then(r=>r.text());
+ const data=await fetch('../js/data.js?v=06a',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Minigry osadzone w app.js',app.includes('Embedded v0.6 minigames')],
-  ['startAimGame eksportowany',app.includes('startAimGame,stopAimGame')],
-  ['startParkour eksportowany',app.includes('startParkour,stopParkour')],
-  ['Przyciski bez inline onclick',!index.includes('onclick="startAimGame()"')],
-  ['Brak zależności od minigames.js',!index.includes('js/minigames.js')],
-  ['renderSkins zabezpieczony',systems.includes("typeof window.renderSkins!=='function'")]
+  ['Wersja 0.6a',data.includes("const GAME_VERSION='0.6a'")],
+  ['Auto-scroll Aim',app.includes("scrollToActiveMinigame('aimStage')")],
+  ['Auto-scroll Rider',app.includes("scrollToActiveMinigame('parkourStage')")],
+  ['Auto-scroll Reflex',app.includes("scrollToActiveMinigame('reflexStage')")],
+  ['Auto-scroll Dodge',app.includes("scrollToActiveMinigame('dodgeStage')")],
+  ['Powrót do kart',app.includes('scrollToArcadeTop()')],
+  ['Noob Coiny z minigier',app.includes('state.coins+=rewards.coins')]
  ];
  checks.forEach(([n,ok])=>out.innerHTML+=`<div class="row ${ok?'ok':'bad'}">${ok?'✅':'❌'} ${n}</div>`)
 }

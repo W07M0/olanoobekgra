@@ -147,7 +147,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.6';
+const GAME_VERSION='0.6a';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -171,7 +171,23 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
-  version:'0.6',date:'Aktualna wersja',title:'Minigames & Casino Rework',
+  version:'0.6a',date:'Aktualna wersja',title:'Quality of Life',
+  summary:'Dopracowanie minigier, kasyna, petów, skinów i wygody obsługi.',
+  changes:[
+   'Po uruchomieniu minigry ekran automatycznie przewija się do planszy.',
+   'Po zamknięciu wyniku strona wraca do kart minigier.',
+   'Aim Lab ma czytelniejszy fake target i spokojniejsze tempo.',
+   'Noob Rider ma pewniejszy skok spacją i dotykiem.',
+   'Reflex działa wolniej i stabilniej.',
+   'Nagrody minigier obejmują EXP, punkty, diamenty i Noob Coiny.',
+   'Kasjer pozwala wpisać dowolną liczbę żetonów.',
+   'Poprawiono czytelność kart petów i skinów.',
+   'Zmniejszono nadmiar animacji w trybie oszczędnym.',
+   'Dodano drobne poprawki responsywności.'
+  ]
+ },
+ {
+  version:'0.6',date:'Poprzednia aktualizacja',title:'Minigames & Casino Rework',
   summary:'Przebudowane minigry i osobna progresja kasyna.',
   changes:[
    'Dodano cztery zręcznościowe minigry.',
@@ -412,7 +428,7 @@ const patchNotes=[
   ]
  }
 ];
-let selectedPatch='0.6';
+let selectedPatch='0.6a';
 function renderPatchNotes(){
  let list=$('#patchList'),content=$('#patchContent');if(!list||!content)return;
  list.innerHTML=patchNotes.map(p=>`<button class="patch-btn ${p.version===selectedPatch?'active':''}" onclick="selectPatch('${p.version}')">Wersja ${p.version}<small>${p.title}</small></button>`).join('');
