@@ -1,19 +1,20 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test sklepu 0.6b</title>
+<title>Test kart sklepu 0.6b</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06bshopfix',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06bshopfix',{cache:'no-store'}).then(r=>r.text());
+ const h=await fetch('../index.html?v=06bshopcards',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06bshopcards',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Grid podstawowy istnieje',h.includes('id="temporaryShopGrid"')],
-  ['Grid permanentny istnieje',h.includes('id="permanentShopGrid"')],
-  ['renderShop używa obu gridów',s.includes("const temporaryGrid=$('#temporaryShopGrid')")&&s.includes("const permanentGrid=$('#permanentShopGrid')")],
-  ['Boss upgrady dołączane',s.includes('bossUpgradeCards()')],
-  ['Brak zatrzymania renderu',s.includes("console.error('renderShop:'")]
+  ['upgradeCard istnieje',s.includes('function upgradeCard(u)')],
+  ['Podstawowe z tablicy upgrades',s.includes('const temporary=upgrades.filter')],
+  ['Permanentne z tablicy upgrades',s.includes('const permanent=upgrades.filter')],
+  ['Karty są renderowane',s.includes('temporary.map(upgradeCard)')&&s.includes('permanent.map(upgradeCard)')],
+  ['Ulepszenia bossów dołączane',s.includes('bossUpgradeCards()')],
+  ['Oba kontenery istnieją',h.includes('temporaryShopGrid')&&h.includes('permanentShopGrid')]
  ];
- out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
+ out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
 }
 </script>

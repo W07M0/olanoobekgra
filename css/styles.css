@@ -880,10 +880,36 @@ body.eco-mode .skin-local-particle{
  margin-top:14px!important;
  min-height:1px;
 }
-#temporaryShopGrid:empty::after,
-#permanentShopGrid:empty::after{
- content:"Ładowanie ulepszeń...";
- display:block;
- padding:16px;
+
+
+/* 0.6b restored shop cards */
+#temporaryShopGrid,
+#permanentShopGrid{
+ display:grid!important;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
+ gap:14px!important;
+ margin-top:14px!important;
+}
+.upgrade-card{
+ display:flex;
+ flex-direction:column;
+ align-items:stretch;
+ gap:10px;
+ min-height:250px;
+}
+.upgrade-card-content{
+ flex:1;
+}
+.upgrade-card .buy-upgrade-btn{
+ width:100%;
+ margin-top:auto;
+}
+.upgrade-card .price{
+ margin:10px 0;
+ font-size:16px;
+ font-weight:900;
+}
+.upgrade-card h3 small{
  color:var(--muted);
+ font-size:11px;
 }

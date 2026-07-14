@@ -314,6 +314,32 @@ function renderStats(){
  if(!box)return
 }
 
+function upgradeCard(u){
+ const lvl=u.get();
+ const isMax=lvl>=u.max;
+ const price=cost(u);
+ const currency=currencyIcon(u.currency);
+ const cardClass=u.permanent?'permanent-card':'temporary-card';
+
+ return `<article class="card upgrade-card ${cardClass}">
+  <div class="big">${u.icon}</div>
+  <div class="upgrade-card-content">
+   <h3>${u.name} <small>Lv.${lvl}/${u.max}</small></h3>
+   <p class="muted">${u.desc}</p>
+   <div class="price">
+    ${isMax
+      ?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>'
+      :`${fmt(price)} ${currency}`}
+   </div>
+  </div>
+  <button class="buy-upgrade-btn"
+   data-upgrade="${u.id}"
+   ${isMax||state[u.currency]<price?'disabled':''}>
+   ${isMax?'MAX':'Kup'}
+  </button>
+ </article>`
+}
+
 function bossUpgradeCards(){
  return `
   <article class="upgrade-card boss-standard-upgrade">
@@ -360,13 +386,8 @@ function renderShop(){
   return
  }
 
- const temporary=typeof temporaryUpgrades!=='undefined'
-  ?temporaryUpgrades
-  :(typeof upgrades!=='undefined'?upgrades.filter(u=>!u.permanent):[]);
-
- const permanent=typeof permanentUpgrades!=='undefined'
-  ?permanentUpgrades
-  :(typeof upgrades!=='undefined'?upgrades.filter(u=>u.permanent):[]);
+ const temporary=upgrades.filter(upgrade=>!upgrade.permanent);
+ const permanent=upgrades.filter(upgrade=>upgrade.permanent);
 
  temporaryGrid.innerHTML=
   temporary.map(upgradeCard).join('')+
@@ -377,6 +398,7 @@ function renderShop(){
  temporaryGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
   button.onclick=()=>buyUpgrade(button.dataset.upgrade)
  });
+
  permanentGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
   button.onclick=()=>buyUpgrade(button.dataset.upgrade)
  });
