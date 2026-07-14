@@ -6,24 +6,16 @@ if(typeof window.renderMiniStats!=='function')window.renderMiniStats=function(){
 if(typeof window.renderMiniCooldowns!=='function')window.renderMiniCooldowns=function(){};
 if(typeof window.loadMinigameLeaderboards!=='function')window.loadMinigameLeaderboards=async function(){};
 
-function bossPowerSnapshot(){
- const rawClick=Math.max(1,clickValue());
- const mult=Math.max(1,totalMultiplier());
- const softenedMult=1+Math.sqrt(mult)/2;
- return {rawClick,mult,softenedMult}
-}
-function bossTargetHits(worldIdx,isEndgame=false){
- if(isEndgame)return 420+Math.min(280,state.level*3+state.rebirths*15);
- return 90+worldIdx*22;
-}
+const WORLD_BOSS_FIXED_HP=[50000, 250000, 1200000, 6000000, 30000000, 150000000, 750000000, 4000000000, 18000000000, 75000000000, 300000000000, 1100000000000, 4000000000000, 14000000000000, 50000000000000];
 function calculatedWorldBossHp(w){
- const p=bossPowerSnapshot(),idx=worldIndex(w.id);
- return Math.floor(p.rawClick*bossTargetHits(idx,false)*p.softenedMult)
+ const idx=Math.max(0,worldIndex(w.id));
+ return WORLD_BOSS_FIXED_HP[idx]||WORLD_BOSS_FIXED_HP[WORLD_BOSS_FIXED_HP.length-1]
 }
 function calculatedEndgameBossHp(){
- const p=bossPowerSnapshot();
- return Math.floor(p.rawClick*bossTargetHits(worlds.length-1,true)*(1+Math.sqrt(p.mult)*0.65))
+ const base=WORLD_BOSS_FIXED_HP[WORLD_BOSS_FIXED_HP.length-1];
+ return Math.floor(base*(1+Math.min(3,state.rebirths*.04)))
 }
+
 
 function worldIndex(id){return worlds.findIndex(w=>w.id===id)}
 function worldBossDefeated(id){return state.worldBossesDefeated.includes(id)}
@@ -49,7 +41,7 @@ function spawnWorldBoss(){
  let w=world();
  if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
  let t=currentWorldBossTemplate();
- let maxHp=Math.max(w.bossHp||500,calculatedWorldBossHp(w));
+ let maxHp=calculatedWorldBossHp(w);
  boss={...t,hp:maxHp,maxHp,time:65,rewardPoints:Math.floor(maxHp*2.25),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
  $('#bossPanel').classList.remove('hidden');renderBoss();scheduleBossBlocker(true);
  clearInterval(bossTimer);bossTimer=setInterval(()=>{
@@ -121,34 +113,8 @@ function scheduleEndgameBossCheck(){
  }else $('#endgameBossBanner').classList.add('hidden')
 }
 
-const playerTitles=[
- {name:'Początkujący Noob',test:()=>true},
- {name:'Klikający Noob',test:()=>state.level>=5},
- {name:'Pro Noob',test:()=>state.level>=10},
- {name:'Mistrz Lagów',test:()=>state.level>=20},
- {name:'Legendarny Noob',test:()=>state.level>=35},
- {name:'Władca Rebirthów',test:()=>state.rebirths>=5},
- {name:'Kosmiczny Noob',test:()=>state.unlockedWorlds.includes('galaxy')},
- {name:'Golden Noob',test:()=>state.ownedSkins.includes('gold')},
- {name:'Developer Noob',test:()=>state.unlockedWorlds.includes('dev')}
-];
-function currentTitle(){return [...playerTitles].reverse().find(t=>t.test())?.name||playerTitles[0].name}
+function currentTitle(){return ''}
 
-let boss=null,bossTimer=null,lastBossLevel=state.lastBossLevel||0;
-const bossTemplates=[
- {name:'Lag Monster',emoji:'👾',desc:'Pożera klatki na sekundę.',mult:1},
- {name:'Banana King',emoji:'🍌',desc:'Władca śliskich porażek.',mult:1.25},
- {name:'Golden Bot',emoji:'🤖',desc:'Klikaj szybciej niż jego skrypty.',mult:1.6},
- {name:'Void Noob',emoji:'🕳️',desc:'Każde kliknięcie znika w pustce.',mult:2.1}
-];
-function maybeSpawnBoss(){
- scheduleEndgameBossCheck();
- let w=world();
- if(!worldBossDefeated(w.id) && !boss){
-  let threshold=Math.max(w.minLevel,3);
-  if(state.level>=threshold && state.totalClicks%35===0)spawnWorldBoss()
- }
-}
 function spawnBoss(){spawnWorldBoss()}
 function damageBoss(amount){
  if(!boss)return;if(boss.blocked)return
@@ -277,7 +243,7 @@ function renderHud(){
  $('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);
  $('#quickClick').disabled=state.points<state.clickCost;
  $('#quickAuto').disabled=state.points<state.autoCost;
- $('#playerTitle').textContent='Tytuł: '+currentTitle();
+ if($('#playerTitle'))$('#playerTitle').remove();
  if(boss)renderBoss();
 }
 function trimEffects(){
@@ -292,7 +258,7 @@ function render(){
  if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
- $('#points').textContent=fmt(state.points);$('#playerTitle').textContent='Tytuł: '+currentTitle();
+ $('#points').textContent=fmt(state.points);if($('#playerTitle'))$('#playerTitle').remove();
  let wb=worldBossDefeated(world().id);$('#challengeBossBtn').textContent=wb&&state.world!=='dev'?'✅ Boss świata pokonany':'⚔️ Zmierz się z '+world().bossName;
  $('#challengeBossBtn').disabled=wb&&state.world!=='dev';if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
@@ -406,35 +372,22 @@ function bindBossUpgradeButtons(){
 
 function renderShop(){
  const temporaryGrid=$('#temporaryShopGrid');
- const permanentGrid=$('#permanentShopGrid');
+ const gemGrid=$('#permanentGemShopGrid');
+ const coinGrid=$('#permanentCoinShopGrid');
+ if(!temporaryGrid||!gemGrid||!coinGrid)return;
 
- if(!temporaryGrid||!permanentGrid){
-  console.error('Shop containers missing',{
-   temporary:!!temporaryGrid,
-   permanent:!!permanentGrid
-  });
-  return
- }
+ const temporary=upgrades.filter(u=>!u.permanent);
+ const gemUpgrades=upgrades.filter(u=>u.permanent&&u.currency==='gems');
+ const coinUpgrades=upgrades.filter(u=>u.permanent&&u.currency==='coins');
 
- const temporary=upgrades.filter(upgrade=>!upgrade.permanent);
- const permanent=upgrades.filter(upgrade=>upgrade.permanent);
+ temporaryGrid.innerHTML=temporary.map(upgradeCard).join('')+(typeof bossUpgradeCards==='function'?bossUpgradeCards():'');
+ gemGrid.innerHTML=gemUpgrades.map(upgradeCard).join('');
+ coinGrid.innerHTML=coinUpgrades.map(upgradeCard).join('');
 
- temporaryGrid.innerHTML=
-  temporary.map(upgradeCard).join('')+
-  (typeof bossUpgradeCards==='function'?bossUpgradeCards():'');
-
- permanentGrid.innerHTML=permanent.map(upgradeCard).join('');
-
- temporaryGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
+ [temporaryGrid,gemGrid,coinGrid].forEach(grid=>grid.querySelectorAll('[data-upgrade]').forEach(button=>{
   button.onclick=()=>buyUpgrade(button.dataset.upgrade)
- });
-
- permanentGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
-  button.onclick=()=>buyUpgrade(button.dataset.upgrade)
- });
-
- if(typeof bindBossUpgradeButtons==='function')bindBossUpgradeButtons();
- if(typeof renderBossUpgrades==='function')renderBossUpgrades()
+ }));
+ if(typeof bindBossUpgradeButtons==='function')bindBossUpgradeButtons()
 }
 function buyUpgrade(id){if(!featureUnlocked('shop'))return toast(lockedFeatureMessage('shop'));let u=upgrades.find(x=>x.id===id);if(!u||u.get()>=u.max)return;let c=cost(u);if(state[u.currency]<c)return;state[u.currency]-=c;u.buy();sfx('buy');render()}
 
@@ -517,7 +470,7 @@ function fusePets(type,tier){
  state.pets.push(newPet);
  confetti();sfx('good');toast(`Ewolucja udana: ${next.name}!`);render()
 }
-function weightedPet(){let adjusted=pets.map((p,i)=>({...p,w:p.chance*Math.pow(1+(state.luck||0)*.08,i/2)})),total=adjusted.reduce((a,p)=>a+p.w,0),r=Math.random()*total,sum=0;for(let p of adjusted){sum+=p.w;if(r<=sum)return p}return pets[0]}
+function weightedPet(){let petLuck=(state.luck||0)*.08+(state.petExpBonus||0)*.04+(state.achievementBonuses?.petLuck||0);let adjusted=pets.map((p,i)=>({...p,w:p.chance*Math.pow(1+petLuck,i/2)})),total=adjusted.reduce((a,p)=>a+p.w,0),r=Math.random()*total,sum=0;for(let p of adjusted){sum+=p.w;if(r<=sum)return p}return pets[0]}
 function openCrate(){
  if(!featureUnlocked('pets'))return toast(lockedFeatureMessage('pets'));
  const eggCost=30;
@@ -537,14 +490,9 @@ function openCrate(){
  },1900)
 }
 
-function renderWorldPath(){
- $('#worldPath').innerHTML=worlds.map((w,i)=>{
-  let done=worldBossDefeated(w.id),current=state.world===w.id;
-  return `<div class="world-path-node ${done?'done':current?'current':''}"><div>${w.emoji}</div><small>${i+1}</small><div>${done?'✓':current?'•':'🔒'}</div></div>`
- }).join('')
-}
+function renderWorldPath(){}
 function renderWorlds(){
- renderWorldPath();
+
  $('#worldGrid').innerHTML=worlds.map((w,i)=>{
   let unlocked=state.unlockedWorlds.includes(w.id),active=state.world===w.id;
   let cur=currencyIcon(w.currency),rebirthLocked=state.rebirths<w.rebirths,fundsLocked=state[w.currency]<w.cost,levelLocked=state.level<w.minLevel;
@@ -582,40 +530,71 @@ function selectWorld(id){
  }
  state.world=id;showWorldTransition(w,newlyUnlocked);render()
 }
+function achievementRewardLabel(a){
+ const currency=a.reward?.[0]==='gems'?'💎':a.reward?.[0]==='coins'?'🟡':'⭐';
+ const base=a.reward?`${a.reward[1]} ${currency}`:'Brak waluty';
+ return a.special?`${base} + ${a.special.name}`:base
+}
 function renderAchievements(){
- const grid=$('#achievementGrid');
- if(!grid)return;
+ const grid=$('#achievementGrid');if(!grid)return;
+ const category=state.achievementCategory||'all';
+ const search=(state.achievementSearch||'').toLowerCase();
+ const sort=state.achievementSort||'ready';
 
- grid.innerHTML=achievements.map(a=>{
+ let list=achievements.filter(a=>(category==='all'||a.category===category)&&(!search||(a.name+' '+a.desc).toLowerCase().includes(search)));
+ const info=a=>{
   const current=Math.max(0,Number(typeof a.progress==='function'?a.progress():(a.test()?1:0))||0);
   const target=Math.max(1,Number(a.target||1));
-  const done=a.test();
-  const claimed=state.claimedAchievements.includes(a.id);
-  const pct=Math.min(100,current/target*100);
-  const rewardIcon=a.reward[0]==='gems'?'💎':'🟡';
+  return{current,target,pct:Math.min(100,current/target*100),done:a.test(),claimed:state.claimedAchievements.includes(a.id)}
+ };
+ list.sort((a,b)=>{
+  const A=info(a),B=info(b);
+  if(sort==='ready')return Number(B.done&&!B.claimed)-Number(A.done&&!A.claimed)||B.pct-A.pct;
+  if(sort==='closest')return B.pct-A.pct;
+  if(sort==='claimed')return Number(B.claimed)-Number(A.claimed);
+  return Number(A.done)-Number(B.done)||B.pct-A.pct
+ });
 
-  return `<article class="achievement ${done?'done':''} ${claimed?'claimed':''}">
-   <div class="achievement-main">
-    <div class="badge">${a.icon}</div>
-    <div class="achievement-copy">
-     <h3>${a.name}</h3>
-     <p class="muted">${a.desc}</p>
-     <div class="achievement-progress"><i style="width:${pct}%"></i></div>
-     <div class="achievement-progress-label">
-      <span>${fmt(Math.min(current,target))} / ${fmt(target)}</span>
-      <span>Nagroda: ${a.reward[1]} ${rewardIcon}</span>
-     </div>
-    </div>
-   </div>
-   <button class="achievement-claim-btn ${done&&!claimed?'ready':''}"
-    onclick="claimAchievement('${a.id}')"
-    ${!done||claimed?'disabled':''}>
-    ${claimed?'✓ Odebrane':done?'Odbierz nagrodę':'Zablokowane'}
-   </button>
+ grid.innerHTML=list.map(a=>{
+  const x=info(a);
+  return `<article class="achievement ${x.done?'done':''} ${x.claimed?'claimed':''}">
+   <div class="achievement-main"><div class="badge">${a.icon}</div><div class="achievement-copy">
+    <div class="achievement-category-label">${a.category}</div><h3>${a.name}</h3><p class="muted">${a.desc}</p>
+    <div class="achievement-progress"><i style="width:${x.pct}%"></i></div>
+    <div class="achievement-progress-label"><span>${fmt(Math.min(x.current,x.target))} / ${fmt(x.target)}</span><span>${achievementRewardLabel(a)}</span></div>
+   </div></div>
+   <button class="achievement-claim-btn ${x.done&&!x.claimed?'ready':''}" onclick="claimAchievement('${a.id}')" ${!x.done||x.claimed?'disabled':''}>${x.claimed?'✓ Odebrane':x.done?'Odbierz nagrodę':'Zablokowane'}</button>
   </article>`
- }).join('')
+ }).join('')||'<div class="card muted">Brak osiągnięć pasujących do filtra.</div>';
+
+ $$('.achievement-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.achievementCategory===category));
+ const searchBox=$('#achievementSearch');if(searchBox&&searchBox.value!==state.achievementSearch)searchBox.value=state.achievementSearch||'';
+ const sortBox=$('#achievementSort');if(sortBox)sortBox.value=sort
 }
-function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;state[a.reward[0]]+=a.reward[1];state.claimedAchievements.push(id);sfx('good');render()}
+function grantAchievementSpecial(a){
+ if(!a.special)return;
+ const s=a.special;
+ if(s.type==='frame'){
+  state.ownedProfileFrames=state.ownedProfileFrames||['default'];
+  if(!state.ownedProfileFrames.includes(s.id))state.ownedProfileFrames.push(s.id);
+  state.profileFrame=s.id
+ }
+ if(s.type==='background'){
+  state.ownedProfileBackgrounds=state.ownedProfileBackgrounds||['default'];
+  if(!state.ownedProfileBackgrounds.includes(s.id))state.ownedProfileBackgrounds.push(s.id);
+  state.profileBackground=s.id
+ }
+ if(s.type==='bonus'){
+  state.achievementBonuses=state.achievementBonuses||{};
+  state.achievementBonuses[s.key]=Math.max(state.achievementBonuses[s.key]||0,s.value)
+ }
+ if(s.type==='pet'&&!state.specialPetClaimed){
+  state.pets.push({uid:createPetUid(),type:'overlord',level:50,xp:0,evolution:3,special:true,mult:9.2,petLuck:.05});
+  state.specialPetClaimed=true;
+  state.achievementBonuses.petLuck=Math.max(state.achievementBonuses.petLuck||0,.05)
+ }
+}
+function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;if(a.reward)state[a.reward[0]]+=a.reward[1];grantAchievementSpecial(a);state.claimedAchievements.push(id);sfx('good');render();save()}
 function renderDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000),can=today>last,rewards=[1,2,3,5,7,10,20];$('#dailyGrid').innerHTML=rewards.map((r,i)=>`<div class="daily ${i===state.dailyStreak%7?'today':''}"><b>Dzień ${i+1}</b><div>💎 ${r}</div></div>`).join('');$('#dailyBtn').disabled=!can;$('#dailyBtn').textContent=can?'Odbierz nagrodę':'Wróć jutro'}
 function claimDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000);if(today<=last)return;if(today-last>1)state.dailyStreak=0;let rewards=[1,2,3,5,7,10,20],r=rewards[state.dailyStreak%7];state.gems+=r;state.dailyStreak++;state.lastDaily=Date.now();confetti();sfx('good');toast('Dzienna nagroda: +'+r+' 💎');render()}
 
@@ -731,72 +710,46 @@ function renderSkins(){
  const ownedCount=$('#ownedSkinCount');
  const navDot=$('#skinDot');
 
- if(!Array.isArray(state.ownedSkins)){
-  state.ownedSkins=['classic']
- }
- if(!state.ownedSkins.includes('classic')){
-  state.ownedSkins.unshift('classic')
- }
-
- const active=skins.find(s=>s.id===state.activeSkin)||skins[0];
- if(!state.ownedSkins.includes(active.id)){
-  state.activeSkin='classic'
- }
+ state.ownedSkins=Array.isArray(state.ownedSkins)?state.ownedSkins:['classic'];
+ if(!state.ownedSkins.includes('classic'))state.ownedSkins.unshift('classic');
+ if(!skins.some(s=>s.id===state.activeSkin)||!state.ownedSkins.includes(state.activeSkin))state.activeSkin='classic';
 
  const selected=skins.find(s=>s.id===state.activeSkin)||skins[0];
-
  if(activeName)activeName.textContent=selected.name;
- if(ownedCount)ownedCount.textContent=state.ownedSkins.length;
- if(navDot)navDot.textContent=state.ownedSkins.length;
+ if(ownedCount)ownedCount.textContent=state.ownedSkins.filter(id=>skins.some(s=>s.id===id)).length;
+ if(navDot)navDot.textContent=state.ownedSkins.filter(id=>skins.some(s=>s.id===id)).length;
  if(!grid)return;
 
- const rarityOrder={
-  common:0,
-  uncommon:1,
-  rare:2,
-  epic:3,
-  legendary:4,
-  mythic:5,
-  secret:6
- };
+ const rarityOrder={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ const rarityNames={common:'COMMON',uncommon:'UNCOMMON',rare:'RARE',epic:'EPIC',legendary:'LEGENDARY',mythic:'MYTHIC',secret:'DEVELOPER'};
+ const filter=state.skinFilter||'all';
 
- const ordered=[...skins].sort((a,b)=>{
-  const ownedA=state.ownedSkins.includes(a.id)?0:1;
-  const ownedB=state.ownedSkins.includes(b.id)?0:1;
-  if(ownedA!==ownedB)return ownedA-ownedB;
-  return (rarityOrder[a.rarity]??0)-(rarityOrder[b.rarity]??0)
- });
-
- grid.innerHTML=ordered.map(skin=>{
+ const visible=skins.filter(skin=>{
   const owned=state.ownedSkins.includes(skin.id);
-  const equipped=state.activeSkin===skin.id;
+  return filter==='all'||(filter==='owned'&&owned)||(filter==='locked'&&!owned)
+ }).sort((a,b)=>(rarityOrder[a.rarity]??99)-(rarityOrder[b.rarity]??99)||a.name.localeCompare(b.name,'pl'));
 
-  return `
-   <article class="card skin-card ${equipped?'active':''} ${owned?'owned':'locked'}"
-    style="--skinColor:${skin.color||'#fff'}">
-    <div class="skin-preview" aria-hidden="true">${skin.emoji||'🙂'}</div>
-    <div class="skin-rarity rarity-${skin.rarity}">${String(skin.rarity||'common').toUpperCase()}</div>
+ const groups=[...new Set(visible.map(s=>s.rarity))];
+ grid.innerHTML=groups.map(rarity=>{
+  const cards=visible.filter(s=>s.rarity===rarity).map(skin=>{
+   const owned=state.ownedSkins.includes(skin.id);
+   const equipped=state.activeSkin===skin.id;
+   const hasArenaEffect=(rarityOrder[skin.rarity]??0)>=3;
+   return `<article class="card skin-card ${equipped?'active':''} ${owned?'owned':'locked'}" style="--skinColor:${skin.color||'#fff'}">
+    <div class="skin-preview">${skin.emoji||'🙂'}</div>
+    <div class="skin-rarity rarity-${skin.rarity}">${rarityNames[skin.rarity]||skin.rarity.toUpperCase()}</div>
     <h3>${safeText(skin.name)}</h3>
     <p class="muted">${safeText(skin.desc||'')}</p>
-    <div class="skin-card-status">
-     ${equipped?'✅ Aktywny':owned?'🔓 Posiadany':'🔒 Nieodblokowany'}
-    </div>
-    <button class="skin-equip-btn"
-     data-skin-id="${skin.id}"
-     ${!owned||equipped?'disabled':''}>
-     ${equipped?'Aktywny':owned?'Załóż':'Zablokowany'}
-    </button>
+    ${hasArenaEffect?'<div class="skin-arena-badge">✨ Efekt areny</div>':''}
+    <div class="skin-card-status">${equipped?'✅ Aktywny':owned?'🔓 Posiadany':'🔒 Nieodblokowany'}</div>
+    <button class="skin-equip-btn" data-skin-id="${skin.id}" ${!owned||equipped?'disabled':''}>${equipped?'Aktywny':owned?'Załóż':'Zablokowany'}</button>
    </article>`
- }).join('');
+  }).join('');
+  return `<section class="skin-rarity-group"><h2>${rarityNames[rarity]||rarity.toUpperCase()} <small>${visible.filter(s=>s.rarity===rarity).length}</small></h2><div class="grid">${cards}</div></section>`
+ }).join('')||'<div class="card muted">Brak skinów dla wybranego filtra.</div>';
 
- grid.querySelectorAll('[data-skin-id]').forEach(button=>{
-  button.onclick=()=>{
-   const id=button.dataset.skinId;
-   if(state.ownedSkins.includes(id)){
-    equipSkin(id)
-   }
-  }
- })
+ grid.querySelectorAll('[data-skin-id]').forEach(button=>button.onclick=()=>equipSkin(button.dataset.skinId));
+ $$('.skin-filter-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.skinFilter===filter))
 }
 
 function renderSkinOrbit(){
@@ -814,9 +767,10 @@ function applySkin(){
   const button=$('#clicker');
   if(!button)return;
 
-  skins.forEach(x=>{
-   if(x.cls)button.classList.remove(x.cls)
-  });
+  skins.forEach(x=>{if(x.cls)button.classList.remove(x.cls)});
+  document.body.classList.remove('arena-skin-epic','arena-skin-legendary','arena-skin-mythic','arena-skin-secret');
+  const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+  if((ranks[skin.rarity]||0)>=3&&!state.ecoMode)document.body.classList.add('arena-skin-'+skin.rarity);
 
   if(skin.cls)button.classList.add(skin.cls);
   if(typeof renderSkinOrbit==='function')renderSkinOrbit()

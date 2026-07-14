@@ -195,7 +195,7 @@ async function loadBoard(){
 
  try{
   const {data,error}=await db.from('players')
-   .select('player_id,player_name,best_score,level,rebirths,last_seen,is_banned')
+   .select('player_id,player_name,best_score,level,rebirths,last_seen,is_banned,save_data')
    .eq('is_banned',false)
    .order(column,{ascending:false})
    .limit(10);
@@ -239,28 +239,14 @@ async function loadBoard(){
 }
 function renderBoard(){
  const target=$('#leaderboard');if(!target)return;
- const rows=onlineBoard||[];
-
- if(!rows.length){
-  target.innerHTML=`<p class="muted">Brak wyników dla tego rankingu.<br><small>${boardMode==='score'?'Ustaw nick lub zapisz wynik ręcznie.':'Rankingi poziomu i rebirthów zapełnią się po zapisaniu nowych profili.'}</small></p>`;
-  return
- }
-
- target.innerHTML=rows.map((row,index)=>{
-  const value=boardMode==='level'
-   ?`Lv.${row.level||1}`
-   :boardMode==='rebirths'
-    ?`${row.rebirths||0} ♻️`
-    :fmt(row.best_score||0);
-
-  const own=row.player_id===playerId;
-  const legacy=row.source==='scores';
-  return`<div class="board-row ${own?'own-row':''}">
-   <b>${index+1}.</b>
-   <span>${safeText(row.player_name||'Gracz')}${own?' • Ty':''}${legacy?' <small>stary wpis</small>':''}</span>
-   <b>${value}</b>
-  </div>`
- }).join('')
+ const list=onlineBoard.length?onlineBoard:[...state.leaderboard].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
+ target.innerHTML=list.length?list.map((row,index)=>{
+  const save=parseAdminSaveData?.(row.save_data)||{};
+  const frame=save.profileFrame||'default';
+  const background=save.profileBackground||'default';
+  const score=row.best_score??row.score??0;
+  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}"><b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(score)}</b></div>`
+ }).join(''):'<p class="muted">Brak wyników.</p>'
 }
 async function saveOnline(){
  if(!state.playerName)return toast('Ustaw nick w Ustawieniach');

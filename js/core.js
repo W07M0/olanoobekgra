@@ -87,8 +87,8 @@ function totalMultiplier(){return rebirthMultiplier()*world().mult*petMultiplier
 function clickValue(){let comboBonus=Math.min(2.5,(combo-1)*state.comboPower*.035);let burst=1+(state.clickBurst||0)*.12;let permanent=1+(state.permClickPower||0)*.10;return state.perClick*totalMultiplier()*(1+comboBonus)*burst*permanent}
 function pps(){let permanent=1+(state.permAutoPower||0)*.12;return state.auto*totalMultiplier()*(1+(state.autoBoost||0)*.2)*permanent}
 function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)*(1+(state.permGemIncome||0)*.08)}
-function coinRewardMultiplier(){return world().coinMult*(1+(state.petCoinBonus||0)*.04)}
-function expMultiplier(){return (1+(state.expBoost||0)*.08)*(1+(state.worldExpBoost||0)*.04)*petExpMultiplier()}
+function coinRewardMultiplier(){return world().coinMult}
+function expMultiplier(){return (1+(state.expBoost||0)*.08)*petExpMultiplier()}
 function cost(u){return Math.ceil(u.base*Math.pow(u.growth,u.get()))}
 function currencyIcon(c){return c==='points'?'⭐':c==='gems'?'💎':'🟡'}
 function needXp(){let base=70+state.level*38+Math.pow(Math.max(0,state.level-25),1.42)*21;return Math.floor(base*(state.level<8?.9:1))}

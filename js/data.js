@@ -10,7 +10,7 @@ const defaults={
  perClick:1,auto:0,clickCost:20,autoCost:75,crit:0,rain:0,comboPower:0,gemChance:0,luck:0,autoBoost:0,clickBurst:0,coinBoost:0,offlineLevel:0,petSlots:0,rainSpeed:0,petPower:0,petGemBonus:0,petCoinBonus:0,expBoost:0,comboExp:0,worldExpBoost:0,petExpBonus:0,permRebirthPower:0,permGemIncome:0,permBossLoot:0,permClickPower:0,permAutoPower:0,
  rebirths:0,world:'neon',unlockedWorlds:['neon'],pets:[],equipped:[],
  sound:true,music:false,lastDaily:0,dailyStreak:0,claimedAchievements:[],quests:null,
- leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},minigameBestGrades:{aim:'-',parkour:'-',reflex:'-',dodge:'-'},arcadeCycle:{aim:false,parkour:false,reflex:false,dodge:false},arcadeBuffUntil:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0},achievementStats:{arcadePlayed:0,casinoPlayed:0,casinoWins:0,maxCasinoChips:0,chipsToGems:0,chipsToCoins:0,portals:0,hospitals:0,aimTrueStreak:0,aimBestTrueStreak:0,reflexPerfectRun:false,dodgeNoLifeLost:false}
+ leaderboard:[],medals:0,aimBest:0,parkourBest:0,memoryBest:0,reflexBest:0,dodgeBest:0,minigameCooldowns:{aim:0,parkour:0,reflex:0,dodge:0},minigameRecords:{aim:0,parkour:0,reflex:0,dodge:0},minigameBestGrades:{aim:'-',parkour:'-',reflex:'-',dodge:'-'},arcadeCycle:{aim:false,parkour:false,reflex:false,dodge:false},arcadeBuffUntil:0,ownedSkins:['classic'],activeSkin:'classic',goldCases:0,casinoUnlocked:false,casinoGames:0,casinoWins:0,casinoProfit:0,casinoChips:0,casinoLevel:1,casinoXp:0,lastCasinoSupply:0,casinoSupplyCount:0,casinoMarket:0,casinoMarketNext:0,casinoUpgrades:{payout:0,supply:0,luck:0,limit:0,xp:0},lastSeen:Date.now(),worldBossesDefeated:[],lastEndgameBossAt:0,eventStats:{golden:0,rain:0,crates:0,minigames:0},achievementStats:{arcadePlayed:0,casinoPlayed:0,casinoWins:0,maxCasinoChips:0,chipsToGems:0,chipsToCoins:0,portals:0,hospitals:0,aimTrueStreak:0,aimBestTrueStreak:0,reflexPerfectRun:false,dodgeNoLifeLost:false},profileFrame:'default',profileBackground:'default',ownedProfileFrames:['default'],ownedProfileBackgrounds:['default'],achievementBonuses:{bossDamage:0,petLuck:0,globalPoints:0},specialPetClaimed:false,skinFilter:'all',achievementCategory:'all',achievementSort:'ready',achievementSearch:''
 };
 let state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));
 
@@ -147,7 +147,7 @@ const worlds=[
 ];
 
 
-const GAME_VERSION='0.6b';
+const GAME_VERSION='0.6c';
 
 const DIAGNOSTICS_KEY='olaNoobDiagnostics_v04f';
 function getDiagnostics(){try{return JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY)||'[]')}catch{return[]}}
@@ -170,6 +170,7 @@ window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error
 window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reason?.message||e.reason,e.reason?.stack||''));
 
 const patchNotes=[
+ {version:'0.6c',date:'Aktualna wersja',title:'Collection, Bosses & Progression Rework',summary:'Stałe HP bossów, uporządkowane skiny, sklep i osiągnięcia.',changes:['Bossowie mają stałe HP zależne od świata, a nie mocy kliknięcia gracza.','Skiny są grupowane według rzadkości i mają filtry.','Skiny Epic+ zmieniają otoczenie klikera.','Permanentny sklep podzielono na diamenty i Noob Coiny.','Osiągnięcia mają kategorie, wyszukiwarkę, sortowanie i nagrody specjalne.','Dodano ramki i tła nicku widoczne w rankingach.','Najtrudniejsze osiągnięcie może dać specjalnego peta Ultimate Noob.','Usunięto tytuły oraz ścieżkę bossów.','Kolekcja jest głównym centrum petów, skinów, osiągnięć i światów.']},
  {version:'0.6b',date:'Aktualna wersja',title:'Achievements & Reflex Navigation',summary:'Nowe osiągnięcia minigier i kasyna oraz poprawione przewijanie Reflex.',changes:['Noob Reflex przewija ekran do planszy i ustawia fokus.','Dodano osiągnięcia minigier i kasyna.','Dodano paski postępu osiągnięć.']},
  {version:'0.6a-ui-boss-admin',date:'Rozszerzenie 0.6a',title:'UI, Boss & Admin Polish',summary:'Poprawki Ridera, bossów, statystyk i panelu administratora.',changes:['Portal Ridera jest nieunikniony.','Szpital Ridera działa jak przeszkoda na ziemi.','Naprawiono cooldown Aim.','Dodano dwa ulepszenia bossów.','Przeszkody bossów pojawiają się na klikerze.','Dodano prywatne najlepsze oceny minigier.','Usunięto panel Co nowego.','Statystyki przeniesiono do Ustawień.','Administrator może edytować podstawowe dane profilu.']},
  {
@@ -516,14 +517,14 @@ const upgrades=[
  {id:'luck',icon:'🍀',name:'Szczęście skrzynek',desc:'Lepsza szansa na rzadkie pety i skiny',currency:'gems',permanent:true,base:15,growth:1.9,max:10,get:()=>state.luck||0,buy:()=>state.luck++},
  {id:'petSlots',icon:'🐾',name:'Dodatkowy slot peta',desc:'+1 slot, maksymalnie 5 petów',currency:'gems',permanent:true,base:35,growth:2.8,max:2,get:()=>state.petSlots||0,buy:()=>state.petSlots++},
  {id:'petPower',icon:'🦴',name:'Trening petów',desc:'+6% do bonusu wszystkich petów',currency:'gems',permanent:true,base:18,growth:1.85,max:15,get:()=>state.petPower||0,buy:()=>state.petPower++},
- {id:'petGem',icon:'💠',name:'Diamentowe pety',desc:'+3,5% diamentów z nagród za poziom i minigry',currency:'gems',permanent:true,base:24,growth:1.95,max:10,get:()=>state.petGemBonus||0,buy:()=>state.petGemBonus++},
- {id:'petCoin',icon:'🪙',name:'Monetowe pety',desc:'+4% Noob Coinów z minigier i nagród',currency:'gems',permanent:true,base:28,growth:2,max:10,get:()=>state.petCoinBonus||0,buy:()=>state.petCoinBonus++},
- {id:'coinBoost',icon:'🟡',name:'Noob Coin Booster',desc:'+15% Noob Coinów z minigier',currency:'gems',permanent:true,base:22,growth:2,max:10,get:()=>state.coinBoost||0,buy:()=>state.coinBoost++},
+ {id:'petGem',icon:'🎟️',name:'Arcade Sponsor',desc:'+5% diamentów wyłącznie z minigier',currency:'gems',permanent:true,base:35,growth:2.05,max:10,get:()=>state.petGemBonus||0,buy:()=>state.petGemBonus++},
+ {id:'petCoin',icon:'🎁',name:'Event Collector',desc:'+5% Noob Coinów z eventów i nagród dziennych',currency:'gems',permanent:true,base:45,growth:2.1,max:10,get:()=>state.petCoinBonus||0,buy:()=>state.petCoinBonus++},
+ {id:'coinBoost',icon:'🎰',name:'Casino Broker',desc:'+4% wypłat żetonów w kasynie',currency:'gems',permanent:true,base:55,growth:2.12,max:10,get:()=>state.coinBoost||0,buy:()=>state.coinBoost++},
  {id:'offline',icon:'🌙',name:'Offline Noob',desc:'+10 minut naliczania offline na poziom',currency:'gems',permanent:true,base:18,growth:1.8,max:12,get:()=>state.offlineLevel||0,buy:()=>state.offlineLevel++},
  {id:'exp',icon:'📘',name:'Noob Akademia',desc:'+8% EXP ze wszystkich źródeł',currency:'gems',permanent:true,base:16,growth:1.75,max:20,get:()=>state.expBoost||0,buy:()=>state.expBoost++},
- {id:'comboExp',icon:'📈',name:'EXP za combo',desc:'Więcej EXP przy długich combo',currency:'gems',permanent:true,base:20,growth:1.82,max:15,get:()=>state.comboExp||0,buy:()=>state.comboExp++},
- {id:'worldExp',icon:'🌍',name:'Światowy trening',desc:'+4% EXP za każdy poziom ulepszenia',currency:'coins',permanent:true,base:18,growth:1.9,max:15,get:()=>state.worldExpBoost||0,buy:()=>state.worldExpBoost++},
- {id:'petExp',icon:'🎓',name:'Szkoła petów',desc:'+3,5% EXP za pety',currency:'gems',permanent:true,base:26,growth:1.9,max:12,get:()=>state.petExpBonus||0,buy:()=>state.petExpBonus++},
+ {id:'comboExp',icon:'🔥',name:'Combo Mastery',desc:'+1% punktów za każde 5 combo, maksymalnie +30%',currency:'gems',permanent:true,base:32,growth:1.95,max:12,get:()=>state.comboExp||0,buy:()=>state.comboExp++},
+ {id:'worldExp',icon:'🌍',name:'World Conqueror',desc:'+5% obrażeń bossom za poziom',currency:'coins',permanent:true,base:30,growth:2.05,max:12,get:()=>state.worldExpBoost||0,buy:()=>state.worldExpBoost++},
+ {id:'petExp',icon:'🍀',name:'Pet Luck',desc:'+4% względnej szansy na rzadszego peta',currency:'gems',permanent:true,base:42,growth:2.08,max:12,get:()=>state.petExpBonus||0,buy:()=>state.petExpBonus++},
  {id:'rainSpeed',icon:'⛈️',name:'Szybszy deszcz',desc:'Deszcz co 1 combo wcześniej (minimum x5)',currency:'gems',permanent:true,base:25,growth:2.1,max:3,get:()=>state.rainSpeed||0,buy:()=>state.rainSpeed++},
  {id:'permClick',icon:'🔨',name:'Rdzeń klikera',desc:'+10% stałej mocy ręcznego kliku',currency:'gems',permanent:true,base:35,growth:1.95,max:15,get:()=>state.permClickPower||0,buy:()=>state.permClickPower++},
  {id:'permAuto',icon:'⚙️',name:'Wieczny automat',desc:'+12% stałej mocy auto-nooba',currency:'gems',permanent:true,base:40,growth:2,max:15,get:()=>state.permAutoPower||0,buy:()=>state.permAutoPower++},
@@ -590,3 +591,22 @@ const achievements=[
  {id:'boss10',icon:'👑',name:'Boss Slayer',desc:'Pokonaj 10 bossów',test:()=>state.bossWins>=10,reward:['coins',25]},
  {id:'allworldbosses',icon:'🌍',name:'Pogromca światów',desc:'Pokonaj bossów wszystkich światów',test:()=>state.worldBossesDefeated.length>=worlds.length,reward:['gems',100]}
 ];
+
+const achievementMeta={
+ click1:{category:'clicking'},click100:{category:'clicking'},combo20:{category:'clicking'},
+ rich:{category:'clicking',special:{type:'background',id:'wealth',name:'Złote tło nicku'}},
+ boss1:{category:'bosses'},boss10:{category:'bosses',special:{type:'bonus',key:'bossDamage',value:.03,name:'+3% obrażeń bossom'}},
+ arcade1:{category:'minigames'},arcade25:{category:'minigames'},arcade100:{category:'minigames',special:{type:'frame',id:'arcade',name:'Neonowa ramka Arcade'}},
+ aim90:{category:'minigames'},aim98:{category:'minigames'},aimstreak100:{category:'minigames'},
+ reflexs:{category:'minigames'},reflexperfect:{category:'minigames',special:{type:'background',id:'reflex',name:'Tło Perfect Reflex'}},
+ rider25k:{category:'minigames'},portal20:{category:'minigames'},hospital10:{category:'minigames'},dodgeperfect:{category:'minigames'},
+ casino1:{category:'casino'},casino10new:{category:'casino'},casino100new:{category:'casino',special:{type:'background',id:'casino',name:'Kasynowe tło nicku'}},
+ chips10k:{category:'casino'},cashgems5k:{category:'casino'},cashcoins20k:{category:'casino'},
+ pet3:{category:'pets'},pets10:{category:'pets'},crate10:{category:'pets'},
+ skins8:{category:'skins',special:{type:'frame',id:'collector',name:'Kolekcjonerska ramka'}},goldskin:{category:'skins'},
+ worlds:{category:'secret'},goldrealm:{category:'secret'},developer:{category:'secret',special:{type:'frame',id:'developer',name:'Developer frame'}},
+ level60:{category:'secret',special:{type:'pet',id:'overlord',name:'Ultimate Noob Pet'}},
+ rebirth:{category:'secret'}
+};
+achievements.forEach(a=>Object.assign(a,{category:achievementMeta[a.id]?.category||'secret',special:achievementMeta[a.id]?.special||null}));
+

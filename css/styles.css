@@ -1216,3 +1216,50 @@ body.eco-mode .skin-local-particle{
 @media(max-width:650px){
  .admin-manual-skin-remove{grid-template-columns:1fr}
 }
+
+/* 0.6c — structured skins */
+.skin-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+.skin-filter-tabs,.achievement-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.skin-filter-tabs button.active,.achievement-tabs button.active{background:linear-gradient(135deg,#36e7ff,#8c4dff);color:#fff}
+.skin-rarity-group{margin:18px 0}
+.skin-rarity-group>h2{display:flex;gap:8px;align-items:center;border-bottom:1px solid rgba(255,255,255,.09);padding-bottom:8px}
+.skin-rarity-group>h2 small{color:var(--muted);font-size:12px}
+.skin-arena-badge{font-size:11px;color:#ffd36a;margin:8px 0}
+
+/* Epic+ arena environments */
+body.arena-skin-epic .arena{box-shadow:0 0 40px rgba(178,92,255,.22),inset 0 0 40px rgba(178,92,255,.08)}
+body.arena-skin-legendary .arena{animation:arenaLegendary 4s linear infinite;box-shadow:0 0 50px rgba(255,107,214,.25)}
+body.arena-skin-mythic .arena{box-shadow:0 0 60px rgba(255,211,78,.38),inset 0 0 45px rgba(255,211,78,.10)}
+body.arena-skin-secret .arena{box-shadow:0 0 55px rgba(77,255,173,.30);filter:contrast(1.03)}
+@keyframes arenaLegendary{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(120deg)}}
+
+/* split permanent shop */
+.permanent-currency-section{margin:18px 0;padding:14px;border-radius:15px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
+.permanent-currency-section>h3{margin:0 0 4px}
+
+/* achievements */
+.achievement-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) 220px;gap:10px;margin:12px 0}
+.achievement-toolbar .achievement-tabs{grid-column:1/-1}
+.achievement-category-label{text-transform:uppercase;font-size:9px;letter-spacing:1px;color:var(--cyan)}
+.achievement-copy{min-width:0}
+
+/* leaderboard cosmetics */
+.board-row{position:relative;overflow:hidden;border:1px solid transparent}
+.profile-frame-arcade{border-color:#36e7ff!important;box-shadow:0 0 14px rgba(54,231,255,.22)}
+.profile-frame-collector{border-color:#ff6bd6!important;box-shadow:0 0 14px rgba(255,107,214,.22)}
+.profile-frame-developer{border-color:#4dffad!important;box-shadow:0 0 16px rgba(77,255,173,.28)}
+.profile-bg-wealth{background:linear-gradient(90deg,rgba(255,190,50,.22),rgba(255,115,40,.10))!important}
+.profile-bg-casino{background:linear-gradient(90deg,rgba(255,55,105,.18),rgba(80,20,95,.18))!important}
+.profile-bg-reflex{background:linear-gradient(90deg,rgba(54,231,255,.16),rgba(120,80,255,.16))!important}
+
+/* collection hub */
+.collection-hub-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 22px}
+.collection-hub-tabs button{min-height:56px;font-weight:900}
+.collection-overview h2{margin-top:24px}
+
+@media(max-width:760px){
+ .skin-toolbar{align-items:flex-start;flex-direction:column}
+ .achievement-toolbar{grid-template-columns:1fr}
+ .achievement-toolbar .achievement-tabs{grid-column:auto}
+ .collection-hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

@@ -844,3 +844,27 @@ if(!window.__v06UiTimer){
   if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('Minigame cooldowns:',error)}}
  },1000)
 }
+
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-skin-filter]');
+ if(!button)return;
+ state.skinFilter=button.dataset.skinFilter;
+ renderSkins();
+ save()
+});
+
+document.addEventListener('click',event=>{
+ const category=event.target.closest('[data-achievement-category]');
+ if(category){state.achievementCategory=category.dataset.achievementCategory;renderAchievements();save()}
+});
+document.addEventListener('input',event=>{
+ if(event.target.id==='achievementSearch'){state.achievementSearch=event.target.value;renderAchievements()}
+});
+document.addEventListener('change',event=>{
+ if(event.target.id==='achievementSort'){state.achievementSort=event.target.value;renderAchievements();save()}
+});
+
+document.addEventListener('click',event=>{
+ const open=event.target.closest('[data-collection-open]');
+ if(open)showView(open.dataset.collectionOpen)
+});

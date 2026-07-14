@@ -5,43 +5,33 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
-<title>Ultimate Noob Clicker v0.6b</title>
-<link href="css/styles.css?v=06brepairfinal" rel="stylesheet"/>
+<title>Ultimate Noob Clicker v0.6c</title>
+<link href="css/styles.css?v=06c" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
 <nav class="panel nav">
-<div class="logo">ULTIMATE<br/><span>NOOB CLICKER</span><small class="version-badge">v0.6b</small></div>
+<div class="logo">ULTIMATE<br/><span>NOOB CLICKER</span><small class="version-badge">v0.6c</small></div>
 <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
 <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
-<button class="nav-btn" data-view="pets">🐾 <span class="label">Pety</span><span class="dot" id="petDot">0</span></button>
+
 <button class="nav-btn" data-view="minigames">🎯 <span class="label">Minigry</span></button>
-<button class="nav-btn" data-view="skins">🎨 <span class="label">Skiny</span><span class="dot" id="skinDot">1</span></button>
+
 <button class="nav-btn" data-view="casino">🎰 <span class="label">Kasyno</span><span class="dot" id="casinoDot">🔒</span></button>
-<button class="nav-btn" data-view="worlds">🌍 <span class="label">Światy</span></button>
+
 <button class="nav-btn" data-view="rebirth">♻️ <span class="label">Rebirth</span></button>
-<button class="nav-btn" data-view="awards">🏆 <span class="label">Nagrody</span></button>
+
 <button class="nav-btn" data-view="collection">📚 <span class="label">Kolekcja</span></button>
 <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
 <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
 <button class="nav-btn hidden" data-view="admin" id="adminNavBtn">🛡️ <span class="label">Admin</span></button>
-<button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.6</span></button>
+<button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.6c</span></button>
 <div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button></div>
 </nav>
 <main class="panel main" id="mainPanel">
-
-
-
-
-
-
-
-
-
-
 <section class="view active" id="view-game">
 <div class="header">
-<div><h1>ULTIMATE <span class="gradient">NOOB CLICKER</span></h1><p class="muted">Klikaj, zdobywaj pety, odblokowuj światy i zostań królem noobków.</p><div class="player-title" id="playerTitle">Tytuł: Początkujący Noob</div></div>
+<div><h1>ULTIMATE <span class="gradient">NOOB CLICKER</span></h1><p class="muted">Klikaj, zdobywaj pety, odblokowuj światy i zostań królem noobków.</p></div>
 <div class="currency"><span class="chip">⭐ <b id="points">0</b></span><span class="chip">💎 <b id="gems">0</b></span><span class="chip">🟡 <b id="coins">0</b></span></div>
 </div>
 <div class="stats">
@@ -84,7 +74,8 @@
 </div>
 <div class="shop-section permanent-shop">
 <div class="shop-section-head"><div><h2>♾️ Ulepszenia permanentne</h2><p class="muted">Kupowane za diamenty i Noob Coiny. Zostają po rebirth.</p></div><span class="shop-tag permanent-tag">NA ZAWSZE</span></div>
-<div class="grid" id="permanentShopGrid"></div>
+<div class="permanent-currency-section"><h3>💎 Ulepszenia za diamenty</h3><p class="muted">Wygoda, kolekcje, EXP i minigry.</p><div class="grid" id="permanentGemShopGrid"></div></div>
+<div class="permanent-currency-section"><h3>🟡 Ulepszenia za Noob Coiny</h3><p class="muted">Endgame, bossowie i trwałe mnożniki.</p><div class="grid" id="permanentCoinShopGrid"></div></div>
 </div>
 </section><section class="view" id="view-pets">
 <div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn" id="openCrate">Otwórz jajko — 30 💎</button></div>
@@ -165,7 +156,16 @@
 </div>
 </section><section class="view" id="view-skins">
 <div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
-<div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div><div class="grid" id="skinGrid"></div>
+<div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div>
+<div class="skin-toolbar card">
+<div class="skin-filter-tabs">
+<button class="active" data-skin-filter="all">Wszystkie</button>
+<button data-skin-filter="owned">Posiadane</button>
+<button data-skin-filter="locked">Nieposiadane</button>
+</div>
+<span class="muted">Skiny Epic+ zmieniają też otoczenie klikera.</span>
+</div>
+<div id="skinGrid"></div>
 </section><section class="view" id="view-casino">
 <div class="section-title">
 <div><h1>🎰 Noob Casino</h1><p class="muted">Kasyno używa wyłącznie wirtualnych żetonów. Bez prawdziwych pieniędzy.</p></div>
@@ -235,7 +235,7 @@
 </div>
 </section><section class="view" id="view-worlds">
 <div class="section-title"><div><h1>🌍 Światy</h1><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
-<div class="world-path"><b>Ścieżka bossów</b><div class="world-path-row" id="worldPath"></div></div><div class="grid" id="worldGrid"></div>
+<div class="grid" id="worldGrid"></div>
 </section><section class="view" id="view-rebirth">
 <div class="rebirth-box">
 <div class="rebirth-icon">♻️</div><h1>Rebirth</h1>
@@ -247,22 +247,45 @@
 </section><section class="view" id="view-awards">
 <div class="section-title"><div><h1>🏆 Nagrody i osiągnięcia</h1><p class="muted">Codzienna nagroda, misje i kolekcja odznak.</p></div></div>
 <h2>🎁 Nagroda dzienna</h2><div class="daily-grid" id="dailyGrid"></div><button class="small-btn" id="dailyBtn" style="margin:12px 0 24px">Odbierz nagrodę</button>
-<h2>🎖️ Osiągnięcia</h2><div class="grid" id="achievementGrid"></div>
-</section><section class="view" id="view-collection">
-<div class="section-title">
-<div><h1>📚 Kolekcja</h1><p class="muted">Sprawdź wszystkie pety, skiny i ich szanse zdobycia.</p></div>
-<div class="chip">Postęp: <b id="collectionProgress">0%</b></div>
+<h2>🎖️ Osiągnięcia</h2>
+<div class="achievement-toolbar card">
+<input id="achievementSearch" placeholder="Szukaj osiągnięcia..."/>
+<select id="achievementSort">
+<option value="ready">Do odebrania</option>
+<option value="closest">Najbliżej ukończenia</option>
+<option value="unclaimed">Nieukończone</option>
+<option value="claimed">Odebrane</option>
+</select>
+<div class="achievement-tabs">
+<button class="active" data-achievement-category="all">Wszystkie</button>
+<button data-achievement-category="clicking">Klikanie</button>
+<button data-achievement-category="bosses">Bossowie</button>
+<button data-achievement-category="minigames">Minigry</button>
+<button data-achievement-category="casino">Kasyno</button>
+<button data-achievement-category="pets">Pety</button>
+<button data-achievement-category="skins">Skiny</button>
+<button data-achievement-category="secret">Sekretne</button>
 </div>
-<h2>🐾 Pety</h2><div class="grid" id="petCollectionGrid"></div>
-<h2 style="margin-top:24px">🎨 Skiny</h2><div class="grid" id="skinCollectionGrid"></div>
-</section><section class="view" id="view-feedback">
+</div>
+<div class="grid" id="achievementGrid"></div>
+</section><section class="view" id="view-collection"><div class="section-title"><div><h1>📚 Kolekcja</h1><p class="muted">Pety, skiny, światy i osiągnięcia w jednym miejscu.</p></div><div class="chip">Postęp: <b id="collectionProgress">0%</b></div></div>
+<div class="collection-hub-tabs">
+<button data-collection-open="pets">🐾 Pety</button>
+<button data-collection-open="skins">🎨 Skiny</button>
+<button data-collection-open="awards">🏆 Osiągnięcia</button>
+<button data-collection-open="worlds">🌍 Światy</button>
+</div>
+<div class="collection-overview">
+<h2>🐾 Kolekcja petów</h2><div class="grid" id="petCollectionGrid"></div>
+<h2>🎨 Kolekcja skinów</h2><div class="grid" id="skinCollectionGrid"></div>
+</div></section><section class="view" id="view-feedback">
 <div class="section-title">
 <div><h1>💬 Player Feedback</h1><p class="muted">Napisz opinię, zgłoś błąd albo zaproponuj nową funkcję.</p></div>
 <div class="chip">Online przez Supabase</div>
 </div>
 <div class="feedback-form card">
 <label>Nazwa gracza</label>
-<input id="feedbackName" maxlength="20" placeholder="Twój nick"/>
+<input id="feedbackName" maxlength="20" placeholder="Twój nick">
 <label>Typ wiadomości</label>
 <select id="feedbackType">
 <option value="opinia">Opinia</option>
@@ -276,7 +299,7 @@
 <span class="muted"><span id="feedbackCount">0</span>/500</span>
 <button class="small-btn" id="sendFeedback">Wyślij feedback</button>
 </div>
-</div>
+</input></div>
 <div class="feedback-toolbar">
 <h2>Ostatnie komentarze</h2>
 <button class="small-btn" id="refreshFeedback">Odśwież</button>
@@ -362,110 +385,100 @@
 </div>
 <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
 <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
-<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div><button type="button" class="admin-section-save" data-admin-save-section="basic">Zapisz podstawowe dane</button>
+<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div><button class="admin-section-save" data-admin-save-section="basic" type="button">Zapisz podstawowe dane</button>
 <div class="admin-editor-section">
- <h3>📈 Postęp i statystyki</h3>
- <div class="admin-edit-grid admin-edit-grid-wide">
-  <label>EXP<input id="adminEditXp" type="number" min="0"></label>
-  <label>Łączne kliknięcia<input id="adminEditTotalClicks" type="number" min="0"></label>
-  <label>Najlepsze combo<input id="adminEditBestCombo" type="number" min="1"></label>
-  <label>Czas gry (sekundy)<input id="adminEditPlaySeconds" type="number" min="0"></label>
-  <label>Medale<input id="adminEditMedals" type="number" min="0"></label>
-  <label>Gold Case<input id="adminEditGoldCases" type="number" min="0"></label>
-  <label>Pokonani bossowie<input id="adminEditBossWins" type="number" min="0"></label>
-  <label>Dzienne logowanie<input id="adminEditDailyStreak" type="number" min="0"></label>
- </div>
-<button type="button" class="admin-section-save" data-admin-save-section="progress">Zapisz postęp i statystyki</button></div>
-
+<h3>📈 Postęp i statystyki</h3>
+<div class="admin-edit-grid admin-edit-grid-wide">
+<label>EXP<input id="adminEditXp" min="0" type="number"/></label>
+<label>Łączne kliknięcia<input id="adminEditTotalClicks" min="0" type="number"/></label>
+<label>Najlepsze combo<input id="adminEditBestCombo" min="1" type="number"/></label>
+<label>Czas gry (sekundy)<input id="adminEditPlaySeconds" min="0" type="number"/></label>
+<label>Medale<input id="adminEditMedals" min="0" type="number"/></label>
+<label>Gold Case<input id="adminEditGoldCases" min="0" type="number"/></label>
+<label>Pokonani bossowie<input id="adminEditBossWins" min="0" type="number"/></label>
+<label>Dzienne logowanie<input id="adminEditDailyStreak" min="0" type="number"/></label>
+</div>
+<button class="admin-section-save" data-admin-save-section="progress" type="button">Zapisz postęp i statystyki</button></div>
 <div class="admin-editor-section">
- <h3>🌍 Światy i skiny</h3>
- <div class="admin-edit-grid admin-edit-grid-wide">
-  <label>Aktualny świat<input id="adminEditWorld" placeholder="np. neon"></label>
-  <label>Aktywny skin<input id="adminEditActiveSkin" placeholder="np. classic"></label>
- </div>
- <label>Odblokowane światy — ID oddzielone przecinkami
+<h3>🌍 Światy i skiny</h3>
+<div class="admin-edit-grid admin-edit-grid-wide">
+<label>Aktualny świat<input id="adminEditWorld" placeholder="np. neon"/></label>
+<label>Aktywny skin<input id="adminEditActiveSkin" placeholder="np. classic"/></label>
+</div>
+<label>Odblokowane światy — ID oddzielone przecinkami
   <textarea id="adminEditUnlockedWorlds" rows="2"></textarea>
- </label>
- <label>Pokonani bossowie światów — ID oddzielone przecinkami
+</label>
+<label>Pokonani bossowie światów — ID oddzielone przecinkami
   <textarea id="adminEditWorldBosses" rows="2"></textarea>
- </label>
- <label>Posiadane skiny — ID oddzielone przecinkami
+</label>
+<label>Posiadane skiny — ID oddzielone przecinkami
   <textarea id="adminEditOwnedSkins" rows="2"></textarea>
- </label>
-<button type="button" class="admin-section-save" data-admin-save-section="worlds">Zapisz światy i skiny</button></div>
-
+</label>
+<button class="admin-section-save" data-admin-save-section="worlds" type="button">Zapisz światy i skiny</button></div>
 <div class="admin-editor-section">
- <h3>🎰 Kasyno</h3>
- <div class="admin-edit-grid admin-edit-grid-wide">
-  <label>Żetony<input id="adminEditCasinoChips" type="number" min="0"></label>
-  <label>Poziom kasyna<input id="adminEditCasinoLevel" type="number" min="1"></label>
-  <label>EXP kasyna<input id="adminEditCasinoXp" type="number" min="0"></label>
-  <label>Gry w kasynie<input id="adminEditCasinoGames" type="number" min="0"></label>
-  <label>Wygrane w kasynie<input id="adminEditCasinoWins" type="number" min="0"></label>
-  <label>Zysk kasyna<input id="adminEditCasinoProfit" type="number"></label>
- </div>
-<button type="button" class="admin-section-save" data-admin-save-section="casino">Zapisz kasyno</button></div>
-
+<h3>🎰 Kasyno</h3>
+<div class="admin-edit-grid admin-edit-grid-wide">
+<label>Żetony<input id="adminEditCasinoChips" min="0" type="number"/></label>
+<label>Poziom kasyna<input id="adminEditCasinoLevel" min="1" type="number"/></label>
+<label>EXP kasyna<input id="adminEditCasinoXp" min="0" type="number"/></label>
+<label>Gry w kasynie<input id="adminEditCasinoGames" min="0" type="number"/></label>
+<label>Wygrane w kasynie<input id="adminEditCasinoWins" min="0" type="number"/></label>
+<label>Zysk kasyna<input id="adminEditCasinoProfit" type="number"/></label>
+</div>
+<button class="admin-section-save" data-admin-save-section="casino" type="button">Zapisz kasyno</button></div>
 <div class="admin-editor-section">
- <h3>🎮 Minigry</h3>
- <div class="admin-edit-grid admin-edit-grid-wide">
-  <label>Aim — rekord<input id="adminEditAimRecord" type="number" min="0"></label>
-  <label>Aim — ocena<input id="adminEditAimGrade" maxlength="3"></label>
-  <label>Rider — rekord<input id="adminEditParkourRecord" type="number" min="0"></label>
-  <label>Rider — ocena<input id="adminEditParkourGrade" maxlength="3"></label>
-  <label>Reflex — rekord<input id="adminEditReflexRecord" type="number" min="0"></label>
-  <label>Reflex — ocena<input id="adminEditReflexGrade" maxlength="3"></label>
-  <label>Dodge — rekord<input id="adminEditDodgeRecord" type="number" min="0"></label>
-  <label>Dodge — ocena<input id="adminEditDodgeGrade" maxlength="3"></label>
- </div>
-<button type="button" class="admin-section-save" data-admin-save-section="minigames">Zapisz minigry</button></div>
-
+<h3>🎮 Minigry</h3>
+<div class="admin-edit-grid admin-edit-grid-wide">
+<label>Aim — rekord<input id="adminEditAimRecord" min="0" type="number"/></label>
+<label>Aim — ocena<input id="adminEditAimGrade" maxlength="3"/></label>
+<label>Rider — rekord<input id="adminEditParkourRecord" min="0" type="number"/></label>
+<label>Rider — ocena<input id="adminEditParkourGrade" maxlength="3"/></label>
+<label>Reflex — rekord<input id="adminEditReflexRecord" min="0" type="number"/></label>
+<label>Reflex — ocena<input id="adminEditReflexGrade" maxlength="3"/></label>
+<label>Dodge — rekord<input id="adminEditDodgeRecord" min="0" type="number"/></label>
+<label>Dodge — ocena<input id="adminEditDodgeGrade" maxlength="3"/></label>
+</div>
+<button class="admin-section-save" data-admin-save-section="minigames" type="button">Zapisz minigry</button></div>
 <div class="admin-editor-section">
- <h3>🐾 Wszystkie pety gracza</h3>
- <p class="muted">Możesz zmienić poziom, EXP i ewolucję każdego egzemplarza. Usuwanie peta jest dostępne przy jego karcie.</p>
- <div id="adminAllPets" class="admin-all-pets"></div>
-<button type="button" class="admin-section-save" data-admin-save-section="pets">Zapisz wszystkie pety</button></div>
-<div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div id="adminEquippedPets" class="admin-equipped-pets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button><button type="button" class="admin-section-save" data-admin-save-section="equipped">Zapisz wyposażone pety</button></div>
-
+<h3>🐾 Wszystkie pety gracza</h3>
+<p class="muted">Możesz zmienić poziom, EXP i ewolucję każdego egzemplarza. Usuwanie peta jest dostępne przy jego karcie.</p>
+<div class="admin-all-pets" id="adminAllPets"></div>
+<button class="admin-section-save" data-admin-save-section="pets" type="button">Zapisz wszystkie pety</button></div>
+<div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div class="admin-equipped-pets" id="adminEquippedPets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></input></input></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button><button class="admin-section-save" data-admin-save-section="equipped" type="button">Zapisz wyposażone pety</button></div>
 <div class="admin-editor-section admin-repair-section" id="adminRepairSave">
- <h3>🧹 Napraw zapis</h3>
- <p class="muted">Narzędzia usuwają osierocone dane po starszych wersjach gry. Najpierw pobierz profil gracza.</p>
-
- <div class="admin-repair-grid">
-  <button type="button" data-admin-repair="skins">🎨 Usuń nieistniejące skiny</button>
-  <button type="button" data-admin-repair="pets">👻 Usuń pety widmo</button>
-  <button type="button" data-admin-repair="equipped">🎒 Napraw wyposażone pety</button>
-  <button type="button" data-admin-repair="worlds">🌍 Napraw światy</button>
-  <button type="button" class="danger-btn" data-admin-repair="all">🧽 Napraw cały zapis</button>
- </div>
-
- 
- <div class="admin-manual-skin-remove">
-  <input id="adminRemoveSkinId" placeholder="ID skina do ręcznego usunięcia">
-  <button type="button" id="adminRemoveSkinById">Usuń skin po ID</button>
- </div>
+<h3>🧹 Napraw zapis</h3>
+<p class="muted">Narzędzia usuwają osierocone dane po starszych wersjach gry. Najpierw pobierz profil gracza.</p>
+<div class="admin-repair-grid">
+<button data-admin-repair="skins" type="button">🎨 Usuń nieistniejące skiny</button>
+<button data-admin-repair="pets" type="button">👻 Usuń pety widmo</button>
+<button data-admin-repair="equipped" type="button">🎒 Napraw wyposażone pety</button>
+<button data-admin-repair="worlds" type="button">🌍 Napraw światy</button>
+<button class="danger-btn" data-admin-repair="all" type="button">🧽 Napraw cały zapis</button>
+</div>
+<div class="admin-manual-skin-remove">
+<input id="adminRemoveSkinId" placeholder="ID skina do ręcznego usunięcia"/>
+<button id="adminRemoveSkinById" type="button">Usuń skin po ID</button>
+</div>
 <div class="admin-repair-preview" id="adminRepairPreview">
   Brak wykonanej naprawy.
  </div>
-
- <button type="button" id="adminSaveRepair" disabled>Zapisz naprawiony profil</button>
+<button disabled="" id="adminSaveRepair" type="button">Zapisz naprawiony profil</button>
 </div>
-
 <div class="admin-editor-section admin-json-section">
- <div class="admin-json-heading">
-  <div>
-   <h3>🧩 Pełny zapis JSON</h3>
-   <p class="muted">Tryb zaawansowany. Pozwala edytować każdą wartość zapisu, także niewidoczną w formularzu.</p>
-  </div>
-  <span id="adminJsonValidation" class="admin-json-status">Nie sprawdzono</span>
- </div>
- <textarea id="adminSaveJson" rows="18" spellcheck="false" placeholder="{ }"></textarea>
- <div class="admin-json-actions">
-  <button id="adminJsonValidate" type="button">Sprawdź JSON</button>
-  <button id="adminJsonToForm" type="button">Wczytaj JSON do formularza</button>
-  <button id="adminFormToJson" type="button">Przepisz formularz do JSON</button>
- </div>
-<button type="button" class="admin-section-save json-save-button" data-admin-save-section="json">Zapisz tylko JSON</button></div>
+<div class="admin-json-heading">
+<div>
+<h3>🧩 Pełny zapis JSON</h3>
+<p class="muted">Tryb zaawansowany. Pozwala edytować każdą wartość zapisu, także niewidoczną w formularzu.</p>
+</div>
+<span class="admin-json-status" id="adminJsonValidation">Nie sprawdzono</span>
+</div>
+<textarea id="adminSaveJson" placeholder="{ }" rows="18" spellcheck="false"></textarea>
+<div class="admin-json-actions">
+<button id="adminJsonValidate" type="button">Sprawdź JSON</button>
+<button id="adminJsonToForm" type="button">Wczytaj JSON do formularza</button>
+<button id="adminFormToJson" type="button">Przepisz formularz do JSON</button>
+</div>
+<button class="admin-section-save json-save-button" data-admin-save-section="json" type="button">Zapisz tylko JSON</button></div>
 <button id="adminSavePlayer">Zapisz cały profil</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section><section class="view" id="view-patchnotes">
 <div class="section-title">
 <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ultimate Noob Clicker.</p></div>
@@ -480,12 +493,6 @@
 <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
 <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="compact-profile"><span id="rankingProfileName">Ustaw nick w profilu</span><input hidden="" id="playerName"/></div></section>
 </aside></div>
-
-
-
-
-
-
 <div class="overlay" id="crateOverlay"><div class="modal egg-modal"><div class="pet-egg" id="petEgg"><span>?</span></div><div class="egg-glow" id="eggGlow"></div><div class="pet-reveal-card"><div class="pet-reveal-icon" id="petRevealIcon">❔</div><h2 id="crateTitle">Otwieranie jajka…</h2><div class="pet-reveal-rarity" id="petRevealRarity"></div><p id="crateResult"></p></div><button class="small-btn hidden" id="crateClose" style="width:100%">Super!</button></div></div>
 <div class="overlay" id="goldCrateOverlay"><div class="modal gold-modal"><div class="gold-rays"></div><div class="gold-case">👑</div><h2 id="goldTitle" style="text-align:center">GOLD NOOB CASE</h2><div class="roulette-window"><div class="roulette-strip" id="rouletteStrip"></div><div class="roulette-marker"></div></div><p id="goldResult" style="text-align:center;min-height:28px;font-weight:900"></p><div class="gold-result-actions"><button class="small-btn gold-btn hidden" id="goldClose">Załóż skin</button><button class="small-btn hidden" id="goldDismiss">Zamknij</button></div></div></div>
 <div class="overlay world-transition" id="worldTransition">
@@ -505,11 +512,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06brepairfinal"></script>
-<script defer="" src="js/core.js?v=06brepairfinal"></script>
-<script defer="" src="js/systems.js?v=06brepairfinal"></script>
-<script defer="" src="js/integrations.js?v=06brepairfinal"></script>
-<script defer="" src="js/profile-admin.js?v=06brepairfinal"></script>
-<script defer="" src="js/app.js?v=06brepairfinal"></script>
+<script defer="" src="js/data.js?v=06c"></script>
+<script defer="" src="js/core.js?v=06c"></script>
+<script defer="" src="js/systems.js?v=06c"></script>
+<script defer="" src="js/integrations.js?v=06c"></script>
+<script defer="" src="js/profile-admin.js?v=06c"></script>
+<script defer="" src="js/app.js?v=06c"></script>
 </body>
 </html>
