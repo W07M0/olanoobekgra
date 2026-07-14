@@ -171,6 +171,21 @@ window.addEventListener('unhandledrejection',e=>saveDiagnostic('Promise',e.reaso
 
 const patchNotes=[
  {
+  version:'0.6a-readability',
+  date:'Rozszerzenie 0.6a',
+  title:'Readability & Gameplay Polish',
+  summary:'Lepsza czytelność minigier i uczciwsze mechaniki.',
+  changes:[
+   'Reflex ma ciaśniejsze okno trafienia i feedback Perfect/Good/Miss.',
+   'Życia są widoczne bezpośrednio w HUD Ridera i Dodge.',
+   'Pickupy mają wyraźniejszy glow.',
+   'Portal Ridera jest widoczny na trasie i czyści pobliskie przeszkody.',
+   'Dodano rzadki szpital +1 HP w Noob Rider.',
+   'Fake cele w Aim są identyczne kształtem, ale ciemniejsze.',
+   'Dodano krótkie opisy najważniejszych zakładek i minigier.'
+  ]
+ },
+ {
   version:'0.6a-gameplay',
   date:'Rozszerzenie 0.6a',
   title:'Minigame mechanics rework',

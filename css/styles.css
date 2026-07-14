@@ -712,3 +712,46 @@ body.eco-mode .skin-local-particle{
 }
 #arcadeCycleStatus{font-weight:1000;color:var(--gold);text-align:right}
 @media(max-width:650px){.arcade-buff{align-items:flex-start;flex-direction:column}#arcadeCycleStatus{text-align:left}}
+
+.section-description{
+ margin:5px 0 14px;
+ color:var(--muted);
+ font-size:13px;
+ line-height:1.45;
+}
+.reflex-feedback{
+ position:absolute;
+ left:50%;top:45%;
+ transform:translate(-50%,-50%) scale(.7);
+ font-size:30px;
+ font-weight:1000;
+ opacity:0;
+ z-index:10;
+ pointer-events:none;
+}
+.reflex-feedback.show{animation:reflexFeedback .55s ease}
+.reflex-feedback.perfect{color:#ffd34e;text-shadow:0 0 20px #ffd34e}
+.reflex-feedback.good{color:#4dffad}
+.reflex-feedback.miss,.reflex-feedback.bomb{color:#ff5277}
+@keyframes reflexFeedback{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}
+ 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+ 100%{opacity:0;transform:translate(-50%,-70%) scale(1)}
+}
+#parkourLives,#dodgeLives{
+ letter-spacing:3px;
+ font-size:18px;
+}
+.life-hit{animation:lifeHit .35s ease}
+@keyframes lifeHit{50%{transform:scale(1.28);filter:brightness(1.8)}}
+#dodgeEffects{
+ color:var(--cyan);
+ font-size:12px;
+}
+.aim-target.fake{
+ filter:brightness(.72) saturate(.8)!important;
+ background:linear-gradient(145deg,#613b8f,#392653)!important;
+}
+.aim-target.fake::after{
+ opacity:.25!important;
+}
