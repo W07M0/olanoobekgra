@@ -487,7 +487,15 @@ body{background:radial-gradient(circle at 15% 5%,rgba(129,92,255,.16),transparen
 .arcade-card{display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;padding:16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.025))}
 .arcade-icon{font-size:42px}.arcade-card h3,.arcade-card p{margin:0}.arcade-card p{color:var(--muted);font-size:12px}.arcade-record{grid-column:2;font-size:12px}.arcade-play{grid-column:3;grid-row:1/3;min-width:105px}.cooldown-label{grid-column:3;text-align:center;color:var(--gold)}
 .aim-card{border-top:3px solid #36e7ff}.parkour-card{border-top:3px solid #ff9b3f}.reflex-card{border-top:3px solid #ffe94e}.dodge-card{border-top:3px solid #b25cff}
-.arcade-stage{margin-top:16px}.aim-v2{background:radial-gradient(circle at center,#31125d,#090311);overflow:hidden}.aim-target{transition:transform .45s linear,left .08s,top .08s}.aim-target::after{content:"";position:absolute;inset:-8px;border:2px solid #fff4;border-radius:50%}.aim-target.fake{background:#ff3b70!important;color:#24000e!important}.aim-target.fake::after{border-style:dashed}
+.arcade-stage{margin-top:16px}.aim-v2{background:radial-gradient(circle at center,#31125d,#090311);overflow:hidden}.aim-target{transition:transform .45s linear,left .08s,top .08s}.aim-target::after{content:"";position:absolute;inset:-8px;border:2px solid #fff4;border-radius:50%}.aim-target.fake{
+ background:linear-gradient(145deg,#3f2c63,#251938)!important;
+ color:transparent!important;
+ border-color:rgba(185,150,255,.55)!important;
+ filter:brightness(.78) saturate(.72)!important;
+ border-radius:50%!important;
+ padding:0!important;
+ min-width:0!important;
+}.aim-target.fake::after{border-style:dashed}
 .reflex-zone{min-height:350px;display:grid;place-items:center;text-align:center;border-radius:18px;background:radial-gradient(circle,#4d1a7a,#14031f)}.reflex-key{font-size:110px;filter:drop-shadow(0 0 25px #fff8)}.reflex-key.pop{animation:reflexPop .18s ease}@keyframes reflexPop{from{transform:scale(.5)}to{transform:scale(1)}}
 .center{text-align:center}.mini-rankings{margin-top:16px}.mini-rank-head{display:flex;justify-content:space-between;align-items:center}.mini-rank-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.mini-board{padding:12px;border-radius:14px;background:rgba(255,255,255,.04)}.mini-board>div{display:grid;grid-template-columns:22px 1fr auto;gap:6px;padding:6px;border-bottom:1px solid rgba(255,255,255,.05)}.mini-board small{display:block;margin-top:8px;color:var(--cyan)}
 .mini-result-modal{text-align:center}.mini-grade{font-size:92px;font-weight:1000}.grade-s{color:#ffd34e;text-shadow:0 0 30px #ffd34e}.grade-a{color:#4dffad}.grade-b{color:#36e7ff}.grade-c{color:#b25cff}.grade-d{color:#ff5277}.mini-result-score{font-size:30px;font-weight:1000}.mini-result-rewards{display:grid;gap:8px;margin:15px}.mini-result-rewards span{padding:9px;border-radius:10px;background:rgba(255,255,255,.05)}
@@ -765,3 +773,83 @@ body.eco-mode .skin-local-particle{
 
 .achievement-progress{height:8px;margin:8px 0 5px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.08)}
 .achievement-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#36e7ff,#b25cff,#ff3b9d);box-shadow:0 0 12px rgba(54,231,255,.35);transition:width .35s ease}
+
+.aim-target.fake .aim-empty{
+ width:100%;
+ height:100%;
+ display:block;
+ border-radius:50%;
+ pointer-events:none;
+}
+.aim-target.fake::after{
+ border-style:solid!important;
+ opacity:.45!important;
+}
+
+/* 0.6b polish — standard boss upgrades */
+.boss-standard-upgrade{
+ display:grid;
+ grid-template-columns:54px minmax(0,1fr);
+ gap:12px;
+ align-items:center;
+}
+.boss-standard-upgrade .buy-upgrade-btn{
+ grid-column:1/-1;
+ width:100%;
+}
+
+/* Achievement readability */
+.achievement{
+ display:flex!important;
+ flex-direction:column;
+ gap:12px;
+ align-items:stretch!important;
+ padding:16px!important;
+}
+.achievement-main{
+ display:grid;
+ grid-template-columns:54px minmax(0,1fr);
+ gap:12px;
+ align-items:start;
+}
+.achievement-copy{
+ min-width:0;
+}
+.achievement-copy h3,
+.achievement-copy p{
+ margin-top:0;
+}
+.achievement-progress-label{
+ display:flex;
+ justify-content:space-between;
+ gap:12px;
+ margin-top:6px;
+ color:var(--muted);
+ font-size:11px;
+}
+.achievement-claim-btn{
+ width:100%;
+ min-height:42px;
+ border-radius:12px!important;
+ background:rgba(255,255,255,.06)!important;
+ color:var(--muted)!important;
+ border:1px solid rgba(255,255,255,.1)!important;
+}
+.achievement-claim-btn.ready{
+ background:linear-gradient(135deg,#36e7ff,#8c4dff)!important;
+ color:#fff!important;
+ box-shadow:0 8px 20px rgba(54,231,255,.18);
+}
+.achievement-claim-btn:disabled{
+ opacity:.62;
+ cursor:not-allowed;
+}
+.achievement.claimed{
+ opacity:.75;
+}
+@media(max-width:520px){
+ .achievement-progress-label{
+  flex-direction:column;
+  gap:3px;
+ }
+}

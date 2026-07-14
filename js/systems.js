@@ -474,12 +474,36 @@ function selectWorld(id){
  state.world=id;showWorldTransition(w,newlyUnlocked);render()
 }
 function renderAchievements(){
- const grid=$('#achievementGrid');if(!grid)return;
+ const grid=$('#achievementGrid');
+ if(!grid)return;
+
  grid.innerHTML=achievements.map(a=>{
   const current=Math.max(0,Number(typeof a.progress==='function'?a.progress():(a.test()?1:0))||0);
   const target=Math.max(1,Number(a.target||1));
-  const done=a.test(),claimed=state.claimedAchievements.includes(a.id),pct=Math.min(100,current/target*100);
-  return`<div class="achievement ${done?'done':''}"><div class="badge">${a.icon}</div><div style="flex:1"><h3>${a.name}</h3><p class="muted">${a.desc}</p><div class="achievement-progress"><i style="width:${pct}%"></i></div><small>${fmt(Math.min(current,target))} / ${fmt(target)}</small><button class="small-btn" onclick="claimAchievement('${a.id}')" ${!done||claimed?'disabled':''}>${claimed?'Odebrane':'Odbierz '+a.reward[1]+' '+(a.reward[0]==='gems'?'💎':'🟡')}</button></div></div>`
+  const done=a.test();
+  const claimed=state.claimedAchievements.includes(a.id);
+  const pct=Math.min(100,current/target*100);
+  const rewardIcon=a.reward[0]==='gems'?'💎':'🟡';
+
+  return `<article class="achievement ${done?'done':''} ${claimed?'claimed':''}">
+   <div class="achievement-main">
+    <div class="badge">${a.icon}</div>
+    <div class="achievement-copy">
+     <h3>${a.name}</h3>
+     <p class="muted">${a.desc}</p>
+     <div class="achievement-progress"><i style="width:${pct}%"></i></div>
+     <div class="achievement-progress-label">
+      <span>${fmt(Math.min(current,target))} / ${fmt(target)}</span>
+      <span>Nagroda: ${a.reward[1]} ${rewardIcon}</span>
+     </div>
+    </div>
+   </div>
+   <button class="achievement-claim-btn ${done&&!claimed?'ready':''}"
+    onclick="claimAchievement('${a.id}')"
+    ${!done||claimed?'disabled':''}>
+    ${claimed?'✓ Odebrane':done?'Odbierz nagrodę':'Zablokowane'}
+   </button>
+  </article>`
  }).join('')
 }
 function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;state[a.reward[0]]+=a.reward[1];state.claimedAchievements.push(id);sfx('good');render()}

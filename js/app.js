@@ -114,7 +114,7 @@ function miniRewards(normalized,rawScore,grade){
  const quality=Math.max(.06,Math.min(1.2,normalized));
  const gradeMult={D:.60,C:.80,B:1,A:1.18,S:1.38,SS:1.58,SSS:1.82}[grade]||1;
  const globalMult=arcadeRewardMultiplier();
- const baseBuff=1.5;
+ const baseBuff=1.35;
  const xp=Math.floor((35+quality*115)*expMultiplier()*gradeMult*globalMult*baseBuff);
  const points=Math.floor((150+quality*900)*Math.max(1,state.level*.35)*totalMultiplier()**.22*gradeMult*globalMult*baseBuff);
  const gems=Math.max(1,Math.floor((1+quality*8*gemRewardMultiplier())*gradeMult*globalMult*baseBuff));
@@ -151,7 +151,7 @@ function moveAim(){
  const rect=field.getBoundingClientRect(),fake=Math.random()<.20,moving=Math.random()<.38;
  target.dataset.fake=fake?'1':'0';target.dataset.moving=moving?'1':'0';
  target.classList.toggle('fake',fake);target.classList.toggle('moving',moving);
- target.innerHTML='<span>NOOB</span>';
+ target.innerHTML=fake?'<span class="aim-empty"></span>':'<span>NOOB</span>';
  const size=Math.max(40,68-aimHits*.28),maxX=Math.max(1,rect.width-size-10),maxY=Math.max(1,rect.height-size-10);
  let x=Math.random()*maxX,y=Math.random()*maxY;target.style.width=size+'px';target.style.height=size+'px';target.style.left=x+'px';target.style.top=y+'px';
  if(moving){
@@ -611,8 +611,9 @@ bindClick('#stopParkourBtn',()=>window.stopParkour?.(false));
 bindClick('#stopReflexBtn',()=>window.stopReflex?.(false));
 bindClick('#stopDodgeBtn',()=>window.stopDodge?.(false));
 
-bindClick('#bossDamageUpgradeBtn',buyBossDamageUpgrade);
-bindClick('#bossBlockerUpgradeBtn',buyBossBlockerUpgrade);
+
+bindClick('#bossDamageUpgradeBtn',()=>buyBossDamageUpgrade());
+bindClick('#bossBlockerUpgradeBtn',()=>buyBossBlockerUpgrade());
 
 /* Główna gra */
 bindClick('#clicker',doClick);

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6b</title>
-<link rel="stylesheet" href="css/styles.css?v=06b">
+<link rel="stylesheet" href="css/styles.css?v=06bpolish">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -74,13 +74,32 @@
  </div>
  <div class="shop-section temporary-shop">
   <div class="shop-section-head"><div><h2>⚡ Ulepszenia podstawowe</h2><p class="muted">Kupowane za punkty. Resetują się podczas rebirthu.</p></div><span class="shop-tag reset-tag">RESETOWANE</span></div>
-  <div class="grid" id="temporaryShopGrid"></div>
+  <div class="grid" id="temporaryShopGrid">
+   <article class="upgrade-card standard-upgrade boss-standard-upgrade">
+    <div class="upgrade-icon">💥</div>
+    <div class="upgrade-info">
+     <h3>Siła przeciw bossom</h3>
+     <p>+12% obrażeń zadawanych bossom za poziom.</p>
+     <small>Poziom <b id="bossDamageUpgradeLevel">0</b></small>
+    </div>
+    <button class="buy-upgrade-btn" id="bossDamageUpgradeBtn">Kup — <span id="bossDamageUpgradeCost">0</span></button>
+   </article>
+   <article class="upgrade-card standard-upgrade boss-standard-upgrade">
+    <div class="upgrade-icon">⏳</div>
+    <div class="upgrade-info">
+     <h3>Opóźnienie blokad</h3>
+     <p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p>
+     <small>Poziom <b id="bossBlockerUpgradeLevel">0</b></small>
+    </div>
+    <button class="buy-upgrade-btn" id="bossBlockerUpgradeBtn">Kup — <span id="bossBlockerUpgradeCost">0</span></button>
+   </article>
+</div>
  </div>
  <div class="shop-section permanent-shop">
   <div class="shop-section-head"><div><h2>♾️ Ulepszenia permanentne</h2><p class="muted">Kupowane za diamenty i Noob Coiny. Zostają po rebirth.</p></div><span class="shop-tag permanent-tag">NA ZAWSZE</span></div>
   <div class="grid" id="permanentShopGrid"></div>
  </div>
-<div class="card boss-upgrade-panel"><h2>⚔️ Ulepszenia bossów</h2><p class="muted">Podstawowe ulepszenia resetowane po rebirth.</p><div class="boss-upgrade-grid"><div class="upgrade-card"><div class="big">💥</div><h3>Siła przeciw bossom</h3><p>+12% obrażeń bossom za poziom.</p><b>Lv. <span id="bossDamageUpgradeLevel">0</span></b><button id="bossDamageUpgradeBtn">Kup — <span id="bossDamageUpgradeCost">0</span></button></div><div class="upgrade-card"><div class="big">⏳</div><h3>Opóźnienie blokad</h3><p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p><b>Lv. <span id="bossBlockerUpgradeLevel">0</span></b><button id="bossBlockerUpgradeBtn">Kup — <span id="bossBlockerUpgradeCost">0</span></button></div></div></div></section>
+</section>
 
 <section class="view" id="view-pets">
  <div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn" id="openCrate">Otwórz jajko — 30 💎</button></div>
@@ -435,11 +454,11 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06b"></script>
-<script defer src="js/core.js?v=06b"></script>
-<script defer src="js/systems.js?v=06b"></script>
-<script defer src="js/integrations.js?v=06b"></script>
-<script defer src="js/profile-admin.js?v=06b"></script>
-<script defer src="js/app.js?v=06b"></script>
+<script defer src="js/data.js?v=06bpolish"></script>
+<script defer src="js/core.js?v=06bpolish"></script>
+<script defer src="js/systems.js?v=06bpolish"></script>
+<script defer src="js/integrations.js?v=06bpolish"></script>
+<script defer src="js/profile-admin.js?v=06bpolish"></script>
+<script defer src="js/app.js?v=06bpolish"></script>
 </body>
 </html>
