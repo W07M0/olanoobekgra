@@ -755,3 +755,10 @@ body.eco-mode .skin-local-particle{
 .aim-target.fake::after{
  opacity:.25!important;
 }
+
+.cooldown-label{display:block;min-width:118px;min-height:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.boss-blocker-layer{position:absolute;inset:28px;z-index:12;pointer-events:none}.boss-blocker-layer .boss-blocker{pointer-events:auto;position:absolute}
+.boss-upgrade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.full-width-settings{grid-column:1/-1}.settings-statistics .section-title{display:none}.settings-statistics{margin-top:10px}
+.admin-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.admin-edit-card label{display:grid;gap:5px;color:var(--muted);font-size:12px}.admin-edit-card input{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff}
+@media(max-width:700px){.boss-upgrade-grid,.admin-edit-grid{grid-template-columns:1fr}}

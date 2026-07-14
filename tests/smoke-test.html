@@ -1,2 +1,23 @@
-<!doctype html><meta charset="utf-8"><button id="run">Test</button><div id="out"></div><script>
-run.onclick=async()=>{const a=await fetch('../js/app.js?v=06areadability').then(r=>r.text()),h=await fetch('../index.html?v=06areadability').then(r=>r.text()),c=await fetch('../css/styles.css?v=06areadability').then(r=>r.text());const x=[['Ciaśniejszy Reflex',a.includes('if(distance>.105)')],['Feedback Reflex',a.includes('showReflexFeedback')],['Życia w HUD',h.includes('parkourLives')&&h.includes('dodgeLives')],['Portal widoczny',a.includes('x.ellipse(d.portal.x')],['Szpital Rider',a.includes("type:hospital?'hospital':'star'")],['Fake ciemniejszy',c.includes('brightness(.72)')],['Opisy zakładek',h.includes('section-description')]];out.innerHTML=x.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')}</script>
+<!doctype html><meta charset="utf-8">
+<title>Test 0.6a UI/Boss/Admin</title>
+<button id="run">Uruchom test</button><div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const h=await fetch('../index.html?v=06auibossadmin',{cache:'no-store'}).then(r=>r.text());
+ const a=await fetch('../js/app.js?v=06auibossadmin',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06auibossadmin',{cache:'no-store'}).then(r=>r.text());
+ const p=await fetch('../js/profile-admin.js?v=06auibossadmin',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['Portal nieunikniony',a.includes('const crossing=d.reversed?d.portal.x>=p.x')],
+  ['Szpital na ziemi',a.includes('healing:true')],
+  ['Stabilny cooldown',a.includes('Math.ceil(left/1000)')],
+  ['Ulepszenia bossów',h.includes('bossDamageUpgradeBtn')&&h.includes('bossBlockerUpgradeBtn')],
+  ['Przeszkody na klikerze',h.includes('bossBlockerLayer')&&s.includes('bossBlockerLayer')],
+  ['Najlepsze oceny',h.includes('aimBestGrade')],
+  ['Brak Co nowego',!h.includes('📰 Co nowego')],
+  ['Statystyki w ustawieniach',h.includes('settings-statistics')],
+  ['Edycja profilu admina',p.includes('adminSavePlayerProfile')]
+ ];
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
+}
+</script>

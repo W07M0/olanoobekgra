@@ -576,7 +576,7 @@ function renderMiniStats(){
  setText('#aimBest',((Number(records.aim)||0)/100).toFixed(1)+'%');
  setText('#parkourBest',fmt(Number(records.parkour)||0)+' m');
  setText('#reflexBest',fmt(Number(records.reflex)||0));
- setText('#dodgeBest',fmt(Number(records.dodge)||0));
+ setText('#dodgeBest',fmt(Number(records.dodge)||0));const grades=state.minigameBestGrades||{};setText('#aimBestGrade',grades.aim||'-');setText('#parkourBestGrade',grades.parkour||'-');setText('#reflexBestGrade',grades.reflex||'-');setText('#dodgeBestGrade',grades.dodge||'-');
 
  // Zgodność ze starym interfejsem, jeśli któryś element nadal istnieje.
  setText('#memoryBest',fmt(Number(state.memoryBest)||0));
@@ -713,4 +713,18 @@ function openGoldCase(){
 }
 
 
-if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};
+if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};function bossDamageUpgradeCost(){return Math.floor(2500*Math.pow(1.72,state.bossDamageLevel||0))}
+function bossBlockerUpgradeCost(){return Math.floor(4200*Math.pow(1.78,state.bossBlockerDelayLevel||0))}
+function bossDamageUpgradeMultiplier(){return 1+(state.bossDamageLevel||0)*.12}
+function bossBlockerDelayMultiplier(){return 1+(state.bossBlockerDelayLevel||0)*.10}
+function buyBossDamageUpgrade(){const cost=bossDamageUpgradeCost();if(state.points<cost)return toast('Za mało punktów');state.points-=cost;state.bossDamageLevel=(state.bossDamageLevel||0)+1;sfx('buy');render()}
+function buyBossBlockerUpgrade(){const cost=bossBlockerUpgradeCost();if(state.points<cost)return toast('Za mało punktów');state.points-=cost;state.bossBlockerDelayLevel=(state.bossBlockerDelayLevel||0)+1;sfx('buy');render()}
+
+
+
+function renderBossUpgrades(){
+ const a=$('#bossDamageUpgradeLevel'),b=$('#bossDamageUpgradeCost'),c=$('#bossDamageUpgradeBtn');
+ if(a)a.textContent=state.bossDamageLevel||0;if(b)b.textContent=fmt(bossDamageUpgradeCost());if(c)c.disabled=state.points<bossDamageUpgradeCost();
+ const d=$('#bossBlockerUpgradeLevel'),e=$('#bossBlockerUpgradeCost'),f=$('#bossBlockerUpgradeBtn');
+ if(d)d.textContent=state.bossBlockerDelayLevel||0;if(e)e.textContent=fmt(bossBlockerUpgradeCost());if(f)f.disabled=state.points<bossBlockerUpgradeCost()
+}

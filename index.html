@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#130623">
 <title>Ultimate Noob Clicker v0.6a</title>
-<link rel="stylesheet" href="css/styles.css?v=06areadability">
+<link rel="stylesheet" href="css/styles.css?v=06auibossadmin">
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -44,7 +44,7 @@
  <div class="world-banner" id="worldBanner"><span id="worldEmoji">🌃</span><div><b id="worldName">Neonowa Piwnica</b><small id="worldFlavor">Pierwszy krok każdego nooba.</small></div></div>
  <div class="arena">
   <div class="aura" id="aura"></div>
-  <div class="clicker-wrap" id="clickerWrap"><div class="skin-orbit-fx" id="skinOrbitFx"></div><div class="pet-orbit" id="petOrbit"></div><button class="clicker" id="clicker"><span class="skin-fx"></span><span class="clicker-word" id="clickerWord">NOOB</span></button><div class="skin-particles" id="skinParticles"></div></div>
+  <div class="clicker-wrap" id="clickerWrap"><div class="boss-blocker-layer" id="bossBlockerLayer"></div><div class="skin-orbit-fx" id="skinOrbitFx"></div><div class="pet-orbit" id="petOrbit"></div><button class="clicker" id="clicker"><span class="skin-fx"></span><span class="clicker-word" id="clickerWord">NOOB</span></button><div class="skin-particles" id="skinParticles"></div></div>
   
   <div class="combo" id="combo">COMBO x1</div>
  </div>
@@ -69,7 +69,7 @@
 
 <section class="view" id="view-shop">
  <div class="section-title">
-  <div><h1>🛒 Sklep ulepszeń</h1><p class="section-description">Ulepszenia podstawowe resetują się po rebirth. Permanentne pozostają na zawsze.</p><p class="muted">Podstawowe ulepszenia resetują się po rebirth. Permanentne zostają na zawsze.</p></div>
+  <div><h1>🛒 Sklep ulepszeń</h1><p class="muted">Podstawowe ulepszenia resetują się po rebirth. Permanentne zostają na zawsze.</p></div>
   <div class="currency"><span class="chip">⭐ <b data-bind="points">0</b></span><span class="chip">💎 <b data-bind="gems">0</b></span><span class="chip">🟡 <b data-bind="coins">0</b></span></div>
  </div>
  <div class="shop-section temporary-shop">
@@ -80,10 +80,10 @@
   <div class="shop-section-head"><div><h2>♾️ Ulepszenia permanentne</h2><p class="muted">Kupowane za diamenty i Noob Coiny. Zostają po rebirth.</p></div><span class="shop-tag permanent-tag">NA ZAWSZE</span></div>
   <div class="grid" id="permanentShopGrid"></div>
  </div>
-</section>
+<div class="card boss-upgrade-panel"><h2>⚔️ Ulepszenia bossów</h2><p class="muted">Podstawowe ulepszenia resetowane po rebirth.</p><div class="boss-upgrade-grid"><div class="upgrade-card"><div class="big">💥</div><h3>Siła przeciw bossom</h3><p>+12% obrażeń bossom za poziom.</p><b>Lv. <span id="bossDamageUpgradeLevel">0</span></b><button id="bossDamageUpgradeBtn">Kup — <span id="bossDamageUpgradeCost">0</span></button></div><div class="upgrade-card"><div class="big">⏳</div><h3>Opóźnienie blokad</h3><p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p><b>Lv. <span id="bossBlockerUpgradeLevel">0</span></b><button id="bossBlockerUpgradeBtn">Kup — <span id="bossBlockerUpgradeCost">0</span></button></div></div></div></section>
 
 <section class="view" id="view-pets">
- <div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="section-description">Wyposażaj do 3 petów, rozwijaj je i łącz duplikaty w silniejsze formy.</p><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn" id="openCrate">Otwórz jajko — 30 💎</button></div>
+ <div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn" id="openCrate">Otwórz jajko — 30 💎</button></div>
  <div class="inventory-info">Wyposażone: <b id="equippedCount">0/3</b> • Łączny bonus petów: <b id="petBonus">x1.00</b> • EXP z petów: <b id="petExpBonus">x1.00</b></div>
  <div id="petGrid"></div>
 </section>
@@ -92,7 +92,7 @@
 
 <section class="view" id="view-minigames">
  <div class="section-title">
-  <div><h1>🎮 Noob Arcade</h1><p class="section-description">Każda minigra testuje inną umiejętność. Wynik, życia i accuracy wpływają na ocenę oraz nagrody.</p><p class="muted">Wynik zależy od umiejętności. Każda gra ma osobny cooldown 30 sekund.</p></div>
+  <div><h1>🎮 Noob Arcade</h1><p class="muted">Wynik zależy od umiejętności. Każda gra ma osobny cooldown 30 sekund.</p></div>
   <div class="currency"><span class="chip">⭐ EXP</span><span class="chip">💎 Diamenty</span></div>
  </div>
 
@@ -104,22 +104,22 @@
  <div class="arcade-grid">
   <article class="arcade-card aim-card">
    <div class="arcade-icon">🎯</div><div><h3>Noob Aim Lab</h3><p>Klikaj jasne cele przed ich zniknięciem. Ciemniejsze cele są fałszywe. Pudło obniża accuracy i combo.</p></div>
-   <div class="arcade-record">Rekord: <b id="aimBest">0%</b></div>
+   <div class="arcade-record">Rekord: <b id="aimBest">0%</b><br>Najlepsza ocena: <strong id="aimBestGrade">-</strong></div>
    <button class="arcade-play" data-mini="aim" id="playAim">Graj</button><small class="cooldown-label" id="cooldown-aim"></small>
   </article>
   <article class="arcade-card parkour-card">
    <div class="arcade-icon">🛒</div><div><h3>Noob Rider</h3><p>Skacz spacją lub dotykiem, omijaj przeszkody, zbieraj gwiazdy i szpitale. Co 10 000 m pojawia się portal.</p></div>
-   <div class="arcade-record">Rekord: <b id="parkourBest">0 m</b></div>
+   <div class="arcade-record">Rekord: <b id="parkourBest">0 m</b><br>Najlepsza ocena: <strong id="parkourBestGrade">-</strong></div>
    <button class="arcade-play" data-mini="parkour" id="playParkour">Graj</button><small class="cooldown-label" id="cooldown-parkour"></small>
   </article>
   <article class="arcade-card reflex-card">
    <div class="arcade-icon">⚡</div><div><h3>Noob Reflex</h3><p>Naciskaj strzałki dokładnie na świecącej linii. Perfect daje więcej punktów. Nie trafiaj bomb.</p></div>
-   <div class="arcade-record">Rekord: <b id="reflexBest">0</b></div>
+   <div class="arcade-record">Rekord: <b id="reflexBest">0</b><br>Najlepsza ocena: <strong id="reflexBestGrade">-</strong></div>
    <button class="arcade-play" data-mini="reflex" id="playReflex">Graj</button><small class="cooldown-label" id="cooldown-reflex"></small>
   </article>
   <article class="arcade-card dodge-card">
    <div class="arcade-icon">🧠</div><div><h3>Brainrot Dodge</h3><p>Unikaj przeszkód, zbieraj bonusy i zachowaj jak najwięcej z 3 żyć. Tempo rośnie z czasem.</p></div>
-   <div class="arcade-record">Rekord: <b id="dodgeBest">0</b></div>
+   <div class="arcade-record">Rekord: <b id="dodgeBest">0</b><br>Najlepsza ocena: <strong id="dodgeBestGrade">-</strong></div>
    <button class="arcade-play" data-mini="dodge" id="playDodge">Graj</button><small class="cooldown-label" id="cooldown-dodge"></small>
   </article>
  </div>
@@ -174,14 +174,14 @@
 </section>
 
 <section class="view" id="view-skins">
- <div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="section-description">Skiny zmieniają wygląd, dźwięki i efekty klikera.</p><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
+ <div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
  <div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div><div class="grid" id="skinGrid"></div>
 </section>
 
 
 <section class="view" id="view-casino">
  <div class="section-title">
-  <div><h1>🎰 Noob Casino</h1><p class="section-description">Graj wyłącznie za wirtualne żetony, rozwijaj kasyno i wymieniaj wygrane.</p><p class="muted">Kasyno używa wyłącznie wirtualnych żetonów. Bez prawdziwych pieniędzy.</p></div>
+  <div><h1>🎰 Noob Casino</h1><p class="muted">Kasyno używa wyłącznie wirtualnych żetonów. Bez prawdziwych pieniędzy.</p></div>
   <div class="casino-wallet"><span>🎲 <b id="casinoChips">0</b></span><span>🏨 Lv.<b id="casinoLevel">1</b></span></div>
  </div>
 
@@ -257,13 +257,13 @@
 </section>
 
 <section class="view" id="view-worlds">
- <div class="section-title"><div><h1>🌍 Światy</h1><p class="section-description">Pokonuj bossów i przechodź światy po kolei.</p><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
+ <div class="section-title"><div><h1>🌍 Światy</h1><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
  <div class="world-path"><b>Ścieżka bossów</b><div class="world-path-row" id="worldPath"></div></div><div class="grid" id="worldGrid"></div>
 </section>
 
 <section class="view" id="view-rebirth">
  <div class="rebirth-box">
-  <div class="rebirth-icon">♻️</div><h1>Rebirth</h1><p class="section-description">Resetuj część postępu, aby zdobywać trwałe bonusy.</p>
+  <div class="rebirth-icon">♻️</div><h1>Rebirth</h1>
   <p class="muted">Zresetuj punkty, poziom i podstawowe ulepszenia. Zachowasz pety, diamenty, monety i otrzymasz trwałe Noob Coiny.</p>
   <h2>Otrzymasz: <span id="rebirthGain" class="gradient">0 🟡</span></h2>
   <p>Noob Coiny dają trwały mnożnik z malejącą skutecznością — kolejne monety są coraz słabsze.</p>
@@ -365,7 +365,7 @@
    <p class="muted" id="adminLoginStatus">Konto musi istnieć w Supabase Authentication i tabeli admin_users.</p>
   </div>
  </div>
-</section>
+<div class="card settings-card full-width-settings"><h2>📊 Statystyki</h2><div class="settings-statistics"><div class="stats-grid"><div class="stat-card"><b id="settingsTotalClicks">0</b><span>Kliknięć</span></div><div class="stat-card"><b id="settingsPlayTime">0</b><span>Czas gry</span></div><div class="stat-card"><b id="settingsBossWins">0</b><span>Pokonanych bossów</span></div><div class="stat-card"><b id="settingsMinigames">0</b><span>Minigier</span></div></div></div></div></section>
 
 <section class="view" id="view-admin">
  <div class="section-title">
@@ -384,7 +384,7 @@
  </div>
  <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
  <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
-</section>
+<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"></label><label>Punkty<input id="adminEditPoints" type="number" min="0"></label><label>Noob Coiny<input id="adminEditCoins" type="number" min="0"></label><label>Diamenty<input id="adminEditGems" type="number" min="0"></label><label>Poziom<input id="adminEditLevel" type="number" min="1"></label><label>Rebirthy<input id="adminEditRebirths" type="number" min="0"></label></div><button id="adminSavePlayer">Zapisz zmiany profilu</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section>
 
 <section class="view" id="view-patchnotes">
  <div class="section-title">
@@ -408,14 +408,6 @@
  <section class="panel event-box"><div class="event-title" id="eventTitle">✨ Następny event</div><div class="event-timer" id="eventTimer">00:45</div><div class="muted" id="eventDesc">Losowy bonus pojawi się za chwilę.</div></section>
  <section class="panel"><h2>📜 Dzienne questy</h2><div id="questList"></div></section>
  <section class="panel"><h2>🏆 Globalny ranking</h2><div class="board-tabs"><button class="tab active" data-board="score">Punkty</button><button class="tab" data-board="level">Poziom</button><button class="tab" data-board="rebirths">Rebirth</button></div><div id="leaderboard"></div><div class="compact-profile"><span id="rankingProfileName">Ustaw nick w profilu</span><input id="playerName" hidden></div></section>
- 
- <section class="panel mini-patch-card">
-  <div class="mini-patch-head"><h2>📰 Co nowego</h2><span>v0.6a</span></div>
-  <p><b>Polish & Overhaul</b></p>
-  <p class="muted">Nowe UI, poprawiona orbita petów i ulepszone skiny.</p>
-  <button class="small-btn" onclick="showView('patchnotes')">Zobacz historię</button>
- </section>
-
 <section class="panel"><h2>📊 Statystyki</h2><div id="statsBox" class="muted"></div></section>
 </aside>
 </div>
@@ -443,11 +435,11 @@
 <div class="toast" id="toast"></div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/data.js?v=06areadability"></script>
-<script defer src="js/core.js?v=06areadability"></script>
-<script defer src="js/systems.js?v=06areadability"></script>
-<script defer src="js/integrations.js?v=06areadability"></script>
-<script defer src="js/profile-admin.js?v=06areadability"></script>
-<script defer src="js/app.js?v=06areadability"></script>
+<script defer src="js/data.js?v=06auibossadmin"></script>
+<script defer src="js/core.js?v=06auibossadmin"></script>
+<script defer src="js/systems.js?v=06auibossadmin"></script>
+<script defer src="js/integrations.js?v=06auibossadmin"></script>
+<script defer src="js/profile-admin.js?v=06auibossadmin"></script>
+<script defer src="js/app.js?v=06auibossadmin"></script>
 </body>
 </html>

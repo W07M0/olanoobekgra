@@ -40,7 +40,7 @@ function renderMiniCooldowns(){
  ['aim','parkour','reflex','dodge'].forEach(id=>{
   const left=Math.max(0,(state.minigameCooldowns[id]||0)-Date.now());
   const label=$('#cooldown-'+id),button=$(`[data-mini="${id}"]`);
-  if(label)label.textContent=left>0?`Cooldown: ${(left/1000).toFixed(1)} s`:'Gotowa';
+  if(label)label.textContent=left>0?`Cooldown: ${Math.ceil(left/1000)} s`:'Gotowa';
   if(button)button.disabled=left>0
  })
 }
@@ -116,6 +116,8 @@ function miniRewards(normalized,rawScore,grade){
  const coins=Math.max(1,Math.floor((2+quality*10)*coinRewardMultiplier()*gradeMult*globalMult*baseBuff));
  return{xp,points,gems,coins,gradeMult,globalMult}
 }
+const miniGradeRank={D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7};
+function saveBestMinigameGrade(game,grade){state.minigameBestGrades={aim:'-',parkour:'-',reflex:'-',dodge:'-',...(state.minigameBestGrades||{})};const old=state.minigameBestGrades[game]||'-';if((miniGradeRank[grade]||0)>(miniGradeRank[old]||0))state.minigameBestGrades[game]=grade}
 function finishMini(id,title,displayScore,normalized,rawScore){
  startMiniCooldown(id);
  state.eventStats.minigames++;
@@ -130,7 +132,7 @@ function finishMini(id,title,displayScore,normalized,rawScore){
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
  $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
  $('#miniResultOverlay').classList.add('show');
- registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
+ saveBestMinigameGrade(id,grade);registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
  render();loadMinigameLeaderboards()
 }
 
@@ -212,16 +214,14 @@ function parkourLoop(){
  d.invuln=Math.max(0,d.invuln-dt);
  if(d.score+d.bonus>=d.nextPortal&&!d.portal){
   d.nextPortal+=10000;
-  d.portal={x:d.reversed?-70:c.width+40,y:165,w:74,h:115,effect:rand(['reverse','flip','boost'])}
+  d.portal={x:d.reversed?-55:c.width+55,y:238,w:96,h:140,effect:rand(['reverse','flip','boost'])}
  }
  d.spawn-=dt;
  if(d.spawn<=0){
   const type=rand(['💩','📦','🧱','🌵']);
   d.obs.push({x:d.reversed?-50:c.width+30,y:255,w:42,h:46,type});
-  if(Math.random()<.35){
-  const hospital=Math.random()<.08;
-  d.pickups.push({x:d.reversed?-90:c.width+100,y:hospital?205:180-Math.random()*80,r:hospital?26:20,type:hospital?'hospital':'star'})
- }
+  if(Math.random()<.35)d.pickups.push({x:d.reversed?-90:c.width+100,y:180-Math.random()*80,r:20,type:'star'});
+ if(Math.random()<.035&&d.lives<3)d.obs.push({x:d.reversed?-70:c.width+50,y:244,w:48,h:56,type:'hospital',healing:true});
   d.spawn=Math.max(38,78-d.score/18)+Math.random()*26
  }
  d.p.vy+=.78*dt;d.p.y+=d.p.vy*dt;if(d.p.y>245){d.p.y=245;d.p.vy=0}
@@ -236,17 +236,11 @@ function parkourLoop(){
   w:p.w-20,
   h:p.h-10
  };
+ let collidedObstacle=null;
  const hit=d.obs.some(o=>{
-  const obstacleHitbox={
-   x:o.x+7,
-   y:o.y+8,
-   w:Math.max(12,o.w-14),
-   h:Math.max(14,o.h-10)
-  };
-  return playerHitbox.x<obstacleHitbox.x+obstacleHitbox.w&&
-   playerHitbox.x+playerHitbox.w>obstacleHitbox.x&&
-   playerHitbox.y<obstacleHitbox.y+obstacleHitbox.h&&
-   playerHitbox.y+playerHitbox.h>obstacleHitbox.y
+  const obstacleHitbox={x:o.x+(o.healing?4:7),y:o.y+(o.healing?4:8),w:Math.max(12,o.w-(o.healing?8:14)),h:Math.max(14,o.h-(o.healing?6:10))};
+  const collided=playerHitbox.x<obstacleHitbox.x+obstacleHitbox.w&&playerHitbox.x+playerHitbox.w>obstacleHitbox.x&&playerHitbox.y<obstacleHitbox.y+obstacleHitbox.h&&playerHitbox.y+playerHitbox.h>obstacleHitbox.y;
+  if(collided)collidedObstacle=o;return collided
  });
  d.pickups=d.pickups.filter(o=>{const got=p.x<o.x+o.r&&p.x+p.w>o.x-o.r&&p.y<o.y+o.r&&p.y+p.h>o.y-o.r;if(got){
   if(o.type==='hospital'){
@@ -262,7 +256,7 @@ function parkourLoop(){
  const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,'#30145d');g.addColorStop(1,'#ff73c4');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
  x.fillStyle='#4a194f';x.fillRect(0,300,c.width,30);
  x.font='36px Arial';x.fillText('🛒',p.x,p.y+38);x.font='26px Arial';x.fillText('😎',p.x+15,p.y+12);
- d.obs.forEach(o=>{x.font='38px Arial';x.fillText(o.type,o.x,o.y+40)});
+ d.obs.forEach(o=>{x.save();if(o.healing){x.shadowBlur=22;x.shadowColor='#4dffad';x.font='44px Arial';x.fillText('🏥',o.x,o.y+42)}else{x.font='38px Arial';x.fillText(o.type,o.x,o.y+40)}x.restore()});
  d.pickups.forEach(o=>{
   x.save();x.shadowBlur=18;x.shadowColor=o.type==='hospital'?'#4dffad':'#ffd34e';
   x.font=o.type==='hospital'?'38px Arial':'30px Arial';
@@ -272,32 +266,30 @@ function parkourLoop(){
   x.save();
   x.shadowBlur=28;x.shadowColor='#b25cff';
   x.strokeStyle='#c975ff';x.lineWidth=10;
-  x.beginPath();x.ellipse(d.portal.x,d.portal.y,28,52,0,0,Math.PI*2);x.stroke();
+  x.beginPath();x.ellipse(d.portal.x,d.portal.y,42,68,0,0,Math.PI*2);x.stroke();
   x.font='26px Arial';x.fillText('🌀',d.portal.x-15,d.portal.y+8);
   x.restore()
  }
  $('#parkourScore').textContent=Math.floor(d.score+d.bonus);$('#parkourSpeed').textContent=(d.speed/5).toFixed(1);if($('#parkourLives'))$('#parkourLives').textContent='❤️'.repeat(d.lives)+'🖤'.repeat(3-d.lives);
  
  if(d.portal){
-  const px=d.portal.x-30,py=d.portal.y-55,pw=60,ph=110;
-  const entered=playerHitbox.x<px+pw&&playerHitbox.x+playerHitbox.w>px&&playerHitbox.y<py+ph&&playerHitbox.y+playerHitbox.h>py;
-  if(entered){
+  const crossing=d.reversed?d.portal.x>=p.x:d.portal.x<=p.x+p.w;
+  if(crossing){
    const effect=d.portal.effect;
-   d.obs=d.obs.filter(o=>Math.abs(o.x-p.x)>230);
-   d.speed=Math.max(5,d.speed*.82);
+   d.obs=d.obs.filter(o=>Math.abs(o.x-p.x)>260);
+   d.pickups=d.pickups.filter(o=>Math.abs(o.x-p.x)>190);
+   d.speed=Math.max(5,d.speed*.78);
    if(effect==='reverse'){d.reversed=!d.reversed;toast('🌀 Portal: zmiana kierunku!')}
    if(effect==='flip'){d.flipped=!d.flipped;toast('🙃 Portal: świat do góry nogami!')}
    if(effect==='boost'){d.speed=Math.min(20,d.speed+3);toast('⚡ Portal: turbo!')}
    const canvas=$('#parkourCanvas');if(canvas)canvas.classList.toggle('parkour-flipped',d.flipped);
-   d.portal=null;
-   d.invuln=90;
-   sfx('good')
-  }else if(d.portal.x<-100||d.portal.x>c.width+100){
-   d.portal=null
-  }
+   d.portal=null;d.invuln=110;sfx('good')
+  }else if(d.portal.x<-120||d.portal.x>c.width+120){d.portal=null}
  }
 
- if(hit&&d.invuln<=0){
+ if(hit&&collidedObstacle?.healing){
+  d.lives=Math.min(3,d.lives+1);d.obs=d.obs.filter(o=>o!==collidedObstacle);d.invuln=45;sfx('good')
+ }else if(hit&&d.invuln<=0){
   d.lives--;d.invuln=70;sfx('bad');
   d.obs=d.obs.filter(o=>!(playerHitbox.x<o.x+o.w&&playerHitbox.x+playerHitbox.w>o.x));
   if($('#parkourLives'))$('#parkourLives').classList.add('life-hit');setTimeout(()=>$('#parkourLives')?.classList.remove('life-hit'),350);
@@ -611,6 +603,9 @@ bindClick('#stopAim',()=>window.stopAimGame?.(false));
 bindClick('#stopParkourBtn',()=>window.stopParkour?.(false));
 bindClick('#stopReflexBtn',()=>window.stopReflex?.(false));
 bindClick('#stopDodgeBtn',()=>window.stopDodge?.(false));
+
+bindClick('#bossDamageUpgradeBtn',buyBossDamageUpgrade);
+bindClick('#bossBlockerUpgradeBtn',buyBossBlockerUpgrade);
 
 /* Główna gra */
 bindClick('#clicker',doClick);

@@ -273,3 +273,24 @@ function bindAdminPanel(){
  });
  db?.auth.onAuthStateChange(()=>setTimeout(refreshAdminSession,0))
 }
+
+let adminEditedProfile=null;
+async function adminLoadPlayerProfile(){
+ if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
+ const id=$('#adminEditPlayerId')?.value.trim();if(!id)return toast('Wpisz Player ID');
+ const {data,error}=await db.from('players').select('*').eq('player_id',id).maybeSingle();
+ if(error||!data){if($('#adminEditStatus'))$('#adminEditStatus').textContent='Nie znaleziono profilu.';return}
+ adminEditedProfile=data;const save=data.save_data||data.game_state||{};
+ $('#adminEditName').value=data.player_name||'';$('#adminEditPoints').value=Math.floor(save.points||0);$('#adminEditCoins').value=Math.floor(save.coins||0);$('#adminEditGems').value=Math.floor(save.gems||0);$('#adminEditLevel').value=Math.max(1,Math.floor(save.level||1));$('#adminEditRebirths').value=Math.max(0,Math.floor(save.rebirths||0));$('#adminEditStatus').textContent='Profil pobrany.'
+}
+async function adminSavePlayerProfile(){
+ if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
+ if(!adminEditedProfile)return toast('Najpierw pobierz profil');
+ const id=$('#adminEditPlayerId').value.trim(),existing=adminEditedProfile.save_data||adminEditedProfile.game_state||{};
+ const updated={...existing,points:Math.max(0,Number($('#adminEditPoints').value)||0),coins:Math.max(0,Number($('#adminEditCoins').value)||0),gems:Math.max(0,Number($('#adminEditGems').value)||0),level:Math.max(1,Number($('#adminEditLevel').value)||1),rebirths:Math.max(0,Number($('#adminEditRebirths').value)||0)};
+ let payload={player_name:($('#adminEditName').value||'Gracz').trim().slice(0,16),save_data:updated,updated_at:new Date().toISOString()};
+ let {error}=await db.from('players').update(payload).eq('player_id',id);
+ if(error&&String(error.message).includes('save_data')){delete payload.save_data;payload.game_state=updated;({error}=await db.from('players').update(payload).eq('player_id',id))}
+ $('#adminEditStatus').textContent=error?'Błąd: '+error.message:'Profil zapisany.'
+}
+setTimeout(()=>{if($('#adminLoadPlayer'))$('#adminLoadPlayer').onclick=adminLoadPlayerProfile;if($('#adminSavePlayer'))$('#adminSavePlayer').onclick=adminSavePlayerProfile},0);
