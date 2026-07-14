@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6b</title>
-<link href="css/styles.css?v=06bremotesync" rel="stylesheet"/>
+<link href="css/styles.css?v=06brepairtools" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -426,6 +426,26 @@
  <div id="adminAllPets" class="admin-all-pets"></div>
 <button type="button" class="admin-section-save" data-admin-save-section="pets">Zapisz wszystkie pety</button></div>
 <div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div id="adminEquippedPets" class="admin-equipped-pets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button><button type="button" class="admin-section-save" data-admin-save-section="equipped">Zapisz wyposażone pety</button></div>
+
+<div class="admin-editor-section admin-repair-section" id="adminRepairSave">
+ <h3>🧹 Napraw zapis</h3>
+ <p class="muted">Narzędzia usuwają osierocone dane po starszych wersjach gry. Najpierw pobierz profil gracza.</p>
+
+ <div class="admin-repair-grid">
+  <button type="button" data-admin-repair="skins">🎨 Usuń nieistniejące skiny</button>
+  <button type="button" data-admin-repair="pets">👻 Usuń pety widmo</button>
+  <button type="button" data-admin-repair="equipped">🎒 Napraw wyposażone pety</button>
+  <button type="button" data-admin-repair="worlds">🌍 Napraw światy</button>
+  <button type="button" class="danger-btn" data-admin-repair="all">🧽 Napraw cały zapis</button>
+ </div>
+
+ <div class="admin-repair-preview" id="adminRepairPreview">
+  Brak wykonanej naprawy.
+ </div>
+
+ <button type="button" id="adminSaveRepair" disabled>Zapisz naprawiony profil</button>
+</div>
+
 <div class="admin-editor-section admin-json-section">
  <div class="admin-json-heading">
   <div>
@@ -480,11 +500,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06bremotesync"></script>
-<script defer="" src="js/core.js?v=06bremotesync"></script>
-<script defer="" src="js/systems.js?v=06bremotesync"></script>
-<script defer="" src="js/integrations.js?v=06bremotesync"></script>
-<script defer="" src="js/profile-admin.js?v=06bremotesync"></script>
-<script defer="" src="js/app.js?v=06bremotesync"></script>
+<script defer="" src="js/data.js?v=06brepairtools"></script>
+<script defer="" src="js/core.js?v=06brepairtools"></script>
+<script defer="" src="js/systems.js?v=06brepairtools"></script>
+<script defer="" src="js/integrations.js?v=06brepairtools"></script>
+<script defer="" src="js/profile-admin.js?v=06brepairtools"></script>
+<script defer="" src="js/app.js?v=06brepairtools"></script>
 </body>
 </html>

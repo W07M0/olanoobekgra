@@ -903,6 +903,205 @@ async function adminSaveSection(section){
  }
 }
 
+
+let adminPendingRepair=null;
+
+function adminKnownSkinIds(){
+ const sources=[];
+ if(typeof skins!=='undefined'&&Array.isArray(skins))sources.push(...skins);
+ if(typeof SKINS!=='undefined'&&Array.isArray(SKINS))sources.push(...SKINS);
+ if(typeof skinList!=='undefined'&&Array.isArray(skinList))sources.push(...skinList);
+
+ const ids=sources.map(item=>typeof item==='string'?item:item?.id).filter(Boolean);
+ if(!ids.includes('classic'))ids.unshift('classic');
+ return new Set(ids)
+}
+
+function adminKnownWorldIds(){
+ const sources=[];
+ if(typeof worlds!=='undefined'&&Array.isArray(worlds))sources.push(...worlds);
+ if(typeof WORLDS!=='undefined'&&Array.isArray(WORLDS))sources.push(...WORLDS);
+ if(typeof worldDefs!=='undefined'&&Array.isArray(worldDefs))sources.push(...worldDefs);
+
+ const ids=sources.map(item=>typeof item==='string'?item:item?.id).filter(Boolean);
+ if(!ids.includes('neon'))ids.unshift('neon');
+ return new Set(ids)
+}
+
+function adminRepairSkins(save,report){
+ const known=adminKnownSkinIds();
+ const before=Array.isArray(save.ownedSkins)?save.ownedSkins:[];
+ const cleaned=[...new Set(before.filter(id=>known.has(id)))];
+
+ if(!cleaned.includes('classic'))cleaned.unshift('classic');
+
+ const removed=before.filter(id=>!cleaned.includes(id));
+ save.ownedSkins=cleaned;
+
+ if(!known.has(save.activeSkin)||!cleaned.includes(save.activeSkin)){
+  if(save.activeSkin&&save.activeSkin!=='classic')report.push(`Aktywny skin "${save.activeSkin}" zmieniono na classic.`);
+  save.activeSkin='classic'
+ }
+
+ if(removed.length)report.push(`Usunięto skiny: ${removed.join(', ')}`);
+ else report.push('Nie znaleziono nieistniejących skinów.')
+}
+
+function adminRepairPets(save,report){
+ const pets=Array.isArray(save.pets)?save.pets:[];
+ const seen=new Set();
+ const cleaned=[];
+ const removed=[];
+
+ for(const pet of pets){
+  const uid=adminPetUid(pet);
+  const type=adminPetType(pet);
+
+  if(!uid||seen.has(uid)){
+   removed.push(uid||'(bez UID)');
+   continue
+  }
+
+  let known=true;
+  if(typeof petDefs!=='undefined'&&Array.isArray(petDefs)){
+   known=petDefs.some(def=>def.id===type)
+  }else if(typeof PETS!=='undefined'&&Array.isArray(PETS)){
+   known=PETS.some(def=>def.id===type)
+  }
+
+  if(!known){
+   removed.push(`${uid} (${type})`);
+   continue
+  }
+
+  seen.add(uid);
+  cleaned.push(pet)
+ }
+
+ save.pets=cleaned;
+
+ if(removed.length)report.push(`Usunięto pety widmo/duplikaty: ${removed.join(', ')}`);
+ else report.push('Nie znaleziono petów widmo.')
+}
+
+function adminRepairEquipped(save,report){
+ const pets=Array.isArray(save.pets)?save.pets:[];
+ const valid=new Set(pets.map(adminPetUid).filter(Boolean));
+ const before=Array.isArray(save.equipped)?save.equipped:[];
+ const cleaned=[...new Set(before.filter(uid=>valid.has(uid)))].slice(0,3);
+
+ const removed=before.filter(uid=>!cleaned.includes(uid));
+ save.equipped=cleaned;
+
+ if(removed.length)report.push(`Usunięto wyposażone pety widmo: ${removed.join(', ')}`);
+ else report.push('Wyposażone pety są poprawne.')
+}
+
+function adminRepairWorlds(save,report){
+ const known=adminKnownWorldIds();
+ const before=Array.isArray(save.unlockedWorlds)?save.unlockedWorlds:[];
+ const cleaned=[...new Set(before.filter(id=>known.has(id)))];
+
+ if(!cleaned.includes('neon'))cleaned.unshift('neon');
+
+ const removed=before.filter(id=>!cleaned.includes(id));
+ save.unlockedWorlds=cleaned;
+
+ if(!known.has(save.world)||!cleaned.includes(save.world)){
+  if(save.world&&save.world!=='neon')report.push(`Aktualny świat "${save.world}" zmieniono na neon.`);
+  save.world='neon'
+ }
+
+ const defeated=Array.isArray(save.worldBossesDefeated)?save.worldBossesDefeated:[];
+ const cleanedDefeated=[...new Set(defeated.filter(id=>known.has(id)))];
+ const removedBosses=defeated.filter(id=>!cleanedDefeated.includes(id));
+ save.worldBossesDefeated=cleanedDefeated;
+
+ if(removed.length)report.push(`Usunięto nieistniejące światy: ${removed.join(', ')}`);
+ if(removedBosses.length)report.push(`Usunięto błędnych bossów światów: ${removedBosses.join(', ')}`);
+ if(!removed.length&&!removedBosses.length)report.push('Dane światów są poprawne.')
+}
+
+function adminRepairSaveData(mode){
+ if(!adminEditedProfile)throw new Error('Najpierw pobierz profil');
+
+ const save=adminClone(parseAdminSaveData(adminEditedProfile.save_data));
+ const report=[];
+
+ if(mode==='skins'||mode==='all')adminRepairSkins(save,report);
+ if(mode==='pets'||mode==='all')adminRepairPets(save,report);
+ if(mode==='equipped'||mode==='all')adminRepairEquipped(save,report);
+ if(mode==='worlds'||mode==='all')adminRepairWorlds(save,report);
+
+ // Po usunięciu petów zawsze ponownie sprawdź wyposażenie.
+ if(mode==='pets')adminRepairEquipped(save,report);
+
+ adminPendingRepair=normalizeAdminSaveIntegers(save);
+
+ const preview=$('#adminRepairPreview');
+ if(preview){
+  preview.innerHTML=report.map(line=>`<div>• ${safeText(line)}</div>`).join('')
+ }
+
+ const saveButton=$('#adminSaveRepair');
+ if(saveButton)saveButton.disabled=false;
+
+ const json=$('#adminSaveJson');
+ if(json)json.value=JSON.stringify(adminPendingRepair,null,2);
+ setAdminJsonStatus(true,'JSON po naprawie');
+
+ safeAdminRender('form',()=>populateAdminForm(adminPendingRepair,adminEditedProfile));
+ return adminPendingRepair
+}
+
+async function adminSaveRepairedProfile(){
+ if(!adminEditedProfile)return toast('Najpierw pobierz profil');
+ if(!adminPendingRepair)return toast('Najpierw wykonaj naprawę');
+
+ const button=$('#adminSaveRepair');
+ const status=$('#adminEditStatus');
+ const oldText=button?.textContent;
+
+ if(button){
+  button.disabled=true;
+  button.textContent='Zapisywanie naprawy...'
+ }
+
+ try{
+  const id=$('#adminEditPlayerId')?.value.trim();
+  const updated=normalizeAdminSaveIntegers(adminPendingRepair);
+
+  const result=await adminWithTimeout(db.rpc('admin_update_player_full_profile',{
+   p_player_id:id,
+   p_player_name:updated.playerName||adminEditedProfile.player_name||'Gracz',
+   p_save_data:updated
+  }),12000);
+
+  if(result.error)throw result.error;
+
+  adminEditedProfile={
+   ...adminEditedProfile,
+   player_name:updated.playerName||adminEditedProfile.player_name,
+   save_data:updated,
+   updated_at:new Date().toISOString()
+  };
+
+  adminPendingRepair=null;
+  safeAdminRender('form',()=>populateAdminForm(updated,adminEditedProfile));
+
+  if(status)status.textContent='Naprawiony profil został zapisany.';
+  toast('Naprawa zapisu została zapisana')
+ }catch(error){
+  if(status)status.textContent='Błąd zapisu naprawy: '+(error.message||error);
+  toast('Nie udało się zapisać naprawy')
+ }finally{
+  if(button){
+   button.textContent=oldText||'Zapisz naprawiony profil';
+   button.disabled=!adminPendingRepair
+  }
+ }
+}
+
 async function adminSavePlayerProfile(){
  if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
  if(!adminEditedProfile)return toast('Najpierw pobierz profil');
@@ -994,3 +1193,19 @@ setTimeout(async()=>{
 document.addEventListener('visibilitychange',()=>{
  if(document.visibilityState==='visible')syncRemoteProfileToPlayer(false)
 });
+
+setTimeout(()=>{
+ document.querySelectorAll('[data-admin-repair]').forEach(button=>{
+  button.onclick=()=>{
+   try{
+    adminRepairSaveData(button.dataset.adminRepair);
+    toast('Naprawa przygotowana — sprawdź podsumowanie')
+   }catch(error){
+    toast(error.message)
+   }
+  }
+ });
+
+ const saveRepair=$('#adminSaveRepair');
+ if(saveRepair)saveRepair.onclick=adminSaveRepairedProfile
+},0);

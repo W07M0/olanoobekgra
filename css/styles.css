@@ -1161,3 +1161,39 @@ body.eco-mode .skin-local-particle{
  color:var(--muted);
  font-size:11px;
 }
+
+.admin-repair-section{
+ border-color:rgba(255,196,73,.20)!important;
+ background:
+  radial-gradient(circle at 90% 10%,rgba(255,196,73,.08),transparent 35%),
+  rgba(255,255,255,.032)!important;
+}
+.admin-repair-grid{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;
+ margin:12px 0;
+}
+.admin-repair-grid button{
+ min-height:44px;
+}
+.admin-repair-preview{
+ min-height:54px;
+ margin:12px 0;
+ padding:12px;
+ border-radius:11px;
+ background:rgba(0,0,0,.16);
+ border:1px solid rgba(255,255,255,.07);
+ color:var(--muted);
+ line-height:1.55;
+}
+#adminSaveRepair{
+ width:100%;
+ min-height:44px;
+ background:linear-gradient(135deg,#ffd34e,#ff8c42)!important;
+ color:#241300!important;
+ font-weight:1000!important;
+}
+@media(max-width:650px){
+ .admin-repair-grid{grid-template-columns:1fr}
+}
