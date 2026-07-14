@@ -1156,3 +1156,8 @@ body.eco-mode .skin-local-particle{
  white-space:nowrap;
  max-width:240px;
 }
+
+.remote-sync-note{
+ color:var(--muted);
+ font-size:11px;
+}

@@ -35,7 +35,105 @@ function renderProfileSettings(){
  $('#profileStatus').textContent=state.playerName?'Profil gotowy — ranking zapisuje się automatycznie.':'Ustaw nick, aby włączyć ranking.';const auto=$('#autosaveStatus');if(auto)auto.textContent='Automatyczny zapis aktywny';
  applyProfilePerformance()
 }
+
+let remoteProfileCheckTimer=null;
+let remoteProfileApplying=false;
+let lastRemoteProfileUpdatedAt=localStorage.getItem('unc_remote_profile_updated_at')||'';
+
+function parseRemoteSaveData(value){
+ if(value&&typeof value==='object')return value;
+ if(typeof value==='string'){
+  try{return JSON.parse(value)}
+  catch(error){console.warn('Nieprawidłowy save_data gracza:',error)}
+ }
+ return null
+}
+
+async function fetchOwnRemoteProfile(){
+ if(!db||!playerId)return null;
+
+ let result;
+ try{
+  result=await adminWithTimeout(
+   db.rpc('get_player_full_profile',{p_player_id:playerId}),
+   12000
+  )
+ }catch(error){
+  console.warn('Remote profile fetch timeout:',error);
+  return null
+ }
+
+ if(result.error){
+  console.warn('Remote profile fetch error:',result.error);
+  return null
+ }
+
+ return result.data||null
+}
+
+function mergeRemoteState(remoteSave){
+ if(!remoteSave||typeof remoteSave!=='object')return false;
+
+ const preserved={
+  soundEnabled:state.soundEnabled,
+  musicEnabled:state.musicEnabled,
+  effectIntensity:state.effectIntensity,
+  performanceMode:state.performanceMode,
+  playerId:state.playerId
+ };
+
+ Object.keys(state).forEach(key=>delete state[key]);
+ Object.assign(state,remoteSave,preserved);
+
+ if(typeof normalizeState==='function')normalizeState();
+ if(typeof ensureAchievementStats==='function')ensureAchievementStats();
+ if(typeof ensureArcadeCycle==='function')ensureArcadeCycle();
+
+ save();
+ return true
+}
+
+async function syncRemoteProfileToPlayer(force=false){
+ if(remoteProfileApplying)return false;
+
+ const row=await fetchOwnRemoteProfile();
+ if(!row)return false;
+
+ const updatedAt=row.updated_at||row.last_seen||'';
+ if(!force&&updatedAt&&updatedAt===lastRemoteProfileUpdatedAt)return false;
+
+ const remoteSave=parseRemoteSaveData(row.save_data);
+ if(!remoteSave||!Object.keys(remoteSave).length)return false;
+
+ remoteProfileApplying=true;
+ try{
+  const applied=mergeRemoteState(remoteSave);
+  if(!applied)return false;
+
+  lastRemoteProfileUpdatedAt=updatedAt||new Date().toISOString();
+  localStorage.setItem('unc_remote_profile_updated_at',lastRemoteProfileUpdatedAt);
+
+  if(typeof render==='function')render();
+  if(typeof applySkin==='function'){
+   try{applySkin()}catch(error){console.warn('Skin after remote sync:',error)}
+  }
+
+  toast('🔄 Profil został zaktualizowany przez administratora');
+  return true
+ }finally{
+  setTimeout(()=>{remoteProfileApplying=false},800)
+ }
+}
+
+function startRemoteProfileWatcher(){
+ clearInterval(remoteProfileCheckTimer);
+ remoteProfileCheckTimer=setInterval(()=>{
+  if(document.visibilityState==='visible')syncRemoteProfileToPlayer(false)
+ },30000)
+}
+
 async function savePlayerProfile(showError=false){
+ if(remoteProfileApplying)return false;
  if(!db||!state.playerName)return false;
 
  let result=await db.rpc('save_player_full_profile',{
@@ -793,7 +891,7 @@ async function adminSaveSection(section){
 
   if(result.error)throw result.error;
 
-  adminEditedProfile={...adminEditedProfile,player_name:updated.playerName||adminEditedProfile.player_name,save_data:updated};
+  adminEditedProfile={...adminEditedProfile,player_name:updated.playerName||adminEditedProfile.player_name,save_data:updated,updated_at:new Date().toISOString()};
   safeAdminRender('form',()=>populateAdminForm(updated,adminEditedProfile));
   if(status)status.textContent=`Zapisano sekcję: ${section}.`;
   toast('Sekcja zapisana')
@@ -886,3 +984,13 @@ if(typeof renderAdminEquippedPets==='function'){
 if(typeof renderAdminAllPets==='function'){
  window.renderAdminAllPets=renderAdminAllPets
 }
+
+
+setTimeout(async()=>{
+ await syncRemoteProfileToPlayer(true);
+ startRemoteProfileWatcher()
+},1200);
+
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='visible')syncRemoteProfileToPlayer(false)
+});

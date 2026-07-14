@@ -1,14 +1,15 @@
 <!doctype html><meta charset="utf-8">
-<title>Test admin render fix 0.6b</title>
+<title>Test remote admin sync 0.6b</title>
 <button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const p=await fetch('../js/profile-admin.js?v=06badminrenderfix',{cache:'no-store'}).then(r=>r.text());
+ const p=await fetch('../js/profile-admin.js?v=06bremotesync',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Renderer wyposażonych petów',p.includes('function renderAdminEquippedPets(')],
-  ['Bezpieczny renderer',p.includes('function safeAdminRender(')],
-  ['Bezpieczny zapis formularza',p.includes("safeAdminRender('form'")],
-  ['Eksport funkcji',p.includes('window.renderAdminEquippedPets=renderAdminEquippedPets')]
+  ['Pobieranie profilu online',p.includes('fetchOwnRemoteProfile')],
+  ['Nakładanie zmian admina',p.includes('mergeRemoteState')],
+  ['Sprawdzanie co 30 sekund',p.includes('setInterval')&&p.includes('30000')],
+  ['Synchronizacja po powrocie do karty',p.includes('visibilitychange')],
+  ['Blokada nadpisania',p.includes('if(remoteProfileApplying)return false')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
