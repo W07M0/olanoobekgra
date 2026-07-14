@@ -1,15 +1,19 @@
 <!doctype html><meta charset="utf-8">
-<title>Test boss/stats 0.6b</title>
-<button id="run">Test</button><div id="out"></div>
+<title>Test stable fix 0.6b</title><button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06bbossstats',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06bbossstats',{cache:'no-store'}).then(r=>r.text());
+ const h=await fetch('../index.html?v=06bstablefix',{cache:'no-store'}).then(r=>r.text());
+ const a=await fetch('../js/app.js?v=06bstablefix',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06bstablefix',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../css/styles.css?v=06bstablefix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Ulepszenie obrażeń widoczne',h.includes('bossDamageUpgradeBtn')],
-  ['Ulepszenie blokad widoczne',h.includes('bossBlockerUpgradeBtn')],
-  ['Pełne statystyki w Ustawieniach',h.includes('settingsStatCasino')&&h.includes('settingsStatPetBonus')],
-  ['Renderer statystyk',s.includes('function renderSettingsStatistics()')]
+  ['Układ strony zachowany',h.includes('<div class="shell">')&&h.includes('right right-overhaul')],
+  ['Stary panel statystyk usunięty',!h.includes('id="statsBox"')],
+  ['Boss upgrady dynamiczne',s.includes('bossUpgradeCards()')],
+  ['Szpital nie jest przeszkodą',a.includes('if(o.healing)return false')],
+  ['Reflex odejmuje punkty',a.includes('score=Math.max(0,reflexData.score-12)')],
+  ['Slow spowalnia obiekty',a.includes('fallSpeedMultiplier=d.slow>0?.55:1')],
+  ['Fake Aim okrągły',c.includes('aspect-ratio:1/1!important')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }

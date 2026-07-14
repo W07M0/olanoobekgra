@@ -303,29 +303,56 @@ function render(){
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
- if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}maybeSpawnBoss();if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}renderQuests();renderStats();renderDaily();renderBoard();applySkin();save()
+ if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}maybeSpawnBoss();if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}renderQuests();renderStats();renderSettingsStatistics();renderDaily();renderBoard();applySkin();save()
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
  return entries.length?`${entries[0][0]} — poziom ${entries[0][1]}`:'wszystko odblokowane'
 }
-function renderStats(){$('#statsBox').innerHTML=`Kliknięcia: <b>${fmt(state.totalClicks)}</b><br>Najlepsze combo: <b>x${state.bestCombo}</b><br>Rebirthy: <b>${state.rebirths}</b><br>Czas gry: <b>${Math.floor(state.playSeconds/60)} min</b><br>Skrzynki: <b>${state.eventStats.crates}</b><br>Minigry: <b>${state.eventStats.minigames||0}</b><br>Skiny: <b>${state.ownedSkins.length}</b><br>Światy: <b>${state.unlockedWorlds.length}/${worlds.length}</b><br>Następna funkcja: <b>${nextFeatureUnlock()}</b><br>Bonus petów: <b>x${petMultiplier().toFixed(2)}</b><br>EXP: <b>x${expMultiplier().toFixed(2)}</b><br>Rebirth mnożnik: <b>x${rebirthMultiplier().toFixed(2)}</b><br>Bossy światów: <b>${state.worldBossesDefeated.length}/${worlds.length}</b><br>Bossy razem: <b>${state.bossWins||0}</b><br>Kasyno: <b>${state.casinoWins||0}/${state.casinoGames||0} wygranych</b>`}
-function upgradeCard(u){
- const lvl=u.get(),isMax=lvl>=u.max,c=cost(u),cur=currencyIcon(u.currency);
- const cardClass=u.permanent?'permanent-card':'temporary-card';
- return`<div class="card ${cardClass}">
-  <div class="big">${u.icon}</div>
-  <h3>${u.name} <small>Lv.${lvl}/${u.max}</small></h3>
-  <p class="muted">${u.desc}</p>
-  <div class="price">${isMax?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>':fmt(c)+' '+cur}</div>
-  <button onclick="buyUpgrade('${u.id}')" ${isMax||state[u.currency]<c?'disabled':''}>${isMax?'MAX':'Kup'}</button>
- </div>`
+function renderStats(){
+ const box=$('#statsBox');
+ if(!box)return
 }
+
+function bossUpgradeCards(){
+ return `
+  <article class="upgrade-card boss-standard-upgrade">
+   <div class="upgrade-icon">💥</div>
+   <div class="upgrade-info">
+    <h3>Siła przeciw bossom</h3>
+    <p>+12% obrażeń zadawanych bossom za poziom.</p>
+    <small>Poziom <b id="bossDamageUpgradeLevel">${state.bossDamageLevel||0}</b></small>
+   </div>
+   <button class="buy-upgrade-btn" id="bossDamageUpgradeBtn"
+    ${state.points<bossDamageUpgradeCost()?'disabled':''}>
+    Kup — <span id="bossDamageUpgradeCost">${fmt(bossDamageUpgradeCost())}</span>
+   </button>
+  </article>
+  <article class="upgrade-card boss-standard-upgrade">
+   <div class="upgrade-icon">⏳</div>
+   <div class="upgrade-info">
+    <h3>Opóźnienie blokad</h3>
+    <p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p>
+    <small>Poziom <b id="bossBlockerUpgradeLevel">${state.bossBlockerDelayLevel||0}</b></small>
+   </div>
+   <button class="buy-upgrade-btn" id="bossBlockerUpgradeBtn"
+    ${state.points<bossBlockerUpgradeCost()?'disabled':''}>
+    Kup — <span id="bossBlockerUpgradeCost">${fmt(bossBlockerUpgradeCost())}</span>
+   </button>
+  </article>`
+}
+function bindBossUpgradeButtons(){
+ const damage=$('#bossDamageUpgradeBtn');
+ const blocker=$('#bossBlockerUpgradeBtn');
+ if(damage)damage.onclick=buyBossDamageUpgrade;
+ if(blocker)blocker.onclick=buyBossBlockerUpgrade
+}
+
 function renderShop(){
  const temporary=upgrades.filter(u=>!u.permanent);
  const permanent=upgrades.filter(u=>u.permanent);
- $('#temporaryShopGrid').innerHTML=temporary.map(upgradeCard).join('');
- $('#permanentShopGrid').innerHTML=permanent.map(upgradeCard).join('')
+ $('#temporaryShopGrid').innerHTML=temporary.map(upgradeCard).join('')+bossUpgradeCards();
+ $('#permanentShopGrid').innerHTML=permanent.map(upgradeCard).join('');bindBossUpgradeButtons()
 }
 function buyUpgrade(id){if(!featureUnlocked('shop'))return toast(lockedFeatureMessage('shop'));let u=upgrades.find(x=>x.id===id);if(!u||u.get()>=u.max)return;let c=cost(u);if(state[u.currency]<c)return;state[u.currency]-=c;u.buy();sfx('buy');render()}
 
@@ -764,24 +791,28 @@ function renderBossUpgrades(){
 
 function renderSettingsStatistics(){
  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
- const playedMinutes=Math.floor((state.playSeconds||0)/60);
- const petBonus=typeof petMultiplier==='function'?petMultiplier():1;
- const expBonus=typeof expMultiplier==='function'?expMultiplier():1;
- const rebirthBonus=typeof rebirthMultiplier==='function'?rebirthMultiplier():1;
- const worldBossCount=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated.length:0;
+ const clicks=Number(state.totalClicks??state.clicks??0);
+ const combo=Number(state.bestCombo??state.maxCombo??0);
+ const seconds=Number(state.playSeconds??state.totalPlaySeconds??0);
+ const crates=Number(state.eventStats?.crates??state.cratesOpened??0);
+ const minigames=Number(state.eventStats?.minigames??state.minigamesPlayed??0);
+ const defeated=state.worldBossesDefeated;
+ const worldBosses=Array.isArray(defeated)
+  ?defeated.length
+  :(defeated&&typeof defeated==='object'?Object.values(defeated).filter(Boolean).length:0);
 
- set('#settingsStatClicks',fmt(state.totalClicks||0));
- set('#settingsStatCombo','x'+fmt(state.bestCombo||0));
- set('#settingsStatRebirths',fmt(state.rebirths||0));
- set('#settingsStatPlaytime',fmt(playedMinutes)+' min');
- set('#settingsStatCrates',fmt(state.eventStats?.crates||0));
- set('#settingsStatMinigames',fmt(state.eventStats?.minigames||0));
+ set('#settingsStatClicks',fmt(clicks));
+ set('#settingsStatCombo','x'+fmt(combo));
+ set('#settingsStatRebirths',fmt(Number(state.rebirths||0)));
+ set('#settingsStatPlaytime',fmt(Math.floor(seconds/60))+' min');
+ set('#settingsStatCrates',fmt(crates));
+ set('#settingsStatMinigames',fmt(minigames));
  set('#settingsStatSkins',fmt(state.ownedSkins?.length||0));
  set('#settingsStatWorlds',fmt(state.unlockedWorlds?.length||0));
- set('#settingsStatPetBonus','x'+Number(petBonus).toFixed(2));
- set('#settingsStatExp','x'+Number(expBonus).toFixed(2));
- set('#settingsStatRebirthMult','x'+Number(rebirthBonus).toFixed(2));
- set('#settingsStatWorldBosses',fmt(worldBossCount));
- set('#settingsStatBosses',fmt(state.bossWins||0));
- set('#settingsStatCasino',`${fmt(state.casinoGames||0)} / ${fmt(state.casinoWins||0)} wygranych`);
+ set('#settingsStatPetBonus','x'+Number(petMultiplier()).toFixed(2));
+ set('#settingsStatExp','x'+Number(expMultiplier()).toFixed(2));
+ set('#settingsStatRebirthMult','x'+Number(rebirthMultiplier()).toFixed(2));
+ set('#settingsStatWorldBosses',fmt(worldBosses));
+ set('#settingsStatBosses',fmt(Number(state.bossWins||0)));
+ set('#settingsStatCasino',`${fmt(Number(state.casinoGames||0))} / ${fmt(Number(state.casinoWins||0))} wygranych`)
 }
