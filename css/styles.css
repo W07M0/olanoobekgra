@@ -994,3 +994,18 @@ body.eco-mode .skin-local-particle{
  color:var(--muted)!important;
  box-shadow:none;
 }
+
+/* 0.6b static opening background lights */
+.gold-rays{animation:none!important;transform:translateX(-50%)!important}
+.egg-glow{animation:none}
+.gold-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.gold-result-actions button{width:100%}
+.skin-duplicate-zero{display:inline-block;margin-top:6px;color:var(--muted);font-weight:900}
+.admin-pet-editor{margin:14px 0;padding:14px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
+.admin-pet-id-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.admin-pet-id-grid input{width:100%}
+.admin-equipped-pets{display:grid;gap:7px;margin:10px 0}
+.admin-equipped-pet{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,220px) auto;gap:8px;align-items:center;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.admin-equipped-pet small{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.admin-empty-pets{color:var(--muted);padding:8px}
+@media(max-width:700px){.admin-pet-id-grid,.gold-result-actions{grid-template-columns:1fr}.admin-equipped-pet{grid-template-columns:1fr}}

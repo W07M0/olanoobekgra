@@ -1,16 +1,1 @@
-<!doctype html><meta charset="utf-8">
-<title>Test boss upgrades 0.6b</title>
-<button id="run">Test</button><div id="out"></div>
-<script>
-run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06bbosspolish',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['Max obrażeń = 10',s.includes('bossDamageUpgradeMax(){return 10}')],
-  ['Max blokad = 8',s.includes('bossBlockerUpgradeMax(){return 8}')],
-  ['Wysokie ceny',s.includes('125000*Math.pow(2.15')&&s.includes('220000*Math.pow(2.28')],
-  ['Przycisk MAX',s.includes("damageMax?'MAX':'Kup ulepszenie'")],
-  ['Paski poziomu',s.includes('boss-upgrade-progress')]
- ];
- out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>r.onclick=async()=>{let h=await fetch('../index.html?v=06bpetskins').then(x=>x.text()),p=await fetch('../js/profile-admin.js?v=06bpetskins').then(x=>x.text()),s=await fetch('../js/systems.js?v=06bpetskins').then(x=>x.text()),a=await fetch('../js/app.js?v=06bpetskins').then(x=>x.text()),c=await fetch('../css/styles.css?v=06bpetskins').then(x=>x.text());let q=[['Edycja petów',h.includes('adminPetSlot1')&&p.includes('save.equipped')],['Powtórka 0 diamentów',s.includes('Powtórka — 0 💎')],['Zamknij bez wyposażania',h.includes('goldDismiss')&&a.includes("bindClick('#goldDismiss'")],['Nieruchome światła',c.includes('.gold-rays{animation:none!important')]];o.innerHTML=q.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>

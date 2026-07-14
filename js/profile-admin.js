@@ -281,16 +281,52 @@ async function adminLoadPlayerProfile(){
  const {data,error}=await db.from('players').select('*').eq('player_id',id).maybeSingle();
  if(error||!data){if($('#adminEditStatus'))$('#adminEditStatus').textContent='Nie znaleziono profilu.';return}
  adminEditedProfile=data;const save=data.save_data||data.game_state||{};
- $('#adminEditName').value=data.player_name||'';$('#adminEditPoints').value=Math.floor(save.points||0);$('#adminEditCoins').value=Math.floor(save.coins||0);$('#adminEditGems').value=Math.floor(save.gems||0);$('#adminEditLevel').value=Math.max(1,Math.floor(save.level||1));$('#adminEditRebirths').value=Math.max(0,Math.floor(save.rebirths||0));$('#adminEditStatus').textContent='Profil pobrany.'
+ $('#adminEditName').value=data.player_name||'';$('#adminEditPoints').value=Math.floor(save.points||0);$('#adminEditCoins').value=Math.floor(save.coins||0);$('#adminEditGems').value=Math.floor(save.gems||0);$('#adminEditLevel').value=Math.max(1,Math.floor(save.level||1));$('#adminEditRebirths').value=Math.max(0,Math.floor(save.rebirths||0));
+ const equipped=Array.isArray(save.equipped)?save.equipped:[];
+ [1,2,3].forEach((slot,index)=>{const input=$('#adminPetSlot'+slot);if(input)input.value=equipped[index]||''});
+ renderAdminEquippedPets(save);$('#adminEditStatus').textContent='Profil pobrany.'
 }
+
+function adminPetUid(pet){return pet?.uid||''}
+function renderAdminEquippedPets(save){
+ const box=$('#adminEquippedPets');if(!box)return;
+ const pets=Array.isArray(save?.pets)?save.pets:[];
+ const equipped=Array.isArray(save?.equipped)?save.equipped:[];
+ if(!equipped.length){box.innerHTML='<div class="admin-empty-pets">Brak wyposażonych petów.</div>';return}
+ box.innerHTML=equipped.map((uid,index)=>{
+  const pet=pets.find(item=>adminPetUid(item)===uid);
+  const base=typeof getPetBase==='function'?getPetBase(pet):null;
+  const name=base?.name||pet?.type||'Pet widmo / nieznany';
+  const icon=base?.emoji||'👻';
+  return `<div class="admin-equipped-pet"><span>${icon} ${safeText(name)}</span><small>${safeText(uid)}</small><button type="button" data-admin-remove-pet="${index}">Usuń</button></div>`
+ }).join('');
+ box.querySelectorAll('[data-admin-remove-pet]').forEach(button=>button.onclick=()=>{
+  const slot=Number(button.dataset.adminRemovePet)+1;
+  const input=$('#adminPetSlot'+slot);if(input)input.value='';
+  const edited={...save,equipped:[1,2,3].map(n=>$('#adminPetSlot'+n)?.value.trim()).filter(Boolean)};
+  renderAdminEquippedPets(edited)
+ })
+}
+
 async function adminSavePlayerProfile(){
  if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
  if(!adminEditedProfile)return toast('Najpierw pobierz profil');
  const id=$('#adminEditPlayerId').value.trim(),existing=adminEditedProfile.save_data||adminEditedProfile.game_state||{};
- const updated={...existing,points:Math.max(0,Number($('#adminEditPoints').value)||0),coins:Math.max(0,Number($('#adminEditCoins').value)||0),gems:Math.max(0,Number($('#adminEditGems').value)||0),level:Math.max(1,Number($('#adminEditLevel').value)||1),rebirths:Math.max(0,Number($('#adminEditRebirths').value)||0)};
+ const pets=Array.isArray(existing.pets)?existing.pets:[];
+ const validPetUids=new Set(pets.map(adminPetUid).filter(Boolean));
+ const equipped=[1,2,3].map(slot=>$('#adminPetSlot'+slot)?.value.trim()).filter(uid=>uid&&validPetUids.has(uid)).slice(0,3);
+ const updated={...existing,points:Math.max(0,Number($('#adminEditPoints').value)||0),coins:Math.max(0,Number($('#adminEditCoins').value)||0),gems:Math.max(0,Number($('#adminEditGems').value)||0),level:Math.max(1,Number($('#adminEditLevel').value)||1),rebirths:Math.max(0,Number($('#adminEditRebirths').value)||0),equipped};
  let payload={player_name:($('#adminEditName').value||'Gracz').trim().slice(0,16),save_data:updated,updated_at:new Date().toISOString()};
  let {error}=await db.from('players').update(payload).eq('player_id',id);
  if(error&&String(error.message).includes('save_data')){delete payload.save_data;payload.game_state=updated;({error}=await db.from('players').update(payload).eq('player_id',id))}
  $('#adminEditStatus').textContent=error?'Błąd: '+error.message:'Profil zapisany.'
 }
 setTimeout(()=>{if($('#adminLoadPlayer'))$('#adminLoadPlayer').onclick=adminLoadPlayerProfile;if($('#adminSavePlayer'))$('#adminSavePlayer').onclick=adminSavePlayerProfile},0);
+
+setTimeout(()=>{
+ const clear=$('#adminClearEquippedPets');
+ if(clear)clear.onclick=()=>{
+  [1,2,3].forEach(slot=>{const input=$('#adminPetSlot'+slot);if(input)input.value='' });
+  const box=$('#adminEquippedPets');if(box)box.innerHTML='<div class="admin-empty-pets">Brak wyposażonych petów.</div>'
+ }
+},0);

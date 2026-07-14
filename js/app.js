@@ -657,6 +657,10 @@ bindClick('#goldClose',()=>{
  $('#goldCrateOverlay')?.classList.remove('show');
  render()
 });
+bindClick('#goldDismiss',()=>{
+ $('#goldCrateOverlay')?.classList.remove('show');
+ render()
+});
 
 /* Kasyno v0.6 */
 bindClick('#unlockCasino',unlockCasino);

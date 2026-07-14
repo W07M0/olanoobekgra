@@ -831,9 +831,9 @@ function openGoldCase(){
  if(!featureUnlocked('skins'))return toast(lockedFeatureMessage('skins'));
  if(state.gems<25)return toast('Potrzebujesz 25 diamentów');
  state.gems-=25;
- const winner=randomSkin(),targetIndex=24;
+ const winner=randomSkin(),isDuplicate=state.ownedSkins.includes(winner.id),targetIndex=24;
  const pool=Array.from({length:30},(_,i)=>i===targetIndex?winner:randomSkin());
- $('#goldCrateOverlay').classList.add('show');$('#goldClose').classList.add('hidden');$('#goldResult').textContent='';$('#goldTitle').textContent='GOLD NOOB CASE';
+ $('#goldCrateOverlay').classList.add('show');$('#goldClose').classList.add('hidden');$('#goldDismiss').classList.add('hidden');$('#goldResult').textContent='';$('#goldTitle').textContent='GOLD NOOB CASE';
  const strip=$('#rouletteStrip');
  strip.innerHTML=pool.map((skin,i)=>`<div class="roulette-item ${i===targetIndex?'winner-preview':''}" data-index="${i}" style="--c:${skin.color}">${skin.emoji}</div>`).join('');
  strip.style.transition='none';strip.style.transform='translateX(0)';
@@ -844,10 +844,10 @@ function openGoldCase(){
   strip.style.transform=`translateX(${translate}px)`
  }));
  setTimeout(()=>{
-  if(!state.ownedSkins.includes(winner.id))state.ownedSkins.push(winner.id);
+  if(!isDuplicate)state.ownedSkins.push(winner.id);
   $('#goldTitle').textContent=winner.emoji+' '+winner.name;
-  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}`;
-  $('#goldClose').classList.remove('hidden');$('#goldClose').dataset.skin=winner.id;
+  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}${isDuplicate?'<br><span class="skin-duplicate-zero">Powtórka — 0 💎</span>':''}`;
+  $('#goldClose').classList.remove('hidden');$('#goldDismiss').classList.remove('hidden');$('#goldClose').dataset.skin=winner.id;
   if(winner.id==='gold'||['legendary','mythic','secret'].includes(winner.rarity))confetti();
   sfx('good');render()
  },4200)

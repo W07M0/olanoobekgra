@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6b</title>
-<link href="css/styles.css?v=06bbosspolish" rel="stylesheet"/>
+<link href="css/styles.css?v=06bpetskins" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -362,7 +362,7 @@
 </div>
 <div class="admin-panel" id="admin-feedback"><div class="admin-list" id="adminFeedbackList"></div></div>
 <div class="admin-panel" id="admin-actions"><div class="admin-list" id="adminActionsList"></div></div>
-<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div><button id="adminSavePlayer">Zapisz zmiany profilu</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section><section class="view" id="view-patchnotes">
+<div class="card admin-edit-card"><h2>🛠️ Edycja profilu gracza</h2><p class="muted">Wpisz Player ID, pobierz profil, zmień wartości i zapisz.</p><label>Player ID<input id="adminEditPlayerId" placeholder="UUID gracza"/></label><button id="adminLoadPlayer">Pobierz profil</button><div class="admin-edit-grid"><label>Nick<input id="adminEditName" maxlength="16"/></label><label>Punkty<input id="adminEditPoints" min="0" type="number"/></label><label>Noob Coiny<input id="adminEditCoins" min="0" type="number"/></label><label>Diamenty<input id="adminEditGems" min="0" type="number"/></label><label>Poziom<input id="adminEditLevel" min="1" type="number"/></label><label>Rebirthy<input id="adminEditRebirths" min="0" type="number"/></label></div><div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div id="adminEquippedPets" class="admin-equipped-pets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button></div><button id="adminSavePlayer">Zapisz zmiany profilu</button><div class="profile-status" id="adminEditStatus">Nie pobrano profilu.</div></div></section><section class="view" id="view-patchnotes">
 <div class="section-title">
 <div><h1>📝 Patch notes</h1><p class="muted">Historia zmian w grze Ultimate Noob Clicker.</p></div>
 <div class="chip">Aktualna wersja: <b>0.6b</b></div>
@@ -383,7 +383,7 @@
 
 
 <div class="overlay" id="crateOverlay"><div class="modal egg-modal"><div class="pet-egg" id="petEgg"><span>?</span></div><div class="egg-glow" id="eggGlow"></div><div class="pet-reveal-card"><div class="pet-reveal-icon" id="petRevealIcon">❔</div><h2 id="crateTitle">Otwieranie jajka…</h2><div class="pet-reveal-rarity" id="petRevealRarity"></div><p id="crateResult"></p></div><button class="small-btn hidden" id="crateClose" style="width:100%">Super!</button></div></div>
-<div class="overlay" id="goldCrateOverlay"><div class="modal gold-modal"><div class="gold-rays"></div><div class="gold-case">👑</div><h2 id="goldTitle" style="text-align:center">GOLD NOOB CASE</h2><div class="roulette-window"><div class="roulette-strip" id="rouletteStrip"></div><div class="roulette-marker"></div></div><p id="goldResult" style="text-align:center;min-height:28px;font-weight:900"></p><button class="small-btn gold-btn hidden" id="goldClose" style="width:100%">Załóż skin</button></div></div>
+<div class="overlay" id="goldCrateOverlay"><div class="modal gold-modal"><div class="gold-rays"></div><div class="gold-case">👑</div><h2 id="goldTitle" style="text-align:center">GOLD NOOB CASE</h2><div class="roulette-window"><div class="roulette-strip" id="rouletteStrip"></div><div class="roulette-marker"></div></div><p id="goldResult" style="text-align:center;min-height:28px;font-weight:900"></p><div class="gold-result-actions"><button class="small-btn gold-btn hidden" id="goldClose">Załóż skin</button><button class="small-btn hidden" id="goldDismiss">Zamknij</button></div></div></div>
 <div class="overlay world-transition" id="worldTransition">
 <div class="world-transition-card">
 <div class="world-transition-emoji" id="transitionEmoji">🌍</div>
@@ -401,11 +401,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06bbosspolish"></script>
-<script defer="" src="js/core.js?v=06bbosspolish"></script>
-<script defer="" src="js/systems.js?v=06bbosspolish"></script>
-<script defer="" src="js/integrations.js?v=06bbosspolish"></script>
-<script defer="" src="js/profile-admin.js?v=06bbosspolish"></script>
-<script defer="" src="js/app.js?v=06bbosspolish"></script>
+<script defer="" src="js/data.js?v=06bpetskins"></script>
+<script defer="" src="js/core.js?v=06bpetskins"></script>
+<script defer="" src="js/systems.js?v=06bpetskins"></script>
+<script defer="" src="js/integrations.js?v=06bpetskins"></script>
+<script defer="" src="js/profile-admin.js?v=06bpetskins"></script>
+<script defer="" src="js/app.js?v=06bpetskins"></script>
 </body>
 </html>
