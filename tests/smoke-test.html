@@ -1,16 +1,15 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Skin Grid Test</title>
+<title>Test 0.6a Hitbox/Aim</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const systems=await fetch('../js/systems.js?v=06skingrid',{cache:'no-store'}).then(r=>r.text());
+ const app=await fetch('../js/app.js?v=06ahitbox',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['renderSkins istnieje',systems.includes('function renderSkins()')],
-  ['Wstawianie kart',systems.includes('grid.innerHTML=ordered.map')],
-  ['Przyciski wyposażania',systems.includes('data-skin-id')],
-  ['Posiadane skiny',systems.includes("state.ownedSkins.includes")]
+  ['Fake znika szybciej',app.includes('const lifetime=fake?760:1150')],
+  ['Mniejszy hitbox gracza',app.includes('x:p.x+10')&&app.includes('w:p.w-20')],
+  ['Mniejszy hitbox przeszkód',app.includes('x:o.x+7')&&app.includes('o.w-14')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }

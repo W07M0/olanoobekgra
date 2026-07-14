@@ -116,7 +116,7 @@ function moveAim(){
    target.style.left=x+'px';target.style.top=y+'px';aimMoveFrame=requestAnimationFrame(animate)};
   aimMoveFrame=requestAnimationFrame(animate)
  }
- const lifetime=1150;
+ const lifetime=fake?760:1150;
  aimTargetTimeout=setTimeout(()=>{if(!aimRunning)return;cancelAnimationFrame(aimMoveFrame);if(!fake){aimMisses++;aimCombo=0;updateAimHud();sfx('bad')}moveAim()},lifetime)
 }
 function updateAimHud(){
@@ -179,7 +179,25 @@ function parkourLoop(){
  d.p.vy+=.78*dt;d.p.y+=d.p.vy*dt;if(d.p.y>245){d.p.y=245;d.p.vy=0}
  d.obs.forEach(o=>o.x-=d.speed*dt);d.pickups.forEach(o=>o.x-=d.speed*dt);
  d.obs=d.obs.filter(o=>o.x>-80);d.pickups=d.pickups.filter(o=>o.x>-50);
- const p=d.p,hit=d.obs.some(o=>p.x<o.x+o.w&&p.x+p.w>o.x&&p.y<o.y+o.h&&p.y+p.h>o.y);
+ const p=d.p;
+ const playerHitbox={
+  x:p.x+10,
+  y:p.y+8,
+  w:p.w-20,
+  h:p.h-10
+ };
+ const hit=d.obs.some(o=>{
+  const obstacleHitbox={
+   x:o.x+7,
+   y:o.y+8,
+   w:Math.max(12,o.w-14),
+   h:Math.max(14,o.h-10)
+  };
+  return playerHitbox.x<obstacleHitbox.x+obstacleHitbox.w&&
+   playerHitbox.x+playerHitbox.w>obstacleHitbox.x&&
+   playerHitbox.y<obstacleHitbox.y+obstacleHitbox.h&&
+   playerHitbox.y+playerHitbox.h>obstacleHitbox.y
+ });
  d.pickups=d.pickups.filter(o=>{const got=p.x<o.x+o.r&&p.x+p.w>o.x-o.r&&p.y<o.y+o.r&&p.y+p.h>o.y-o.r;if(got){d.bonus+=12;sfx('good')}return!got});
  x.clearRect(0,0,c.width,c.height);
  const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,'#30145d');g.addColorStop(1,'#ff73c4');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);

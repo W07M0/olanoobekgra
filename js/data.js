@@ -179,7 +179,7 @@ const patchNotes=[
    'Przywrócono funkcję renderSkins.',
    'Zakładka pokazuje posiadane, aktywne i zablokowane skiny.',
    'Dodano czytelne oznaczenia rzadkości.',
-   'Naprawiono wyposażanie skinów z kart.'
+   'Naprawiono wyposażanie skinów z kart.','Mniejsze hitboxy Noob Ridera.','Fake cele w Aim Lab znikają szybciej.'
   ]
  },
  {version:'0.6a-fix',date:'Poprawka 0.6a',title:'Aim, Skins & Exchange Fix',summary:'Ruchome cele, działające skiny i lepszy kurs diamentów.',changes:['Ruchome cele w Aim Lab.','Stałe 1,15 s na trafienie.','Fake cele podobne do normalnych.','Lepszy kurs diamentów.','Naprawiono renderSkinOrbit.']},
