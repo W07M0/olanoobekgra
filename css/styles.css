@@ -870,3 +870,20 @@ body.eco-mode .skin-local-particle{
 }
 .settings-stats-grid span{color:var(--muted);font-size:12px}
 @media(max-width:650px){.settings-stats-grid{grid-template-columns:1fr}}
+
+/* 0.6b shop render fix */
+#temporaryShopGrid,
+#permanentShopGrid{
+ display:grid!important;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
+ gap:14px!important;
+ margin-top:14px!important;
+ min-height:1px;
+}
+#temporaryShopGrid:empty::after,
+#permanentShopGrid:empty::after{
+ content:"Ładowanie ulepszeń...";
+ display:block;
+ padding:16px;
+ color:var(--muted);
+}

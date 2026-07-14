@@ -349,10 +349,40 @@ function bindBossUpgradeButtons(){
 }
 
 function renderShop(){
- const temporary=upgrades.filter(u=>!u.permanent);
- const permanent=upgrades.filter(u=>u.permanent);
- $('#temporaryShopGrid').innerHTML=temporary.map(upgradeCard).join('')+bossUpgradeCards();
- $('#permanentShopGrid').innerHTML=permanent.map(upgradeCard).join('');bindBossUpgradeButtons()
+ const temporaryGrid=$('#temporaryShopGrid');
+ const permanentGrid=$('#permanentShopGrid');
+
+ if(!temporaryGrid||!permanentGrid){
+  console.error('Shop containers missing',{
+   temporary:!!temporaryGrid,
+   permanent:!!permanentGrid
+  });
+  return
+ }
+
+ const temporary=typeof temporaryUpgrades!=='undefined'
+  ?temporaryUpgrades
+  :(typeof upgrades!=='undefined'?upgrades.filter(u=>!u.permanent):[]);
+
+ const permanent=typeof permanentUpgrades!=='undefined'
+  ?permanentUpgrades
+  :(typeof upgrades!=='undefined'?upgrades.filter(u=>u.permanent):[]);
+
+ temporaryGrid.innerHTML=
+  temporary.map(upgradeCard).join('')+
+  (typeof bossUpgradeCards==='function'?bossUpgradeCards():'');
+
+ permanentGrid.innerHTML=permanent.map(upgradeCard).join('');
+
+ temporaryGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
+  button.onclick=()=>buyUpgrade(button.dataset.upgrade)
+ });
+ permanentGrid.querySelectorAll('[data-upgrade]').forEach(button=>{
+  button.onclick=()=>buyUpgrade(button.dataset.upgrade)
+ });
+
+ if(typeof bindBossUpgradeButtons==='function')bindBossUpgradeButtons();
+ if(typeof renderBossUpgrades==='function')renderBossUpgrades()
 }
 function buyUpgrade(id){if(!featureUnlocked('shop'))return toast(lockedFeatureMessage('shop'));let u=upgrades.find(x=>x.id===id);if(!u||u.get()>=u.max)return;let c=cost(u);if(state[u.currency]<c)return;state[u.currency]-=c;u.buy();sfx('buy');render()}
 

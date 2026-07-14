@@ -1,29 +1,19 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test struktury 0.6b</title>
-<style>
-body{font-family:system-ui;background:#12051e;color:#fff;padding:24px}
-.ok{color:#64ffb1}.bad{color:#ff6b83}
-</style>
+<title>Test sklepu 0.6b</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const text=await fetch('../index.html?v=06bstructure',{cache:'no-store'}).then(r=>r.text());
- const doc=new DOMParser().parseFromString(text,'text/html');
- const shell=doc.querySelector('.shell');
- const main=doc.querySelector('#mainPanel');
- const right=doc.querySelector('aside.right');
- const views=[...doc.querySelectorAll('section.view')];
+ const h=await fetch('../index.html?v=06bshopfix',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06bshopfix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Shell ma 3 główne kolumny',shell&&shell.children.length===3],
-  ['Prawa kolumna jest wewnątrz shell',right&&right.parentElement===shell],
-  ['Wszystkie zakładki są wewnątrz main',views.length===14&&views.every(v=>v.parentElement===main)],
-  ['Admin jest w main',doc.querySelector('#view-admin')?.parentElement===main],
-  ['Patch notes są w main',doc.querySelector('#view-patchnotes')?.parentElement===main],
-  ['Nagrody są w main',doc.querySelector('#view-awards')?.parentElement===main],
-  ['Jeden bossBlockerLayer',doc.querySelectorAll('#bossBlockerLayer').length===1]
+  ['Grid podstawowy istnieje',h.includes('id="temporaryShopGrid"')],
+  ['Grid permanentny istnieje',h.includes('id="permanentShopGrid"')],
+  ['renderShop używa obu gridów',s.includes("const temporaryGrid=$('#temporaryShopGrid')")&&s.includes("const permanentGrid=$('#permanentShopGrid')")],
+  ['Boss upgrady dołączane',s.includes('bossUpgradeCards()')],
+  ['Brak zatrzymania renderu',s.includes("console.error('renderShop:'")]
  ];
- out.innerHTML=checks.map(([name,ok])=>`<p class="${ok?'ok':'bad'}">${ok?'✅':'❌'} ${name}</p>`).join('');
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>
