@@ -907,14 +907,19 @@ async function adminSaveSection(section){
 let adminPendingRepair=null;
 
 function adminKnownSkinIds(){
- const sources=[];
- if(typeof skins!=='undefined'&&Array.isArray(skins))sources.push(...skins);
- if(typeof SKINS!=='undefined'&&Array.isArray(SKINS))sources.push(...SKINS);
- if(typeof skinList!=='undefined'&&Array.isArray(skinList))sources.push(...skinList);
+ const ids=new Set(['classic','banana','matrix','cyber','lava','ice','toxic','glitch','rainbow','void','gold','dev']);
 
- const ids=sources.map(item=>typeof item==='string'?item:item?.id).filter(Boolean);
- if(!ids.includes('classic'))ids.unshift('classic');
- return new Set(ids)
+ try{
+  if(typeof skins!=='undefined'&&Array.isArray(skins)){
+   skins.forEach(item=>ids.add(typeof item==='string'?item:item?.id))
+  }
+ }catch(error){console.warn('Lista skinów:',error)}
+
+ ids.delete(undefined);
+ ids.delete(null);
+ ids.delete('');
+ ids.add('classic');
+ return ids
 }
 
 function adminKnownWorldIds(){
@@ -930,21 +935,36 @@ function adminKnownWorldIds(){
 
 function adminRepairSkins(save,report){
  const known=adminKnownSkinIds();
- const before=Array.isArray(save.ownedSkins)?save.ownedSkins:[];
- const cleaned=[...new Set(before.filter(id=>known.has(id)))];
+
+ const sources=[
+  ...(Array.isArray(save.ownedSkins)?save.ownedSkins:[]),
+  ...(Array.isArray(save.skinsOwned)?save.skinsOwned:[]),
+  ...(Array.isArray(save.unlockedSkins)?save.unlockedSkins:[])
+ ].filter(Boolean);
+
+ const before=[...new Set(sources)];
+ const cleaned=before.filter(id=>known.has(id));
 
  if(!cleaned.includes('classic'))cleaned.unshift('classic');
 
- const removed=before.filter(id=>!cleaned.includes(id));
+ const removed=before.filter(id=>!known.has(id));
+
  save.ownedSkins=cleaned;
+ if('skinsOwned' in save)save.skinsOwned=[...cleaned];
+ if('unlockedSkins' in save)save.unlockedSkins=[...cleaned];
 
  if(!known.has(save.activeSkin)||!cleaned.includes(save.activeSkin)){
-  if(save.activeSkin&&save.activeSkin!=='classic')report.push(`Aktywny skin "${save.activeSkin}" zmieniono na classic.`);
+  if(save.activeSkin&&save.activeSkin!=='classic'){
+   report.push(`Aktywny skin "${save.activeSkin}" zmieniono na classic.`)
+  }
   save.activeSkin='classic'
  }
 
- if(removed.length)report.push(`Usunięto skiny: ${removed.join(', ')}`);
- else report.push('Nie znaleziono nieistniejących skinów.')
+ if(removed.length){
+  report.push(`Usunięto ${removed.length} nieistniejących skinów: ${removed.join(', ')}`)
+ }else{
+  report.push(`Nie znaleziono nieistniejących skinów. Aktualna liczba: ${cleaned.length}.`)
+ }
 }
 
 function adminRepairPets(save,report){
@@ -1209,3 +1229,45 @@ setTimeout(()=>{
  const saveRepair=$('#adminSaveRepair');
  if(saveRepair)saveRepair.onclick=adminSaveRepairedProfile
 },0);
+
+setTimeout(()=>{
+ const removeSkin=$('#adminRemoveSkinById');
+ if(removeSkin)removeSkin.onclick=()=>{
+  if(!adminEditedProfile)return toast('Najpierw pobierz profil');
+
+  const id=$('#adminRemoveSkinId')?.value.trim();
+  if(!id)return toast('Wpisz ID skina');
+
+  const save=adminClone(parseAdminSaveData(adminEditedProfile.save_data));
+  const lists=['ownedSkins','skinsOwned','unlockedSkins'];
+
+  lists.forEach(key=>{
+   if(Array.isArray(save[key]))save[key]=save[key].filter(skinId=>skinId!==id)
+  });
+
+  if(!Array.isArray(save.ownedSkins))save.ownedSkins=['classic'];
+  if(!save.ownedSkins.includes('classic'))save.ownedSkins.unshift('classic');
+  if(save.activeSkin===id)save.activeSkin='classic';
+
+  adminPendingRepair=normalizeAdminSaveIntegers(save);
+
+  const preview=$('#adminRepairPreview');
+  if(preview)preview.innerHTML=`<div>• Ręcznie usunięto skin: ${safeText(id)}</div>`;
+
+  const saveButton=$('#adminSaveRepair');
+  if(saveButton)saveButton.disabled=false;
+
+  const json=$('#adminSaveJson');
+  if(json)json.value=JSON.stringify(adminPendingRepair,null,2);
+
+  safeAdminRender('form',()=>populateAdminForm(adminPendingRepair,adminEditedProfile));
+  toast('Skin usunięty z przygotowanego zapisu — kliknij Zapisz naprawiony profil')
+ }
+},0);
+
+if(typeof renderAdminEquippedPets==='function'){
+ window.renderAdminEquippedPets=renderAdminEquippedPets
+}
+if(typeof renderAdminAllPets==='function'){
+ window.renderAdminAllPets=renderAdminAllPets
+}

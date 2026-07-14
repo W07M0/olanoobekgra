@@ -1197,3 +1197,22 @@ body.eco-mode .skin-local-particle{
 @media(max-width:650px){
  .admin-repair-grid{grid-template-columns:1fr}
 }
+
+.admin-manual-skin-remove{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) auto;
+ gap:8px;
+ margin:12px 0;
+}
+.admin-manual-skin-remove input{
+ min-width:0;
+}
+.admin-pet-uid{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ max-width:240px;
+}
+@media(max-width:650px){
+ .admin-manual-skin-remove{grid-template-columns:1fr}
+}

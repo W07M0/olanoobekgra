@@ -1,17 +1,16 @@
 <!doctype html><meta charset="utf-8">
-<title>Test narzędzi naprawy 0.6b</title>
+<title>Test final repair 0.6b</title>
 <button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06brepairtools',{cache:'no-store'}).then(r=>r.text());
- const p=await fetch('../js/profile-admin.js?v=06brepairtools',{cache:'no-store'}).then(r=>r.text());
+ const h=await fetch('../index.html?v=06brepairfinal',{cache:'no-store'}).then(r=>r.text());
+ const p=await fetch('../js/profile-admin.js?v=06brepairfinal',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Panel naprawy',h.includes('id="adminRepairSave"')],
-  ['Naprawa skinów',p.includes('function adminRepairSkins')],
-  ['Naprawa petów',p.includes('function adminRepairPets')],
-  ['Naprawa wyposażenia',p.includes('function adminRepairEquipped')],
-  ['Naprawa światów',p.includes('function adminRepairWorlds')],
-  ['Zapis naprawy',p.includes('async function adminSaveRepairedProfile')]
+  ['Renderer wyposażonych petów',p.includes('function renderAdminEquippedPets(')],
+  ['Bezpieczne renderowanie',p.includes('function safeAdminRender(')],
+  ['Automatyczna naprawa skinów',p.includes('function adminRepairSkins')],
+  ['Ręczne usunięcie po ID',h.includes('adminRemoveSkinById')],
+  ['Eksport renderera',p.includes('window.renderAdminEquippedPets=renderAdminEquippedPets')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
