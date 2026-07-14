@@ -913,3 +913,84 @@ body.eco-mode .skin-local-particle{
  color:var(--muted);
  font-size:11px;
 }
+
+/* 0.6b boss upgrade visual polish */
+.boss-upgrade-card{
+ position:relative;
+ overflow:hidden;
+ border:1px solid rgba(255,82,130,.18)!important;
+ background:
+  radial-gradient(circle at 85% 15%,rgba(255,67,122,.12),transparent 32%),
+  linear-gradient(160deg,rgba(71,31,88,.96),rgba(31,16,45,.98))!important;
+}
+.boss-upgrade-card::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.04),transparent 70%);
+}
+.boss-upgrade-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+.boss-upgrade-icon{
+ width:58px;
+ height:58px;
+ display:grid;
+ place-items:center;
+ border-radius:16px;
+ background:rgba(255,255,255,.06);
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 0 22px rgba(255,75,129,.14);
+}
+.upgrade-type-badge{
+ padding:5px 9px;
+ border-radius:999px;
+ font-size:10px;
+ font-weight:1000;
+ letter-spacing:.8px;
+ color:#ffd6e6;
+ background:rgba(255,72,132,.13);
+ border:1px solid rgba(255,72,132,.28);
+}
+.boss-level-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-top:14px;
+ font-size:12px;
+ color:var(--muted);
+}
+.boss-level-row b{
+ color:#fff;
+ font-size:13px;
+}
+.boss-upgrade-progress{
+ height:8px;
+ margin:7px 0 12px;
+ overflow:hidden;
+ border-radius:999px;
+ background:rgba(255,255,255,.07);
+}
+.boss-upgrade-progress i{
+ display:block;
+ height:100%;
+ border-radius:inherit;
+ background:linear-gradient(90deg,#ff4c88,#ff9d4c);
+ box-shadow:0 0 14px rgba(255,76,136,.35);
+}
+.boss-buy-btn{
+ min-height:46px;
+ border-radius:13px!important;
+ background:linear-gradient(135deg,#ff467d,#ff8b42)!important;
+ color:#fff!important;
+ font-weight:1000!important;
+ border:1px solid rgba(255,255,255,.16)!important;
+ box-shadow:0 10px 22px rgba(255,70,125,.18);
+}
+.boss-buy-btn:disabled{
+ background:rgba(255,255,255,.07)!important;
+ color:var(--muted)!important;
+ box-shadow:none;
+}

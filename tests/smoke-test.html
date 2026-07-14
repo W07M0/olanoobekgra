@@ -1,20 +1,16 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Test kart sklepu 0.6b</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
+<!doctype html><meta charset="utf-8">
+<title>Test boss upgrades 0.6b</title>
+<button id="run">Test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06bshopcards',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06bshopcards',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06bbosspolish',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['upgradeCard istnieje',s.includes('function upgradeCard(u)')],
-  ['Podstawowe z tablicy upgrades',s.includes('const temporary=upgrades.filter')],
-  ['Permanentne z tablicy upgrades',s.includes('const permanent=upgrades.filter')],
-  ['Karty są renderowane',s.includes('temporary.map(upgradeCard)')&&s.includes('permanent.map(upgradeCard)')],
-  ['Ulepszenia bossów dołączane',s.includes('bossUpgradeCards()')],
-  ['Oba kontenery istnieją',h.includes('temporaryShopGrid')&&h.includes('permanentShopGrid')]
+  ['Max obrażeń = 10',s.includes('bossDamageUpgradeMax(){return 10}')],
+  ['Max blokad = 8',s.includes('bossBlockerUpgradeMax(){return 8}')],
+  ['Wysokie ceny',s.includes('125000*Math.pow(2.15')&&s.includes('220000*Math.pow(2.28')],
+  ['Przycisk MAX',s.includes("damageMax?'MAX':'Kup ulepszenie'")],
+  ['Paski poziomu',s.includes('boss-upgrade-progress')]
  ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
+ out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>

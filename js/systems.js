@@ -341,29 +341,59 @@ function upgradeCard(u){
 }
 
 function bossUpgradeCards(){
+ const damageLevel=state.bossDamageLevel||0;
+ const blockerLevel=state.bossBlockerDelayLevel||0;
+ const damageMax=damageLevel>=bossDamageUpgradeMax();
+ const blockerMax=blockerLevel>=bossBlockerUpgradeMax();
+
  return `
-  <article class="upgrade-card boss-standard-upgrade">
-   <div class="upgrade-icon">💥</div>
-   <div class="upgrade-info">
-    <h3>Siła przeciw bossom</h3>
-    <p>+12% obrażeń zadawanych bossom za poziom.</p>
-    <small>Poziom <b id="bossDamageUpgradeLevel">${state.bossDamageLevel||0}</b></small>
+  <article class="card upgrade-card temporary-card boss-upgrade-card">
+   <div class="boss-upgrade-top">
+    <div class="big boss-upgrade-icon">💥</div>
+    <span class="upgrade-type-badge">BOSS</span>
    </div>
-   <button class="buy-upgrade-btn" id="bossDamageUpgradeBtn"
-    ${state.points<bossDamageUpgradeCost()?'disabled':''}>
-    Kup — <span id="bossDamageUpgradeCost">${fmt(bossDamageUpgradeCost())}</span>
+   <div class="upgrade-card-content">
+    <h3>Siła przeciw bossom</h3>
+    <p class="muted">+14% obrażeń zadawanych bossom za każdy poziom.</p>
+    <div class="boss-level-row">
+     <span>Poziom</span>
+     <b>${damageLevel} / ${bossDamageUpgradeMax()}</b>
+    </div>
+    <div class="boss-upgrade-progress">
+     <i style="width:${damageLevel/bossDamageUpgradeMax()*100}%"></i>
+    </div>
+    <div class="price">
+     ${damageMax?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>':`${fmt(bossDamageUpgradeCost())} ⭐`}
+    </div>
+   </div>
+   <button class="buy-upgrade-btn boss-buy-btn" id="bossDamageUpgradeBtn"
+    ${damageMax||state.points<bossDamageUpgradeCost()?'disabled':''}>
+    ${damageMax?'MAX':'Kup ulepszenie'}
    </button>
   </article>
-  <article class="upgrade-card boss-standard-upgrade">
-   <div class="upgrade-icon">⏳</div>
-   <div class="upgrade-info">
-    <h3>Opóźnienie blokad</h3>
-    <p>Przeszkody bossa pojawiają się o 10% rzadziej za poziom.</p>
-    <small>Poziom <b id="bossBlockerUpgradeLevel">${state.bossBlockerDelayLevel||0}</b></small>
+
+  <article class="card upgrade-card temporary-card boss-upgrade-card">
+   <div class="boss-upgrade-top">
+    <div class="big boss-upgrade-icon">⏳</div>
+    <span class="upgrade-type-badge">BOSS</span>
    </div>
-   <button class="buy-upgrade-btn" id="bossBlockerUpgradeBtn"
-    ${state.points<bossBlockerUpgradeCost()?'disabled':''}>
-    Kup — <span id="bossBlockerUpgradeCost">${fmt(bossBlockerUpgradeCost())}</span>
+   <div class="upgrade-card-content">
+    <h3>Opóźnienie blokad</h3>
+    <p class="muted">Przeszkody bossa pojawiają się o 13% rzadziej za każdy poziom.</p>
+    <div class="boss-level-row">
+     <span>Poziom</span>
+     <b>${blockerLevel} / ${bossBlockerUpgradeMax()}</b>
+    </div>
+    <div class="boss-upgrade-progress">
+     <i style="width:${blockerLevel/bossBlockerUpgradeMax()*100}%"></i>
+    </div>
+    <div class="price">
+     ${blockerMax?'<span class="upgrade-max">MAKSYMALNY POZIOM</span>':`${fmt(bossBlockerUpgradeCost())} ⭐`}
+    </div>
+   </div>
+   <button class="buy-upgrade-btn boss-buy-btn" id="bossBlockerUpgradeBtn"
+    ${blockerMax||state.points<bossBlockerUpgradeCost()?'disabled':''}>
+    ${blockerMax?'MAX':'Kup ulepszenie'}
    </button>
   </article>`
 }
@@ -824,20 +854,37 @@ function openGoldCase(){
 }
 
 
-if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};function bossDamageUpgradeCost(){return Math.floor(2500*Math.pow(1.72,state.bossDamageLevel||0))}
-function bossBlockerUpgradeCost(){return Math.floor(4200*Math.pow(1.78,state.bossBlockerDelayLevel||0))}
-function bossDamageUpgradeMultiplier(){return 1+(state.bossDamageLevel||0)*.12}
-function bossBlockerDelayMultiplier(){return 1+(state.bossBlockerDelayLevel||0)*.10}
-function buyBossDamageUpgrade(){const cost=bossDamageUpgradeCost();if(state.points<cost)return toast('Za mało punktów');state.points-=cost;state.bossDamageLevel=(state.bossDamageLevel||0)+1;sfx('buy');render()}
-function buyBossBlockerUpgrade(){const cost=bossBlockerUpgradeCost();if(state.points<cost)return toast('Za mało punktów');state.points-=cost;state.bossBlockerDelayLevel=(state.bossBlockerDelayLevel||0)+1;sfx('buy');render()}
+if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};function bossDamageUpgradeMax(){return 10}
+function bossDamageUpgradeCost(){return Math.floor(125000*Math.pow(2.15,state.bossDamageLevel||0))}
+function bossBlockerUpgradeMax(){return 8}
+function bossBlockerUpgradeCost(){return Math.floor(220000*Math.pow(2.28,state.bossBlockerDelayLevel||0))}
+function bossDamageUpgradeMultiplier(){return 1+Math.min(bossDamageUpgradeMax(),state.bossDamageLevel||0)*.14}
+function bossBlockerDelayMultiplier(){return 1+Math.min(bossBlockerUpgradeMax(),state.bossBlockerDelayLevel||0)*.13}
+function buyBossDamageUpgrade(){
+ const level=state.bossDamageLevel||0;
+ if(level>=bossDamageUpgradeMax())return toast('Maksymalny poziom');
+ const cost=bossDamageUpgradeCost();
+ if(state.points<cost)return toast('Za mało punktów');
+ state.points-=cost;
+ state.bossDamageLevel=level+1;
+ sfx('buy');
+ render()
+}
+function buyBossBlockerUpgrade(){
+ const level=state.bossBlockerDelayLevel||0;
+ if(level>=bossBlockerUpgradeMax())return toast('Maksymalny poziom');
+ const cost=bossBlockerUpgradeCost();
+ if(state.points<cost)return toast('Za mało punktów');
+ state.points-=cost;
+ state.bossBlockerDelayLevel=level+1;
+ sfx('buy');
+ render()
+}
 
 
 
 function renderBossUpgrades(){
- const a=$('#bossDamageUpgradeLevel'),b=$('#bossDamageUpgradeCost'),c=$('#bossDamageUpgradeBtn');
- if(a)a.textContent=state.bossDamageLevel||0;if(b)b.textContent=fmt(bossDamageUpgradeCost());if(c)c.disabled=state.points<bossDamageUpgradeCost();
- const d=$('#bossBlockerUpgradeLevel'),e=$('#bossBlockerUpgradeCost'),f=$('#bossBlockerUpgradeBtn');
- if(d)d.textContent=state.bossBlockerDelayLevel||0;if(e)e.textContent=fmt(bossBlockerUpgradeCost());if(f)f.disabled=state.points<bossBlockerUpgradeCost()
+ if(typeof bindBossUpgradeButtons==='function')bindBossUpgradeButtons()
 }
 
 
