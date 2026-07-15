@@ -606,6 +606,8 @@ function render(){
  if(typeof refreshBossUnlockUi==='function')refreshBossUnlockUi();
 
  safeGameRender('renderCollection',()=>typeof renderCollection==='function'&&renderCollection());
+
+ safeGameRender('renderProfileStyleSettings',()=>typeof renderProfileStyleSettings==='function'&&renderProfileStyleSettings());
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -1044,7 +1046,7 @@ function spawnSkinParticles(intensity=1){
 
 function doClick(e){
 let now=performance.now();combo=now-lastClick<470?Math.min(50,combo+1):1;lastClick=now;state.bestCombo=Math.max(state.bestCombo,combo);state.totalClicks++;
- let crit=Math.random()<Math.min(.32,.05+state.crit*.02),gain=clickValue()*(crit?5:1);addPoints(gain);if(boss)damageBoss(gain);grantPetXp(.08);addXp((1+Math.floor(combo/10))*(1+(state.comboExp||0)*Math.min(combo,25)*.006));
+ let crit=Math.random()<Math.min(.32,.05+state.crit*.02),gain=clickValue()*(crit?5:1);queueManualClickReward(gain,typeof critical!=='undefined'?critical:false,typeof event!=='undefined'?event.clientX:null,typeof event!=='undefined'?event.clientY:null);if(boss)damageBoss(gain);grantPetXp(.08);addXp((1+Math.floor(combo/10))*(1+(state.comboExp||0)*Math.min(combo,25)*.006));
  if(Math.random()<Math.min(.08,.004+state.gemChance*.004)){state.gems++;toast('Znalazłeś diament! 💎')}
  let r=$('#clicker').getBoundingClientRect();floating(e?.clientX||r.left+r.width/2,e?.clientY||r.top+r.height/2,crit?'KRYTYK x5':undefined,crit);
  let b=$('#clicker');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');if(crit)sfx('crit');else skinClickSound();spawnSkinParticles(crit?1.7:1);
@@ -1434,12 +1436,88 @@ function applySkinTextTheme(){
 
 
 let lastManualClickAt=0;
+const MAX_COMBO=50;
 const COMBO_WINDOW_MS=1150;
+
+
+const CLICK_BATCH_INTERVAL_MS=50;
+const MAX_EFFECTS_PER_SECOND=9;
+const MAX_SOUNDS_PER_SECOND=7;
+
+let clickBatchCount=0;
+let clickBatchPoints=0;
+let clickBatchCriticalPoints=0;
+let clickBatchTimer=null;
+let clickEffectWindowStart=0;
+let clickEffectsThisWindow=0;
+let clickSoundWindowStart=0;
+let clickSoundsThisWindow=0;
+let lastHudBatchRender=0;
+
+function canShowClickEffect(){
+ const now=performance.now();
+ if(now-clickEffectWindowStart>=1000){
+  clickEffectWindowStart=now;
+  clickEffectsThisWindow=0
+ }
+ if(clickEffectsThisWindow>=MAX_EFFECTS_PER_SECOND)return false;
+ clickEffectsThisWindow++;
+ return true
+}
+
+function canPlayClickSound(){
+ const now=performance.now();
+ if(now-clickSoundWindowStart>=1000){
+  clickSoundWindowStart=now;
+  clickSoundsThisWindow=0
+ }
+ if(clickSoundsThisWindow>=MAX_SOUNDS_PER_SECOND)return false;
+ clickSoundsThisWindow++;
+ return true
+}
+
+function queueManualClickReward(points,critical=false,x=null,y=null){
+ const safePoints=Math.max(0,Number(points)||0);
+ clickBatchCount++;
+ clickBatchPoints+=safePoints;
+ if(critical)clickBatchCriticalPoints+=safePoints;
+
+ if(canShowClickEffect()){
+  showSkinClickValue(safePoints,x,y,critical)
+ }
+ if(canPlayClickSound()&&typeof sfx==='function'){
+  sfx(critical?'crit':'click')
+ }
+
+ if(!clickBatchTimer){
+  clickBatchTimer=setTimeout(flushManualClickBatch,CLICK_BATCH_INTERVAL_MS)
+ }
+}
+
+function flushManualClickBatch(){
+ clickBatchTimer=null;
+ if(clickBatchPoints<=0&&clickBatchCount<=0)return;
+
+ const points=clickBatchPoints;
+ clickBatchCount=0;
+ clickBatchPoints=0;
+ clickBatchCriticalPoints=0;
+
+ if(points>0)addPoints(points);
+
+ const now=performance.now();
+ if(now-lastHudBatchRender>=100){
+  lastHudBatchRender=now;
+  if(typeof renderHud==='function'){
+   try{renderHud()}catch(error){console.error('renderHud batch:',error)}
+  }
+ }
+}
 
 function registerManualCombo(){
  const now=Date.now();
  if(lastManualClickAt&&now-lastManualClickAt<=COMBO_WINDOW_MS){
-  state.combo=Math.max(1,Number(state.combo)||1)+1
+  state.combo=Math.min(50,Math.max(1,Number(state.combo)||1)+1)
  }else{
   state.combo=1
  }
@@ -1455,7 +1533,7 @@ function decayComboIfNeeded(){
 }
 
 function refreshComboDisplay(){
- const comboValue=Math.max(1,Number(state.combo)||1);
+ const comboValue=Math.min(50,Math.max(1,Number(state.combo)||1));
  const text=formatSkinCombo(comboValue);
  const nodes=[...document.querySelectorAll('#comboText,#combo,.combo-text,.combo-label,[data-combo-display]')];
  [...new Set(nodes)].forEach(el=>{
@@ -1475,8 +1553,8 @@ function applySkinTextClass(element){
 
 function formatSkinCombo(value){
  const theme=skinTextTheme();
- const comboValue=Math.max(1,Number(value ?? state.combo)||1);
- return `${theme.combo} x${comboValue}`
+ const comboValue=Math.min(50,Math.max(1,Number(value ?? state.combo)||1));
+ return comboValue>=MAX_COMBO?`${theme.combo} x${comboValue} • MAX`:`${theme.combo} x${comboValue}`
 }
 function skinCriticalLabel(){
  return skinTextTheme().crit
@@ -1553,6 +1631,83 @@ function renderBossUpgrades(){
  if(typeof bindBossUpgradeButtons==='function')bindBossUpgradeButtons()
 }
 
+
+
+const PROFILE_FRAME_NAMES={
+ default:'Domyślna',
+ arcade:'Arcade',
+ collector:'Kolekcjoner',
+ developer:'Developer'
+};
+const PROFILE_BACKGROUND_NAMES={
+ default:'Domyślne',
+ wealth:'Bogactwo',
+ casino:'Kasyno',
+ reflex:'Reflex'
+};
+
+function normalizeProfileStyles(){
+ state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)?state.ownedProfileFrames:['default'];
+ state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)?state.ownedProfileBackgrounds:['default'];
+ if(!state.ownedProfileFrames.includes('default'))state.ownedProfileFrames.unshift('default');
+ if(!state.ownedProfileBackgrounds.includes('default'))state.ownedProfileBackgrounds.unshift('default');
+ if(!state.ownedProfileFrames.includes(state.profileFrame))state.profileFrame='default';
+ if(!state.ownedProfileBackgrounds.includes(state.profileBackground))state.profileBackground='default'
+}
+
+function renderProfileStyleSettings(){
+ normalizeProfileStyles();
+
+ const frameOptions=$('#profileFrameOptions');
+ const backgroundOptions=$('#profileBackgroundOptions');
+ const preview=$('#profileStylePreview');
+ const previewName=$('#profileStylePreviewName');
+
+ if(previewName)previewName.textContent=safeText(state.playerName||'Gracz');
+
+ if(preview){
+  preview.className=`profile-style-preview profile-frame-${state.profileFrame||'default'} profile-bg-${state.profileBackground||'default'}`
+ }
+
+ if(frameOptions){
+  frameOptions.innerHTML=state.ownedProfileFrames.map(id=>`
+   <button class="profile-style-option ${state.profileFrame===id?'active':''}" data-profile-frame="${id}">
+    <span class="profile-style-mini profile-frame-${id}">ABC</span>
+    <b>${PROFILE_FRAME_NAMES[id]||id}</b>
+   </button>
+  `).join('')
+ }
+
+ if(backgroundOptions){
+  backgroundOptions.innerHTML=state.ownedProfileBackgrounds.map(id=>`
+   <button class="profile-style-option ${state.profileBackground===id?'active':''}" data-profile-background="${id}">
+    <span class="profile-style-mini profile-bg-${id}">ABC</span>
+    <b>${PROFILE_BACKGROUND_NAMES[id]||id}</b>
+   </button>
+  `).join('')
+ }
+}
+
+function equipProfileFrame(id){
+ normalizeProfileStyles();
+ if(!state.ownedProfileFrames.includes(id))return;
+ state.profileFrame=id;
+ renderProfileStyleSettings();
+ save();
+ if(typeof saveOnlineProfile==='function')saveOnlineProfile()
+}
+
+function equipProfileBackground(id){
+ normalizeProfileStyles();
+ if(!state.ownedProfileBackgrounds.includes(id))return;
+ state.profileBackground=id;
+ renderProfileStyleSettings();
+ save();
+ if(typeof saveOnlineProfile==='function')saveOnlineProfile()
+}
+
+window.equipProfileFrame=equipProfileFrame;
+window.equipProfileBackground=equipProfileBackground;
 
 function renderSettingsStatistics(){
  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};

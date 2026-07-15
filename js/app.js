@@ -905,7 +905,7 @@ document.addEventListener('click',event=>{
 
  const approxValue=typeof clickPower==='function'?clickPower():1;
  const critical=clicker.classList.contains('critical-hit');
- showSkinClickValue(approxValue,event.clientX,event.clientY,critical)
+ if(canShowClickEffect())showSkinClickValue(approxValue,event.clientX,event.clientY,critical)
 });
 
 setInterval(()=>{if(typeof refreshComboDisplay==='function')refreshComboDisplay()},250);
@@ -923,4 +923,16 @@ bindClick('#bossResultClose',()=>closeBossResult());
 bindClick('#bossResultContinue',()=>closeBossResult());
 document.addEventListener('click',event=>{
  if(event.target?.id==='bossResult')closeBossResult()
+});
+
+window.addEventListener('beforeunload',()=>{
+ if(typeof flushManualClickBatch==='function')flushManualClickBatch()
+});
+
+document.addEventListener('click',event=>{
+ const frame=event.target.closest('[data-profile-frame]');
+ if(frame)window.equipProfileFrame?.(frame.dataset.profileFrame);
+
+ const background=event.target.closest('[data-profile-background]');
+ if(background)window.equipProfileBackground?.(background.dataset.profileBackground)
 });
