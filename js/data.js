@@ -532,6 +532,11 @@ const upgrades=[
  {id:'permBoss',icon:'🏆',name:'Łowca bossów',desc:'+10% wszystkich nagród z bossów',currency:'coins',permanent:true,base:18,growth:1.9,max:15,get:()=>state.permBossLoot||0,buy:()=>state.permBossLoot++},
  {id:'permRebirth',icon:'♻️',name:'Rdzeń rebirthu',desc:'+8% do bonusu pochodzącego z Noob Coinów',currency:'coins',permanent:true,base:22,growth:2.05,max:12,get:()=>state.permRebirthPower||0,buy:()=>state.permRebirthPower++}
 
+,
+ {id:'bossCooldown',icon:'⏱️',name:'Skrócony odpoczynek bossa',desc:'Skraca cooldown odnawialnych bossów o 12 sekund za poziom.',currency:'gems',permanent:true,base:180,growth:2.35,max:8,get:()=>state.bossCooldownLevel||0,buy:()=>state.bossCooldownLevel=(state.bossCooldownLevel||0)+1},
+ {id:'bossRepeatLoot',icon:'🎁',name:'Łupy z rewanżu',desc:'+7% nagród z kolejnych pokonań bossa za poziom.',currency:'gems',permanent:true,base:240,growth:2.4,max:8,get:()=>state.bossRepeatLootLevel||0,buy:()=>state.bossRepeatLootLevel=(state.bossRepeatLootLevel||0)+1},
+ {id:'bossRematchDamage',icon:'⚔️',name:'Furia rewanżu',desc:'+10% obrażeń przeciw bossom pokonanym wcześniej za poziom.',currency:'coins',permanent:true,base:120,growth:2.5,max:10,get:()=>state.bossRematchDamageLevel||0,buy:()=>state.bossRematchDamageLevel=(state.bossRematchDamageLevel||0)+1},
+ {id:'bossInstantReset',icon:'⚡',name:'Niecierpliwy boss',desc:'+1.5% szansy po zwycięstwie na natychmiastowy reset cooldownu.',currency:'coins',permanent:true,base:180,growth:2.65,max:8,get:()=>state.bossInstantResetLevel||0,buy:()=>state.bossInstantResetLevel=(state.bossInstantResetLevel||0)+1},
 ];
 
 const skins=[

@@ -43,13 +43,25 @@ function calculatedEndgameBossHp(){
 
 
 const BOSS_REPEAT_COOLDOWN_MS=180000;
+function effectiveBossCooldownMs(){
+ return Math.max(60000,BOSS_REPEAT_COOLDOWN_MS-(state.bossCooldownLevel||0)*12000)
+}
+function bossRepeatRewardMultiplier(){
+ return 1+(state.bossRepeatLootLevel||0)*.07
+}
+function bossRematchDamageMultiplier(worldId){
+ return worldBossDefeated(worldId)?1+(state.bossRematchDamageLevel||0)*.10:1
+}
+function bossInstantResetChance(){
+ return Math.min(.12,(state.bossInstantResetLevel||0)*.015)
+}
 function bossCooldownRemaining(worldId){
  state.bossCooldowns=state.bossCooldowns||{};
  return Math.max(0,Number(state.bossCooldowns[worldId]||0)-Date.now())
 }
 function setBossCooldown(worldId){
  state.bossCooldowns=state.bossCooldowns||{};
- state.bossCooldowns[worldId]=Date.now()+BOSS_REPEAT_COOLDOWN_MS
+ state.bossCooldowns[worldId]=Date.now()+effectiveBossCooldownMs()
 }
 function bossKillCount(worldId){
  state.bossKillCounts=state.bossKillCounts||{};
@@ -246,7 +258,7 @@ function damageBoss(amount){
   *1.35
   *bossDamageUpgradeMultiplier()
   *(1+(state.worldExpBoost||0)*.05)
-  *(1+(state.achievementBonuses?.bossDamage||0))
+  *(1+(state.achievementBonuses?.bossDamage||0))*bossRematchDamageMultiplier(boss.worldId)
  );
 
  const capped=Math.min(upgraded,(boss?.maxHp||1)*.05);
@@ -282,7 +294,7 @@ function finishBoss(win){
 
  if(win){
   const lootMult=1+(state.permBossLoot||0)*.10;
-  const repeatScale=wasFirst?1:.40;
+  const repeatScale=wasFirst?1:.40*bossRepeatRewardMultiplier();
 
   defeated.rewardPoints=Math.max(1,Math.floor(defeated.rewardPoints*lootMult*repeatScale));
   defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()*(wasFirst?1:.75)));
@@ -302,6 +314,10 @@ function finishBoss(win){
 
   grantPetXp(70+Math.max(0,worldIndex(w.id))*18);
   setBossCooldown(w.id);
+  if(!wasFirst&&Math.random()<bossInstantResetChance()){
+   state.bossCooldowns[w.id]=0;
+   toast('⚡ Boss wrócił natychmiast!')
+  }
   sfx('good');
   confetti()
  }else{
@@ -418,7 +434,7 @@ function renderHud(){
  $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';
  $('#expMult').textContent='x'+expMultiplier().toFixed(2);
  $('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));
- $('#combo').textContent='COMBO x'+combo;
+ $('#combo').textContent=formatSkinCombo(state.combo||1);
  $('#combo').classList.toggle('hot',combo>=8);
  $('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);
@@ -451,7 +467,7 @@ function render(){
  $('#points').textContent=fmt(state.points);if($('#playerTitle'))$('#playerTitle').remove();
  if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
- $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent='COMBO x'+combo;$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
+ $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent=formatSkinCombo(state.combo||1);$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);$('#quickClick').disabled=state.points<state.clickCost;$('#quickAuto').disabled=state.points<state.autoCost;
  $('#rebirthGain').textContent=rebirthGain()+' 🟡';$('#rebirthBtn').disabled=rebirthGain()<1;
  $('#soundBtn').textContent=state.sound?'🔊':'🔇';$('#musicBtn').textContent=state.music?'🎶':'🎵';
@@ -1128,6 +1144,42 @@ function applySkinArenaEffects(skin){
  if(signature!==skinFxSignature||!$('#skinEffectField')?.classList.contains('active'))startSkinEffectField(skin)
 }
 
+
+function skinTextTheme(){
+ const id=state.activeSkin||'classic';
+ const themes={
+  classic:{className:'text-classic',crit:'KRYTYCZNY NOOB!',combo:'COMBO'},
+  banana:{className:'text-banana',crit:'BANANOWY CRIT!',combo:'BANANA COMBO'},
+  matrix:{className:'text-matrix',crit:'SYSTEM CRIT!',combo:'MATRIX COMBO'},
+  cyber:{className:'text-cyber',crit:'CYBER CRIT!',combo:'CYBER COMBO'},
+  lava:{className:'text-lava',crit:'LAVA CRIT!',combo:'INFERNO COMBO'},
+  ice:{className:'text-ice',crit:'FROST CRIT!',combo:'FROST COMBO'},
+  toxic:{className:'text-toxic',crit:'TOXIC CRIT!',combo:'TOXIC COMBO'},
+  glitch:{className:'text-glitch',crit:'GLITCH CRIT!',combo:'ERROR COMBO'},
+  rainbow:{className:'text-rainbow',crit:'RAINBOW CRIT!',combo:'RAINBOW COMBO'},
+  void:{className:'text-void',crit:'VOID CRIT!',combo:'VOID COMBO'},
+  gold:{className:'text-gold',crit:'GOLDEN CRIT!',combo:'GOLD COMBO'},
+  dev:{className:'text-dev',crit:'DEV CRIT!',combo:'DEV COMBO'}
+ };
+ return themes[id]||themes.classic
+}
+function applySkinTextTheme(){
+ const theme=skinTextTheme();
+ document.body.dataset.skinText=theme.className;
+ const combo=$('#comboText')||$('#combo');
+ if(combo){
+  combo.classList.remove(...[...combo.classList].filter(c=>c.startsWith('skin-text-')));
+  combo.classList.add('skin-text-'+theme.className)
+ }
+}
+function formatSkinCombo(value){
+ const theme=skinTextTheme();
+ return `${theme.combo} x${value}`
+}
+function skinCriticalLabel(){
+ return skinTextTheme().crit
+}
+
 function applySkin(){
  try{
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
@@ -1138,7 +1190,7 @@ function applySkin(){
    if(skin.cls)button.classList.add(skin.cls)
   }
   applySkinArenaEffects(skin);
-  if(typeof renderSkinOrbit==='function')renderSkinOrbit()
+  if(typeof renderSkinOrbit==='function')renderSkinOrbit();applySkinTextTheme()
  }catch(error){
   console.error('Skin render error:',error);
   if(typeof saveDiagnostic==='function')saveDiagnostic('Skin render',error.message,error.stack||'')

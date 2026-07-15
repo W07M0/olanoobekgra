@@ -1636,3 +1636,39 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 /* 0.6c — repeatable bosses */
 #challengeBossBtn:disabled{opacity:.72!important;cursor:not-allowed!important;filter:saturate(.65)}
 .world-boss-status.done{display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px}
+
+/* 0.6c — skin-based click and combo typography */
+.skin-click-text,
+#comboText,
+#combo{
+ font-weight:1000!important;
+ letter-spacing:.04em;
+ text-transform:uppercase;
+}
+
+.text-classic,.skin-text-text-classic{color:#fff;text-shadow:0 3px 0 #271a44,0 0 12px rgba(255,255,255,.35)}
+.text-banana,.skin-text-text-banana{color:#ffe35a;text-shadow:0 3px 0 #8a5b00,0 0 16px rgba(255,227,90,.6);font-style:italic}
+.text-matrix,.skin-text-text-matrix{color:#52ff80;text-shadow:0 0 6px #52ff80,0 0 18px rgba(82,255,128,.7);font-family:ui-monospace,monospace}
+.text-cyber,.skin-text-text-cyber{color:#42e9ff;text-shadow:2px 2px 0 #7b45ff,-2px -1px 0 #ff3fa4,0 0 14px rgba(66,233,255,.65)}
+.text-lava,.skin-text-text-lava{color:#ff9a3d;text-shadow:0 3px 0 #8a1f00,0 0 18px #ff4d1f;animation:lavaTextPulse .8s ease-in-out infinite alternate}
+.text-ice,.skin-text-text-ice{color:#d9f8ff;text-shadow:0 3px 0 #3a7f9f,0 0 18px #8eeaff;letter-spacing:.08em}
+.text-toxic,.skin-text-text-toxic{color:#9cff45;text-shadow:0 3px 0 #265900,0 0 16px #72ff1f;transform:skew(-5deg)}
+.text-glitch,.skin-text-text-glitch{color:#fff;text-shadow:3px 0 #00eaff,-3px 0 #ff2d95;animation:glitchText .42s steps(2,end) infinite}
+.text-rainbow,.skin-text-text-rainbow{background:linear-gradient(90deg,#ff4f82,#ffd84e,#4dffad,#45d9ff,#a65cff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rainbowText 2.2s linear infinite}
+.text-void,.skin-text-text-void{color:#c58cff;text-shadow:0 0 8px #6b2cff,0 0 22px #21004d;letter-spacing:.1em}
+.text-gold,.skin-text-text-gold{color:#ffd75a;text-shadow:0 3px 0 #8d5b00,0 0 18px rgba(255,215,90,.8);font-family:Georgia,serif}
+.text-dev,.skin-text-text-dev{color:#4dffad;text-shadow:2px 2px 0 #151515,0 0 16px #4dffad;font-family:ui-monospace,monospace}
+
+@keyframes glitchText{
+ 0%,100%{transform:translate(0,0)}
+ 33%{transform:translate(2px,-1px)}
+ 66%{transform:translate(-2px,1px)}
+}
+@keyframes rainbowText{
+ from{background-position:0 0}
+ to{background-position:300% 0}
+}
+@keyframes lavaTextPulse{
+ from{filter:brightness(.95)}
+ to{filter:brightness(1.35)}
+}
