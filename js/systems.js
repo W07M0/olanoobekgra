@@ -1753,8 +1753,8 @@ async function saveProfileStyleNow(){
   let onlineSaved=false;
 
   if(typeof saveOnlineProfile==='function'){
-   const result=await saveOnlineProfile({force:true});
-   onlineSaved=result!==false
+   await saveOnlineProfile({force:true});
+   onlineSaved=true
   }else if(typeof saveOnlineScore==='function'){
    await saveOnlineScore(true);
    onlineSaved=true
