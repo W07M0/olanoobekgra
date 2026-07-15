@@ -1632,3 +1632,7 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
   max-height:76%!important;
  }
 }
+
+/* 0.6c — repeatable bosses */
+#challengeBossBtn:disabled{opacity:.72!important;cursor:not-allowed!important;filter:saturate(.65)}
+.world-boss-status.done{display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px}

@@ -41,6 +41,40 @@ function calculatedEndgameBossHp(){
 
 
 
+
+const BOSS_REPEAT_COOLDOWN_MS=180000;
+function bossCooldownRemaining(worldId){
+ state.bossCooldowns=state.bossCooldowns||{};
+ return Math.max(0,Number(state.bossCooldowns[worldId]||0)-Date.now())
+}
+function setBossCooldown(worldId){
+ state.bossCooldowns=state.bossCooldowns||{};
+ state.bossCooldowns[worldId]=Date.now()+BOSS_REPEAT_COOLDOWN_MS
+}
+function bossKillCount(worldId){
+ state.bossKillCounts=state.bossKillCounts||{};
+ return Math.max(0,Number(state.bossKillCounts[worldId]||0))
+}
+function registerBossKill(worldId){
+ state.bossKillCounts=state.bossKillCounts||{};
+ state.bossKillCounts[worldId]=bossKillCount(worldId)+1
+}
+function formatBossCooldown(ms){
+ const total=Math.max(0,Math.ceil(ms/1000));
+ return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`
+}
+function unlockNextWorldAfterBoss(worldId){
+ const idx=worldIndex(worldId);
+ const next=worlds[idx+1];
+ if(!next)return false;
+ state.unlockedWorlds=Array.isArray(state.unlockedWorlds)?state.unlockedWorlds:['neon'];
+ if(!state.unlockedWorlds.includes(next.id)){
+  state.unlockedWorlds.push(next.id);
+  return true
+ }
+ return false
+}
+
 function ensureWorldBossProgress(worldId){
  state.worldBossProgress=state.worldBossProgress||{};
  if(!(worldId in state.worldBossProgress))state.worldBossProgress[worldId]=0
@@ -63,30 +97,30 @@ function refreshBossUnlockUi(){
  const w=world();
  ensureWorldBossProgress(w.id);
 
- const done=worldBossDefeated(w.id)&&w.id!=='dev';
+ const firstDefeat=worldBossDefeated(w.id);
  const fightActive=!!(boss&&boss.active!==false);
  const current=worldBossUnlockProgress(w);
  const target=worldBossUnlockTarget(w);
- const ready=current>=target;
+ const ready=current>=target||firstDefeat;
+ const cooldown=bossCooldownRemaining(w.id);
+ const cooling=cooldown>0;
 
  if(button){
-  const shouldShow=!done&&!fightActive&&ready;
+  const shouldShow=!fightActive&&ready;
   button.classList.toggle('hidden',!shouldShow);
   button.style.display=shouldShow?'block':'none';
-  button.disabled=!shouldShow;
-  button.textContent=done
-   ?'✅ Boss pokonany'
-   :fightActive
-    ?'⚔️ Walka trwa'
-    :'⚔️ Zmierz się z bossem'
+  button.disabled=!shouldShow||cooling;
+  button.textContent=fightActive?'⚔️ Walka trwa'
+   :cooling?`⏱️ Boss odpoczywa ${formatBossCooldown(cooldown)}`
+   :firstDefeat?'⚔️ Walcz ponownie'
+   :'⚔️ Zmierz się z bossem'
  }
 
  if(hint){
-  const shouldShowHint=!done&&!fightActive;
-  hint.classList.toggle('hidden',!shouldShowHint);
-  hint.style.display=shouldShowHint?'block':'none';
-  hint.textContent=ready
-   ?'⚔️ Walka z bossem odblokowana'
+  hint.classList.toggle('hidden',fightActive);
+  hint.style.display=fightActive?'none':'block';
+  hint.textContent=cooling?`Boss wróci za ${formatBossCooldown(cooldown)}`
+   :ready?(firstDefeat?`🏆 Pokonano: ${bossKillCount(w.id)} razy`:'⚔️ Walka z bossem odblokowana')
    :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`
  }
 }
@@ -114,13 +148,18 @@ function spawnWorldBoss(){
  if(boss)return toast('Walka z bossem już trwa');
  let w=world();
  ensureWorldBossProgress(w.id);
+ const cooldown=bossCooldownRemaining(w.id);
+ if(cooldown>0){
+  refreshBossUnlockUi();
+  return toast(`Boss odpoczywa jeszcze ${formatBossCooldown(cooldown)}`)
+ }
  const currentProgress=worldBossUnlockProgress(w);
  const requiredProgress=worldBossUnlockTarget(w);
- if(currentProgress<requiredProgress){
+ if(!worldBossDefeated(w.id)&&currentProgress<requiredProgress){
   const current=worldBossUnlockProgress(w),target=worldBossUnlockTarget(w);
   return toast(`Najpierw zdobądź w tym świecie ${fmt(target-current)} punktów`)
  }
- if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
+ 
  let t=currentWorldBossTemplate();
  let maxHp=calculatedWorldBossHp(w);
  boss={...t,hp:maxHp,maxHp,time:Math.min(125,80+worldIndex(w)*4),rewardPoints:Math.floor(maxHp*.08),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
@@ -224,22 +263,67 @@ function renderBoss(){
  $('#bossHealthBar').style.width=((boss&&(boss?.maxHp||1)?(boss?.hp||0)/(boss?.maxHp||1):0)*100)+'%'
 }
 function finishBoss(win){
- if(!boss)return;clearInterval(bossTimer);clearTimeout(blockerTimeout);$('#bossBlockerLayer').classList.add('hidden');$('#bossBlockerLayer').innerHTML='';$('#bossPanel').classList.remove('blocked');let defeated={...boss};
+ if(!boss)return;
+
+ clearInterval(bossTimer);
+ clearTimeout(blockerTimeout);
+
+ const blockerLayer=$('#bossBlockerLayer');
+ if(blockerLayer){
+  blockerLayer.classList.add('hidden');
+  blockerLayer.innerHTML=''
+ }
+ const bossPanel=$('#bossPanel');
+ if(bossPanel)bossPanel.classList.remove('blocked');
+
+ const defeated={...boss};
+ const w=worlds.find(item=>item.id===defeated.worldId)||world();
+ const wasFirst=defeated.isWorldBoss&&!worldBossDefeated(w.id);
+
  if(win){
   const lootMult=1+(state.permBossLoot||0)*.10;
-  defeated.rewardPoints=Math.floor(defeated.rewardPoints*lootMult);
-  defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()));
-  defeated.rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()));
-  addPoints(defeated.rewardPoints);state.gems+=defeated.rewardGems;state.coins+=defeated.rewardCoins;
+  const repeatScale=wasFirst?1:.40;
+
+  defeated.rewardPoints=Math.max(1,Math.floor(defeated.rewardPoints*lootMult*repeatScale));
+  defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()*(wasFirst?1:.75)));
+  defeated.rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()*(wasFirst?1:.75)));
+
+  addPoints(defeated.rewardPoints);
+  state.gems+=defeated.rewardGems;
+  state.coins+=defeated.rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
-  if(defeated.isWorldBoss)markWorldBossDefeated(defeated.worldId);
-  grantPetXp(70+Math.max(0,worldIndex(defeated.worldId))*18);
-  sfx('good');confetti()
+
+  registerBossKill(w.id);
+
+  if(defeated.isWorldBoss&&wasFirst){
+   markWorldBossDefeated(w.id);
+   unlockNextWorldAfterBoss(w.id)
+  }
+
+  grantPetXp(70+Math.max(0,worldIndex(w.id))*18);
+  setBossCooldown(w.id);
+  sfx('good');
+  confetti()
+ }else{
+  setBossCooldown(w.id)
  }
- $('#bossResultIcon').textContent=win?'🏆':'💨';
- $('#bossResultTitle').textContent=win?(defeated.isWorldBoss?'Strażnik świata pokonany!':'Boss pokonany!'):'Boss uciekł!';
- $('#bossResultText').textContent=win?`Zdobywasz ${fmt(defeated.rewardPoints)} punktów, ${defeated.rewardGems} gemów i ${defeated.rewardCoins||0} Noob Coinów.`:'Spróbuj ponownie za chwilę.';
- $('#bossResultOverlay').classList.add('show');boss=null;$('#bossPanel').classList.add('hidden');render()
+
+ const icon=$('#bossResultIcon');
+ const title=$('#bossResultTitle');
+ const desc=$('#bossResultDesc');
+ if(icon)icon.textContent=win?'🏆':'💨';
+ if(title)title.textContent=win?(wasFirst?'Pierwsze zwycięstwo!':'Boss pokonany ponownie!'):'Boss uciekł';
+ if(desc)desc.textContent=win
+  ?`+${fmt(defeated.rewardPoints)} ⭐ +${defeated.rewardGems} 💎 +${defeated.rewardCoins||0} 🟡`
+  :'Spróbuj ponownie po cooldownie.';
+
+ const result=$('#bossResult');
+ if(result)result.classList.remove('hidden');
+
+ boss=null;
+ save();
+ render();
+ refreshBossUnlockUi()
 }
 function showWorldTransition(w,newUnlock=false){
  $('#transitionEmoji').textContent=w.emoji;$('#transitionName').textContent=w.name;$('#transitionDesc').textContent=w.desc;
@@ -637,7 +721,7 @@ function renderWorlds(){
   ensureWorldBossProgress(w.id);
   let bossUnlockCurrent=worldBossUnlockProgress(w),bossUnlockTarget=worldBossUnlockTarget(w),bossUnlocked=bossUnlockCurrent>=bossUnlockTarget;
   let bossStatus=bossDone
-   ?`<div class="world-boss-status done">✅ Boss pokonany: ${w.bossEmoji} ${w.bossName}</div>`
+   ?`<div class="world-boss-status done">✅ ${w.bossEmoji} ${w.bossName} • Pokonano ${bossKillCount(w.id)}×</div>`
    :`<div class="world-boss-unlock ${bossUnlocked?'ready':''}">
       <div><span>Odblokowanie walki</span><b>${fmt(Math.min(bossUnlockCurrent,bossUnlockTarget))} / ${fmt(bossUnlockTarget)} ⭐</b></div>
       <div class="world-boss-unlock-bar"><i style="width:${Math.min(100,bossUnlockCurrent/bossUnlockTarget*100)}%"></i></div>
@@ -1151,3 +1235,15 @@ function renderSettingsStatistics(){
  set('#settingsStatBosses',fmt(Number(state.bossWins||0)));
  set('#settingsStatCasino',`${fmt(Number(state.casinoGames||0))} / ${fmt(Number(state.casinoWins||0))} wygranych`)
 }
+
+let bossCooldownUiTimer=setInterval(()=>{
+ if(document.visibilityState==='visible'){
+  try{
+   refreshBossUnlockUi();
+   const worldPanel=document.querySelector('[data-collection-panel="worlds"].active');
+   if(worldPanel&&typeof renderWorlds==='function')renderWorlds()
+  }catch(error){
+   console.warn('Boss cooldown UI:',error)
+  }
+ }
+},1000);
