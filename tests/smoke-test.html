@@ -1,2 +1,20 @@
-<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>
-r.onclick=async()=>{let h=await fetch('../index.html?v=06cskinbossfix').then(x=>x.text()),s=await fetch('../js/systems.js?v=06cskinbossfix').then(x=>x.text()),c=await fetch('../css/styles.css?v=06cskinbossfix').then(x=>x.text());let a=[['HP',s.includes('2000000000')],['Próg 30%',s.includes('calculatedWorldBossHp(w)*.30')],['Ukryty przycisk',h.includes('challengeBossBtn')&&h.includes('hidden')],['Opis postępu',h.includes('bossUnlockHint')],['Obie strony',c.includes('.skin-side.left')&&c.includes('.skin-side.right')]];o.innerHTML=a.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Test arena/boss 0.6c</title>
+<button id="run">Uruchom test</button>
+<div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const s=await fetch('../js/systems.js?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../js/core.js?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
+ const css=await fetch('../css/styles.css?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['Losowe cząsteczki',s.includes('function spawnSkinEffectParticle')],
+  ['Obszar za klikerem',css.includes('.skin-effect-field')],
+  ['Postęp bossa per świat',c.includes('state.worldBossProgress[activeWorld.id]')],
+  ['Natychmiastowe odświeżenie',s.includes('function refreshBossUnlockUi')],
+  ['Brak starego baseline',!s.includes('worldBossStartedAt')]
+ ];
+ out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
+}
+</script>

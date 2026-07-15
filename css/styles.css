@@ -1399,3 +1399,104 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 @keyframes skinSideFloatSymmetric{0%,100%{transform:translate3d(0,8px,0) scale(.75) rotate(-4deg);opacity:.24}50%{transform:translate3d(0,-18px,0) scale(1.12) rotate(5deg);opacity:1}}
 .boss-unlock-hint{margin:10px auto;max-width:420px;text-align:center;padding:9px 12px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-weight:800}
 @media(max-width:800px){.skin-side{width:24%!important}.skin-side.left{right:77%!important}.skin-side.right{left:77%!important}.skin-side span{font-size:18px;width:26px;height:26px}}
+
+/* 0.6c — losowy obszar efektów skinów za klikerem */
+.skin-side-fx{display:none!important}
+
+.skin-effect-field{
+ position:absolute;
+ left:50%;
+ top:50%;
+ width:156%;
+ aspect-ratio:1/1;
+ transform:translate(-50%,-50%);
+ pointer-events:none;
+ z-index:1;
+ overflow:visible;
+ display:none;
+ border-radius:50%;
+}
+.skin-effect-field.active{
+ display:block;
+}
+.skin-fx-particle{
+ position:absolute;
+ display:grid;
+ place-items:center;
+ font-size:var(--fx-size);
+ transform:translate(-50%,-50%) rotate(var(--fx-rotate));
+ opacity:0;
+ filter:drop-shadow(0 0 10px currentColor);
+ animation:skinFxParticle ease-out forwards;
+ will-change:transform,opacity,filter;
+}
+.fx-glitch{
+ color:#36e7ff;
+ font-family:ui-monospace,monospace;
+ animation-timing-function:steps(5,end);
+}
+.fx-lava{color:#ff713d}
+.fx-ice{color:#9befff}
+.fx-void{color:#a96cff}
+.fx-rainbow{animation-name:skinFxParticleRainbow}
+.fx-gold{color:#ffd34e}
+.fx-generic{color:#fff}
+
+@keyframes skinFxParticle{
+ 0%{
+  opacity:0;
+  transform:translate(-50%,-50%) rotate(var(--fx-rotate)) scale(.35);
+ }
+ 18%{
+  opacity:.95;
+ }
+ 72%{
+  opacity:.75;
+ }
+ 100%{
+  opacity:0;
+  transform:
+   translate(
+    calc(-50% + var(--fx-drift-x)),
+    calc(-50% + var(--fx-drift-y))
+   )
+   rotate(calc(var(--fx-rotate) + 45deg))
+   scale(1.25);
+  filter:drop-shadow(0 0 18px currentColor);
+ }
+}
+@keyframes skinFxParticleRainbow{
+ 0%{
+  opacity:0;
+  color:#ff557f;
+  transform:translate(-50%,-50%) scale(.35);
+ }
+ 25%{opacity:1;color:#ffd34e}
+ 50%{color:#36e7ff}
+ 75%{opacity:.8;color:#a75cff}
+ 100%{
+  opacity:0;
+  color:#ff557f;
+  transform:
+   translate(
+    calc(-50% + var(--fx-drift-x)),
+    calc(-50% + var(--fx-drift-y))
+   )
+   scale(1.3)
+   rotate(60deg);
+ }
+}
+#clicker,
+.click-button,
+.main-click-button{
+ position:relative;
+ z-index:4;
+}
+#petOrbit{
+ position:absolute;
+ z-index:5;
+}
+@media(max-width:800px){
+ .skin-effect-field{width:138%}
+ .skin-fx-particle{font-size:calc(var(--fx-size)*.78)}
+}

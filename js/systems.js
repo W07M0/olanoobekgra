@@ -67,22 +67,46 @@ function calculatedEndgameBossHp(){
 
 function ensureWorldBossProgress(worldId){
  state.worldBossProgress=state.worldBossProgress||{};
- state.worldBossStartedAt=state.worldBossStartedAt||{};
- if(!(worldId in state.worldBossProgress)){
-  state.worldBossProgress[worldId]=0;
-  state.worldBossStartedAt[worldId]=state.totalPointsEarned||0
- }
+ if(!(worldId in state.worldBossProgress))state.worldBossProgress[worldId]=0
 }
 function worldBossUnlockTarget(w){
  return Math.ceil(calculatedWorldBossHp(w)*.30)
 }
 function worldBossUnlockProgress(w){
  ensureWorldBossProgress(w.id);
- const baseline=Number(state.worldBossStartedAt[w.id]||0);
- return Math.max(0,(state.totalPointsEarned||0)-baseline)
+ return Math.max(0,Number(state.worldBossProgress[w.id])||0)
 }
 function worldBossFightUnlocked(w){
  return worldBossUnlockProgress(w)>=worldBossUnlockTarget(w)
+}
+function refreshBossUnlockUi(){
+ const button=$('#challengeBossBtn');
+ const hint=$('#bossUnlockHint');
+ if(!button&&!hint)return;
+
+ const w=world();
+ ensureWorldBossProgress(w.id);
+
+ const done=worldBossDefeated(w.id)&&w.id!=='dev';
+ const ready=worldBossFightUnlocked(w);
+ const fightActive=!!boss;
+ const current=worldBossUnlockProgress(w);
+ const target=worldBossUnlockTarget(w);
+
+ if(button){
+  button.classList.toggle('hidden',done||fightActive||!ready);
+  button.disabled=done||fightActive||!ready;
+  button.textContent=done?'✅ Boss pokonany':fightActive?'⚔️ Walka trwa':'⚔️ Zmierz się z bossem'
+ }
+
+ if(hint){
+  hint.classList.toggle('hidden',done||fightActive);
+  hint.textContent=done
+   ?''
+   :ready
+    ?'⚔️ Walka z bossem odblokowana'
+    :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`
+ }
 }
 
 function worldIndex(id){return worlds.findIndex(w=>w.id===id)}
@@ -297,33 +321,7 @@ function applyFeatureViewLocks(){
 
 
 function renderHud(){
- const bossHint=$('#bossUnlockHint');
- if(bossHint){
-  const hw=world();
-  ensureWorldBossProgress(hw.id);
-  const done=worldBossDefeated(hw.id)&&hw.id!=='dev';
-  const current=worldBossUnlockProgress(hw);
-  const target=worldBossUnlockTarget(hw);
-  bossHint.classList.toggle('hidden',done||!!boss);
-  bossHint.textContent=done
-   ?''
-   :worldBossFightUnlocked(hw)
-    ?'⚔️ Walka z bossem odblokowana'
-    :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`;
- }
-
- const bossButton=$('#challengeBossBtn');
- if(bossButton){
-  const bw=world();
-  ensureWorldBossProgress(bw.id);
-  const done=worldBossDefeated(bw.id)&&bw.id!=='dev';
-  const ready=worldBossFightUnlocked(bw);
-  const fightActive=!!boss;
-
-  bossButton.classList.toggle('hidden',done||fightActive||!ready);
-  bossButton.disabled=done||fightActive||!ready;
-  bossButton.textContent=done?'✅ Boss pokonany':fightActive?'⚔️ Walka trwa':'⚔️ Zmierz się z bossem';
- }try{
+ refreshBossUnlockUi();try{
  const activeBoss=typeof boss!=='undefined'?boss:null;
 
  $('#points').textContent=fmt(state.points);
@@ -380,6 +378,7 @@ function render(){
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
  if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof maybeSpawnBoss==='function'){try{maybeSpawnBoss()}catch(error){console.error('maybeSpawnBoss:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
+ if(typeof refreshBossUnlockUi==='function')refreshBossUnlockUi();
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -667,7 +666,7 @@ function selectWorld(id){
   if(state[w.currency]<w.cost)return toast('Masz za mało '+currencyIcon(w.currency));
   state[w.currency]-=w.cost;state.unlockedWorlds.push(id);newlyUnlocked=true;toast('Odblokowano '+w.name+'!')
  }
- state.world=id;ensureWorldBossProgress(id);showWorldTransition(w,newlyUnlocked);render()
+ state.world=id;ensureWorldBossProgress(id);showWorldTransition(w,newlyUnlocked);refreshBossUnlockUi();render()
 }
 function achievementRewardLabel(a){
  const currency=a.reward?.[0]==='gems'?'💎':a.reward?.[0]==='coins'?'🟡':'⭐';
@@ -914,35 +913,151 @@ function applySkinArenaEffects(skin){
  if(map[skin.id])document.body.classList.add(map[skin.id])
 }
 
-function ensureSkinSideFx(){
+let skinFxTimer=null;
+let skinFxSignature='';
+
+function ensureSkinEffectField(){
  const arena=$('.arena');
  if(!arena)return null;
- let layer=$('#skinSideFx');
- if(!layer){
-  layer=document.createElement('div');
-  layer.id='skinSideFx';
-  layer.className='skin-side-fx';
-  layer.innerHTML='<div class="skin-side left"></div><div class="skin-side right"></div>';
-  arena.appendChild(layer)
+
+ let field=$('#skinEffectField');
+ if(!field){
+  field=document.createElement('div');
+  field.id='skinEffectField';
+  field.className='skin-effect-field';
+  arena.appendChild(field)
  }
- return layer
+ return field
 }
-function renderSkinSideFx(skin){
- const layer=ensureSkinSideFx();
- if(!layer)return;
+
+function skinEffectConfig(skin){
+ const configs={
+  glitch:{symbols:['0','1','▰','⌁','▓'],className:'fx-glitch',interval:[170,300],life:[1100,1900]},
+  lava:{symbols:['🔥','✦','•','▲'],className:'fx-lava',interval:[210,360],life:[1300,2100]},
+  ice:{symbols:['❄️','✧','◆','❅'],className:'fx-ice',interval:[230,390],life:[1500,2300]},
+  void:{symbols:['●','◆','✦','◉'],className:'fx-void',interval:[260,430],life:[1700,2600]},
+  rainbow:{symbols:['✦','●','✨','◆'],className:'fx-rainbow',interval:[190,330],life:[1400,2300]},
+  gold:{symbols:['🪙','✨','◆','✦'],className:'fx-gold',interval:[210,360],life:[1300,2200]},
+  dev:{symbols:['</>','0','1','▰'],className:'fx-glitch',interval:[150,270],life:[1000,1700]}
+ };
+ return configs[skin?.id]||{
+  symbols:['✨','✦','•'],
+  className:'fx-generic',
+  interval:[260,420],
+  life:[1400,2200]
+ }
+}
+
+function spawnSkinEffectParticle(skin){
+ const field=ensureSkinEffectField();
+ if(!field||!skin||state.ecoMode)return;
+
  const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
- const enabled=skin&&!state.ecoMode&&(ranks[skin.rarity]||0)>=3;
- layer.classList.toggle('active',enabled);
- if(!enabled){layer.dataset.effect='';return}
- layer.dataset.effect=skin.id||skin.rarity;
- const symbols={
-  glitch:['0','1','⌁','▰'],lava:['🔥','✦','•'],ice:['❄️','✧','◆'],void:['●','✦','◆'],
-  rainbow:['✦','●','✨'],gold:['🪙','✨','◆'],dev:['</>','0','1']
- }[skin.id]||['✨','✦','•'];
- layer.querySelectorAll('.skin-side').forEach((side,sideIndex)=>{
-  side.innerHTML=Array.from({length:10},(_,i)=>`<span style="--i:${i};--side:${sideIndex}">${symbols[i%symbols.length]}</span>`).join('')
- })
+ if((ranks[skin.rarity]||0)<3)return;
+
+ const config=skinEffectConfig(skin);
+ const particle=document.createElement('span');
+ particle.className=`skin-fx-particle ${config.className}`;
+
+ const side=Math.random()<.5?'left':'right';
+ const angle=(side==='left'
+  ?130+Math.random()*100
+  :-50+Math.random()*100)*Math.PI/180;
+
+ const radius=46+Math.random()*28;
+ const x=50+Math.cos(angle)*radius;
+ const y=50+Math.sin(angle)*radius*.72;
+
+ particle.style.left=x+'%';
+ particle.style.top=y+'%';
+ particle.style.setProperty('--fx-size',(14+Math.random()*22)+'px');
+ particle.style.setProperty('--fx-rotate',(-35+Math.random()*70)+'deg');
+ particle.style.setProperty('--fx-drift-x',(-24+Math.random()*48)+'px');
+ particle.style.setProperty('--fx-drift-y',(-40-Math.random()*45)+'px');
+
+ const life=config.life[0]+Math.random()*(config.life[1]-config.life[0]);
+ particle.style.animationDuration=life+'ms';
+ particle.textContent=config.symbols[Math.floor(Math.random()*config.symbols.length)];
+
+ field.appendChild(particle);
+ setTimeout(()=>particle.remove(),life+120)
 }
+
+function stopSkinEffectField(){
+ clearTimeout(skinFxTimer);
+ skinFxTimer=null;
+ const field=$('#skinEffectField');
+ if(field){
+  field.classList.remove('active');
+  field.innerHTML=''
+ }
+ skinFxSignature=''
+}
+
+function startSkinEffectField(skin){
+ stopSkinEffectField();
+
+ const field=ensureSkinEffectField();
+ if(!field||!skin||state.ecoMode)return;
+
+ const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ if((ranks[skin.rarity]||0)<3)return;
+
+ field.classList.add('active');
+ field.dataset.skin=skin.id;
+ skinFxSignature=skin.id+'|'+skin.rarity;
+
+ const config=skinEffectConfig(skin);
+
+ const loop=()=>{
+  if(state.ecoMode||state.activeSkin!==skin.id){
+   stopSkinEffectField();
+   return
+  }
+
+  const burst=Math.random()<.22?2:1;
+  for(let i=0;i<burst;i++)spawnSkinEffectParticle(skin);
+
+  const delay=config.interval[0]+Math.random()*(config.interval[1]-config.interval[0]);
+  skinFxTimer=setTimeout(loop,delay)
+ };
+
+ for(let i=0;i<8;i++){
+  setTimeout(()=>spawnSkinEffectParticle(skin),i*90)
+ }
+ skinFxTimer=setTimeout(loop,250)
+}
+
+function applySkinArenaEffects(skin){
+ clearSkinArenaEffects();
+ if(!skin||state.ecoMode){
+  stopSkinEffectField();
+  return
+ }
+
+ const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ if((ranks[skin.rarity]||0)<3){
+  stopSkinEffectField();
+  return
+ }
+
+ document.body.classList.add('arena-skin-'+skin.rarity);
+
+ const map={
+  glitch:'arena-effect-glitch',
+  lava:'arena-effect-lava',
+  ice:'arena-effect-ice',
+  void:'arena-effect-void',
+  rainbow:'arena-effect-rainbow',
+  gold:'arena-effect-gold',
+  dev:'arena-effect-glitch'
+ };
+ if(map[skin.id])document.body.classList.add(map[skin.id]);
+
+ const signature=skin.id+'|'+skin.rarity;
+ if(signature!==skinFxSignature)startSkinEffectField(skin)
+}
+
 function applySkin(){
  try{
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
@@ -953,7 +1068,6 @@ function applySkin(){
    if(skin.cls)button.classList.add(skin.cls)
   }
   applySkinArenaEffects(skin);
-  renderSkinSideFx(skin);
   if(typeof renderSkinOrbit==='function')renderSkinOrbit()
  }catch(error){
   console.error('Skin render error:',error);
