@@ -2,7 +2,7 @@ function applyOfflineEarnings(){
  let last=Number(state.lastSeen)||Date.now(),elapsed=Math.max(0,(Date.now()-last)/1000),cap=(state.offlineLevel||0)*600;
  if(cap>0&&elapsed>30&&state.auto>0){
   let seconds=Math.min(elapsed,cap),gain=pps()*seconds*.55;
-  state.points+=gain;toast('Offline Noob zarobił '+fmt(gain)+' ⭐')
+  addPoints(gain);toast('Offline Noob zarobił '+fmt(gain)+' ⭐')
  }
  state.lastSeen=Date.now()
 }
@@ -121,7 +121,7 @@ document.addEventListener('pointermove',e=>{if(Math.random()>.65){let t=document
 function addXp(v){state.xp+=v*expMultiplier();while(state.xp>=needXp()){state.xp-=needXp();state.level++;state.gems+=Math.max(1,Math.floor(Math.max(1,state.level/5)*gemRewardMultiplier()));toast('LEVEL UP! Poziom '+state.level);sfx('good');confetti();
  let unlockedNow=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl===state.level).map(([id])=>id);
  if(unlockedNow.length)setTimeout(()=>toast('🔓 Odblokowano: '+unlockedNow.join(', ')),900)}}
-function addPoints(v){state.points+=v}
+function addPoints(v){v=Math.max(0,Number(v)||0);state.points+=v;state.totalPointsEarned=(state.totalPointsEarned||0)+v}
 function newQuests(){return[
  {id:'clicks',name:'Kliknij 250 razy',goal:250,start:state.totalClicks,reward:['gems',5]},
  {id:'earn',name:'Zdobądź 10K punktów',goal:10000,start:state.points,reward:['gems',7]},

@@ -59,7 +59,7 @@ function finishMini(id,title,displayScore,normalized,rawScore){
  state.eventStats.minigames++;
  state.minigameRecords[id]=Math.max(state.minigameRecords[id]||0,rawScore);
  const rewards=miniRewards(normalized,rawScore);
- state.points+=rewards.points;state.gems+=rewards.gems;addXp(rewards.xp);grantPetXp(8+normalized*28);
+ addPoints(rewards.points);state.gems+=rewards.gems;addXp(rewards.xp);grantPetXp(8+normalized*28);
  const grade=miniGrade(normalized);
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;

@@ -128,7 +128,7 @@ function finishMini(id,title,displayScore,normalized,rawScore){
  state.eventStats.minigames++;ensureAchievementStats();state.achievementStats.arcadePlayed++;
  state.minigameRecords[id]=Math.max(state.minigameRecords[id]||0,rawScore);
  const grade=miniGrade(normalized);const rewards=miniRewards(normalized,rawScore,grade);
- state.points+=rewards.points;
+ addPoints(rewards.points);
  state.gems+=rewards.gems;
  state.coins+=rewards.coins;
  addXp(rewards.xp);
@@ -136,7 +136,7 @@ function finishMini(id,title,displayScore,normalized,rawScore){
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
  $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
- $('#miniResultOverlay').classList.add('show');
+ const resultOverlay=$('#miniResultOverlay');if(resultOverlay){resultOverlay.classList.remove('hidden');resultOverlay.classList.add('show');resultOverlay.scrollIntoView({behavior:'smooth',block:'center'})}
  saveBestMinigameGrade(id,grade);registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
  render();loadMinigameLeaderboards()
 }
@@ -630,10 +630,10 @@ bindClick('#playParkour',()=>window.startParkour?.());
 bindClick('#playReflex',()=>window.startReflex?.());
 bindClick('#playDodge',()=>window.startDodge?.());
 bindClick('#refreshMiniBoards',()=>window.loadMinigameLeaderboards?.());
-bindClick('#stopAim',()=>window.stopAimGame?.(false));
-bindClick('#stopParkourBtn',()=>window.stopParkour?.(false));
-bindClick('#stopReflexBtn',()=>window.stopReflex?.(false));
-bindClick('#stopDodgeBtn',()=>window.stopDodge?.(false));
+bindClick('#stopAim',()=>window.stopAimGame?.(true));
+bindClick('#stopParkourBtn',()=>window.stopParkour?.(true));
+bindClick('#stopReflexBtn',()=>window.stopReflex?.(true));
+bindClick('#stopDodgeBtn',()=>window.stopDodge?.(true));
 
 
 bindClick('#bossDamageUpgradeBtn',()=>buyBossDamageUpgrade());
@@ -782,7 +782,7 @@ setInterval(()=>{
  state.lastSeen=Date.now();
 
  if(state.auto>0){
-  state.points+=pps();
+  addPoints(pps());
   addXp(Math.max(1,Math.floor(state.auto/3)))
  }
 

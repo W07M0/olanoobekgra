@@ -64,6 +64,27 @@ function calculatedEndgameBossHp(){
 }
 
 
+
+function ensureWorldBossProgress(worldId){
+ state.worldBossProgress=state.worldBossProgress||{};
+ state.worldBossStartedAt=state.worldBossStartedAt||{};
+ if(!(worldId in state.worldBossProgress)){
+  state.worldBossProgress[worldId]=0;
+  state.worldBossStartedAt[worldId]=state.totalPointsEarned||0
+ }
+}
+function worldBossUnlockTarget(w){
+ return Math.ceil(calculatedWorldBossHp(w)*.5)
+}
+function worldBossUnlockProgress(w){
+ ensureWorldBossProgress(w.id);
+ const baseline=Number(state.worldBossStartedAt[w.id]||0);
+ return Math.max(0,(state.totalPointsEarned||0)-baseline)
+}
+function worldBossFightUnlocked(w){
+ return worldBossUnlockProgress(w)>=worldBossUnlockTarget(w)
+}
+
 function worldIndex(id){return worlds.findIndex(w=>w.id===id)}
 function worldBossDefeated(id){return state.worldBossesDefeated.includes(id)}
 function canUnlockWorld(w){
@@ -84,8 +105,13 @@ function currentWorldBossTemplate(){
  }
 }
 function spawnWorldBoss(){
- if(boss)return;
+ if(boss)return toast('Walka z bossem już trwa');
  let w=world();
+ ensureWorldBossProgress(w.id);
+ if(!worldBossFightUnlocked(w)){
+  const current=worldBossUnlockProgress(w),target=worldBossUnlockTarget(w);
+  return toast(`Najpierw zdobądź w tym świecie ${fmt(target-current)} punktów`)
+ }
  if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
  let t=currentWorldBossTemplate();
  let maxHp=calculatedWorldBossHp(w);
@@ -182,7 +208,7 @@ function finishBoss(win){
   defeated.rewardPoints=Math.floor(defeated.rewardPoints*lootMult);
   defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()));
   defeated.rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()));
-  state.points+=defeated.rewardPoints;state.gems+=defeated.rewardGems;state.coins+=defeated.rewardCoins;
+  addPoints(defeated.rewardPoints);state.gems+=defeated.rewardGems;state.coins+=defeated.rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
   if(defeated.isWorldBoss)markWorldBossDefeated(defeated.worldId);
   grantPetXp(70+Math.max(0,worldIndex(defeated.worldId))*18);
@@ -270,7 +296,14 @@ function applyFeatureViewLocks(){
 }
 
 
-function renderHud(){try{
+function renderHud(){
+ const bossButton=$('#challengeBossBtn');
+ if(bossButton){
+  const bw=world();ensureWorldBossProgress(bw.id);
+  const ready=worldBossFightUnlocked(bw),done=worldBossDefeated(bw.id)&&bw.id!=='dev';
+  bossButton.disabled=done||!ready;
+  bossButton.textContent=done?'✅ Boss pokonany':ready?'⚔️ Zmierz się z bossem':`🔒 ${fmt(worldBossUnlockProgress(bw))}/${fmt(worldBossUnlockTarget(bw))} ⭐`;
+ }try{
  const activeBoss=typeof boss!=='undefined'?boss:null;
 
  $('#points').textContent=fmt(state.points);
@@ -485,10 +518,14 @@ function renderPets(){
 
   const orbit=$('#petOrbit');
   if(orbit){
-   orbit.innerHTML=state.equipped.map(uid=>{
-    const instance=getPetInstance(uid),base=getPetBase(instance),evo=PET_EVOLUTIONS[instance?.evolution||0];
-    return instance?`<span class="orbit-pet rarity-${base.rarity}" style="filter:drop-shadow(0 0 ${8+instance.evolution*5}px ${evo.color})">${base.emoji}</span>`:''
-   }).join('')
+   const signature=state.equipped.join('|');
+   if(orbit.dataset.signature!==signature){
+    orbit.dataset.signature=signature;
+    orbit.innerHTML=state.equipped.map((uid,index)=>{
+     const instance=getPetInstance(uid),base=getPetBase(instance),evo=PET_EVOLUTIONS[instance?.evolution||0];
+     return instance?`<span class="orbit-pet rarity-${base.rarity}" style="--orbit-index:${index};--orbit-count:${Math.max(1,state.equipped.length)};filter:drop-shadow(0 0 ${8+instance.evolution*5}px ${evo.color})">${base.emoji}</span>`:''
+    }).join('')
+   }
   }
 
   const container=$('#petGroups')||$('#petGrid')||$('#petsGrid');
@@ -581,11 +618,15 @@ function renderWorlds(){
   if(w.requiresBoss)reqs.push(`⚔️ Boss: ${worlds.find(x=>x.id===w.requiresBoss)?.bossName||w.requiresBoss}`);
   let req=reqs.length?`<div class="world-requirement">${reqs.join(' • ')}</div>`:'';
   let bossDone=worldBossDefeated(w.id);
+  ensureWorldBossProgress(w.id);
+  let bossUnlockCurrent=worldBossUnlockProgress(w),bossUnlockTarget=worldBossUnlockTarget(w),bossUnlocked=bossUnlockCurrent>=bossUnlockTarget;
   let bossStatus=bossDone
    ?`<div class="world-boss-status done">✅ Boss pokonany: ${w.bossEmoji} ${w.bossName}</div>`
-   :active
-    ?`<div class="world-boss-status pending">⚔️ Do pokonania: ${w.bossEmoji} ${w.bossName}</div>`
-    :`<div class="world-boss-status locked">🔒 Strażnik: ${w.bossEmoji} ${w.bossName}</div>`;
+   :`<div class="world-boss-unlock ${bossUnlocked?'ready':''}">
+      <div><span>Odblokowanie walki</span><b>${fmt(Math.min(bossUnlockCurrent,bossUnlockTarget))} / ${fmt(bossUnlockTarget)} ⭐</b></div>
+      <div class="world-boss-unlock-bar"><i style="width:${Math.min(100,bossUnlockCurrent/bossUnlockTarget*100)}%"></i></div>
+      <small>${bossUnlocked?'⚔️ Walka odblokowana':'Zdobywaj punkty w tym świecie'}</small>
+     </div>`;
   let label=active?'Aktywny':unlocked?'Wejdź':bossGate?'Pokonaj poprzedniego bossa':levelLocked?'Za niski poziom':rebirthLocked?'Za mało rebirthów':w.cost===0?'Odblokuj':`Odblokuj za ${fmt(w.cost)} ${cur}`;
   return`<div class="card world-card ${w.cls} ${(levelLocked||bossGate)&&!unlocked?'level-locked':''}">
    <div class="big">${w.emoji}</div><h3>${w.name}</h3>
@@ -606,7 +647,7 @@ function selectWorld(id){
   if(state[w.currency]<w.cost)return toast('Masz za mało '+currencyIcon(w.currency));
   state[w.currency]-=w.cost;state.unlockedWorlds.push(id);newlyUnlocked=true;toast('Odblokowano '+w.name+'!')
  }
- state.world=id;showWorldTransition(w,newlyUnlocked);render()
+ state.world=id;ensureWorldBossProgress(id);showWorldTransition(w,newlyUnlocked);render()
 }
 function achievementRewardLabel(a){
  const currency=a.reward?.[0]==='gems'?'💎':a.reward?.[0]==='coins'?'🟡':'⭐';
@@ -853,25 +894,51 @@ function applySkinArenaEffects(skin){
  if(map[skin.id])document.body.classList.add(map[skin.id])
 }
 
+function ensureSkinSideFx(){
+ const arena=$('.arena');
+ if(!arena)return null;
+ let layer=$('#skinSideFx');
+ if(!layer){
+  layer=document.createElement('div');
+  layer.id='skinSideFx';
+  layer.className='skin-side-fx';
+  layer.innerHTML='<div class="skin-side left"></div><div class="skin-side right"></div>';
+  arena.appendChild(layer)
+ }
+ return layer
+}
+function renderSkinSideFx(skin){
+ const layer=ensureSkinSideFx();
+ if(!layer)return;
+ const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ const enabled=skin&&!state.ecoMode&&(ranks[skin.rarity]||0)>=3;
+ layer.classList.toggle('active',enabled);
+ if(!enabled){layer.dataset.effect='';return}
+ layer.dataset.effect=skin.id||skin.rarity;
+ const symbols={
+  glitch:['0','1','⌁','▰'],lava:['🔥','✦','•'],ice:['❄️','✧','◆'],void:['●','✦','◆'],
+  rainbow:['✦','●','✨'],gold:['🪙','✨','◆'],dev:['</>','0','1']
+ }[skin.id]||['✨','✦','•'];
+ layer.querySelectorAll('.skin-side').forEach((side,sideIndex)=>{
+  side.innerHTML=Array.from({length:7},(_,i)=>`<span style="--i:${i};--side:${sideIndex}">${symbols[i%symbols.length]}</span>`).join('')
+ })
+}
 function applySkin(){
  try{
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
+  if(!skin)return;
   const button=$('#clicker');
-  if(!button)return;
-
-  skins.forEach(x=>{if(x.cls)button.classList.remove(x.cls)});
-  document.body.classList.remove('arena-skin-epic','arena-skin-legendary','arena-skin-mythic','arena-skin-secret');
-  const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
-  if((ranks[skin.rarity]||0)>=3&&!state.ecoMode)document.body.classList.add('arena-skin-'+skin.rarity);
-
-  if(skin.cls)button.classList.add(skin.cls);
+  if(button){
+   skins.forEach(x=>{if(x.cls)button.classList.remove(x.cls)});
+   if(skin.cls)button.classList.add(skin.cls)
+  }
+  applySkinArenaEffects(skin);
+  renderSkinSideFx(skin);
   if(typeof renderSkinOrbit==='function')renderSkinOrbit()
  }catch(error){
   console.error('Skin render error:',error);
-  saveDiagnostic?.('Skin render',error.message,error.stack||'')
+  if(typeof saveDiagnostic==='function')saveDiagnostic('Skin render',error.message,error.stack||'')
  }
-
- applySkinArenaEffects(skin);
 }
 function equipSkin(id){if(state.ownedSkins.includes(id)){state.activeSkin=id;sfx('buy');render()}}
 function randomSkin(){let a=skins.filter(s=>s.id!=='classic'),r=Math.random()*a.reduce((n,s)=>n+s.weight,0),sum=0;for(let s of a){sum+=s.weight;if(r<=sum)return s}return a[0]}

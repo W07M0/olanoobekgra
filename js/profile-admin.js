@@ -73,6 +73,13 @@ async function fetchOwnRemoteProfile(){
 
 function mergeRemoteState(remoteSave){
  if(!remoteSave||typeof remoteSave!=='object')return false;
+ const localProgress=(state.totalClicks||0)+(state.level||1)*100+(state.rebirths||0)*10000+(state.pets?.length||0)*500;
+ const remoteProgress=(remoteSave.totalClicks||0)+(remoteSave.level||1)*100+(remoteSave.rebirths||0)*10000+(remoteSave.pets?.length||0)*500;
+ if(localProgress>5000&&remoteProgress<localProgress*.05){
+  console.warn('Odrzucono podejrzanie pusty zapis online',{localProgress,remoteProgress});
+  if(typeof saveDiagnostic==='function')saveDiagnostic('Remote sync','Odrzucono pusty zapis online',JSON.stringify({localProgress,remoteProgress}));
+  return false
+ }
 
  const preserved={
   soundEnabled:state.soundEnabled,
@@ -239,13 +246,25 @@ async function loadBoard(){
 }
 function renderBoard(){
  const target=$('#leaderboard');if(!target)return;
- const list=onlineBoard.length?onlineBoard:[...state.leaderboard].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
+ const metric=['score','level','rebirths'].includes(boardMode)?boardMode:'score';
+ const list=onlineBoard.length
+  ?onlineBoard
+  :[...state.leaderboard].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
+
+ const valueOf=row=>metric==='level'
+  ?Number(row.level||1)
+  :metric==='rebirths'
+   ?Number(row.rebirths||0)
+   :Number(row.best_score??row.score??0);
+
+ const suffix=metric==='level'?' Lv.':metric==='rebirths'?' ♻️':' ⭐';
  target.innerHTML=list.length?list.map((row,index)=>{
-  const save=parseAdminSaveData?.(row.save_data)||{};
+  const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
   const frame=save.profileFrame||'default';
   const background=save.profileBackground||'default';
-  const score=row.best_score??row.score??0;
-  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}"><b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(score)}</b></div>`
+  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}">
+   <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
+  </div>`
  }).join(''):'<p class="muted">Brak wyników.</p>'
 }
 async function saveOnline(){

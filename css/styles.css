@@ -1348,3 +1348,39 @@ body.arena-effect-gold .arena{box-shadow:0 0 55px rgba(255,205,70,.30),inset 0 0
 @keyframes arenaRainbow{0%{box-shadow:0 0 45px rgba(255,75,110,.22)}33%{box-shadow:0 0 45px rgba(70,220,255,.22)}66%{box-shadow:0 0 45px rgba(160,90,255,.22)}100%{box-shadow:0 0 45px rgba(255,75,110,.22)}}
 .pet-empty-state{grid-column:1/-1;text-align:center;padding:28px}
 @media(max-width:760px){.collection-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.skin-side-fx{position:absolute;inset:0;pointer-events:none;display:none;z-index:2;overflow:visible}
+.skin-side-fx.active{display:block}
+.skin-side{position:absolute;top:18%;bottom:18%;width:34%;overflow:visible}
+.skin-side.left{right:72%}.skin-side.right{left:72%}
+.skin-side span{position:absolute;font-size:clamp(14px,2vw,28px);opacity:.82;filter:drop-shadow(0 0 9px currentColor);animation:skinSideFloat 3.6s ease-in-out infinite;animation-delay:calc(var(--i)*-.42s)}
+.skin-side.left span{right:calc((var(--i)%3)*20%);top:calc(var(--i)*12%)}
+.skin-side.right span{left:calc((var(--i)%3)*20%);top:calc(var(--i)*12%)}
+body.arena-effect-glitch .skin-side span{color:#36e7ff;animation-timing-function:steps(3,end)}
+body.arena-effect-lava .skin-side span{color:#ff6b31}
+body.arena-effect-ice .skin-side span{color:#8feaff}
+body.arena-effect-void .skin-side span{color:#a75cff}
+body.arena-effect-rainbow .skin-side span{animation-name:skinSideRainbow}
+body.arena-effect-gold .skin-side span{color:#ffd34e}
+@keyframes skinSideFloat{0%,100%{transform:translate(0,0) scale(.8);opacity:.25}50%{transform:translate(calc((var(--side)*2 - 1)*14px),-20px) scale(1.15);opacity:1}}
+@keyframes skinSideRainbow{0%,100%{color:#ff527f;transform:translateY(0)}33%{color:#36e7ff;transform:translateY(-18px)}66%{color:#a75cff;transform:translateY(8px)}}
+
+.world-boss-unlock{margin:10px 0;padding:10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.world-boss-unlock>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.world-boss-unlock-bar{height:8px;margin:8px 0;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)}
+.world-boss-unlock-bar i{display:block;height:100%;background:linear-gradient(90deg,#ff4f88,#ffd34e);border-radius:inherit}
+.world-boss-unlock.ready{border-color:rgba(77,255,173,.25);background:rgba(77,255,173,.05)}
+.world-boss-unlock.ready .world-boss-unlock-bar i{background:linear-gradient(90deg,#37e8ff,#4dffad)}
+
+#petOrbit .orbit-pet{
+ animation-name:petOrbitStable!important;
+ animation-duration:8s!important;
+ animation-timing-function:linear!important;
+ animation-iteration-count:infinite!important;
+ animation-delay:calc(var(--orbit-index) * -2.666s)!important;
+ transform-origin:center!important;
+}
+@keyframes petOrbitStable{
+ from{transform:rotate(calc(var(--orbit-index)*120deg)) translateX(142px) rotate(calc(var(--orbit-index)*-120deg))}
+ to{transform:rotate(calc(360deg + var(--orbit-index)*120deg)) translateX(142px) rotate(calc(-360deg - var(--orbit-index)*120deg))}
+}
