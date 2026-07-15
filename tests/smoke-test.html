@@ -1,22 +1,18 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test final state/boss/font 0.6c</title>
+<title>Test case handlers 0.6c</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06cstatebossfontfix',{cache:'no-store'}).then(r=>r.text());
- const p=await fetch('../js/profile-admin.js?v=06cstatebossfontfix',{cache:'no-store'}).then(r=>r.text());
- const c=await fetch('../css/styles.css?v=06cstatebossfontfix',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06ccasehandlersfix',{cache:'no-store'}).then(r=>r.text());
+ const a=await fetch('../js/app.js?v=06ccasehandlersfix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Prawdziwe combo',s.includes('function refreshComboDisplay')&&s.includes('Number(state.combo)')],
-  ['Styl napisu kliknięcia',s.includes('skin-theme-${theme.className}')],
-  ['Pasek bossa znika',s.includes("bossPanel.classList.add('hidden')")],
-  ['Postęp bossa zachowany',s.includes('state.worldBossProgress[w.id]=Math.max')],
-  ['Odblokowanie świata',s.includes('unlockNextWorldAfterBoss(w.id)')],
-  ['Brak powiadomienia admina',!p.includes('Profil został zaktualizowany przez administratora')],
-  ['Skin zapisany lokalnie',s.includes('unc_active_skin_revision')],
-  ['Rainbow ma własny wygląd',c.includes('.skin-theme-text-rainbow')]
+  ['openGoldCase istnieje',s.includes('function openGoldCase()')],
+  ['Uniwersalny dispatcher',s.includes('function safeOpenCase(')],
+  ['Eksport do window',s.includes('window.openGoldCase=openGoldCase')],
+  ['Bezpieczne akcje',a.includes('function safeAction(')],
+  ['Bezpieczny bindClick',a.includes('element.onclick=safeAction(selector,handler)')]
  ];
  out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
 }

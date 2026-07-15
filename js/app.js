@@ -610,9 +610,28 @@ function showView(id){
  render()
 }
 
+
+function safeAction(name,callback){
+ return (...args)=>{
+  try{
+   if(typeof callback!=='function'){
+    console.warn(`Brak funkcji akcji: ${name}`);
+    if(typeof saveDiagnostic==='function')saveDiagnostic('Missing action',name,'');
+    return
+   }
+   return callback(...args)
+  }catch(error){
+   console.error(`Akcja ${name}:`,error);
+   if(typeof saveDiagnostic==='function')saveDiagnostic('Action error',`${name}: ${error.message}`,error.stack||'');
+   if(typeof toast==='function')toast('Ta akcja chwilowo nie działa')
+  }
+ }
+}
+
 function bindClick(selector,handler){
  const element=$(selector);
- if(element)element.onclick=handler
+ if(!element)return;
+ element.onclick=safeAction(selector,handler)
 }
 function bindInput(selector,handler){
  const element=$(selector);
@@ -656,7 +675,7 @@ bindClick('#crateClose',()=>{
  if(egg){egg.className='pet-egg';egg.innerHTML='<span>?</span>'}
  glow?.classList.remove('show')
 });
-bindClick('#openGoldCrate',openGoldCase);
+bindClick('#openGoldCrate',()=>window.openGoldCase?.());
 bindClick('#goldClose',()=>{
  const close=$('#goldClose');
  if(close?.dataset.skin)state.activeSkin=close.dataset.skin;

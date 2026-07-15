@@ -962,6 +962,67 @@ function renderMiniStats(){
 }
 
 
+
+function safeOpenCase(type='gold'){
+ try{
+  const normalized=String(type||'gold').toLowerCase();
+
+  if(typeof openSkinCase==='function')return openSkinCase(normalized);
+  if(typeof openCrate==='function')return openCrate(normalized);
+  if(typeof openLootCase==='function')return openLootCase(normalized);
+
+  if(normalized==='gold'){
+   const price=Number(state.goldCasePrice||250);
+   if((state.gems||0)<price)return toast(`Potrzebujesz ${price} 💎`);
+
+   state.gems-=price;
+
+   const pool=skins.filter(skin=>skin.id!=='dev');
+   const weights={common:420,uncommon:280,rare:160,epic:80,legendary:40,mythic:18,secret:2};
+   const total=pool.reduce((sum,skin)=>sum+(weights[skin.rarity]||10),0);
+   let roll=Math.random()*total;
+   let won=pool[0]||skins[0];
+
+   for(const skin of pool){
+    roll-=weights[skin.rarity]||10;
+    if(roll<=0){won=skin;break}
+   }
+
+   const duplicate=state.ownedSkins.includes(won.id);
+   if(duplicate)state.gems+=10;
+   else state.ownedSkins.push(won.id);
+
+   if(typeof showSkinOpening==='function')showSkinOpening(won,duplicate);
+   else if(typeof showCaseResult==='function')showCaseResult(won,duplicate);
+   else toast(duplicate?`Powtórka: ${won.name} • +10 💎`:`Zdobyto skin: ${won.name}`);
+
+   if(typeof sfx==='function')sfx(duplicate?'buy':'good');
+   save();
+   render();
+   return won
+  }
+
+  toast('Ta skrzynka nie jest jeszcze dostępna');
+  return null
+ }catch(error){
+  console.error('safeOpenCase:',error);
+  if(typeof saveDiagnostic==='function')saveDiagnostic('Case opening',error.message,error.stack||'');
+  toast('Nie udało się otworzyć skrzynki');
+  return null
+ }
+}
+
+function openGoldCase(){return safeOpenCase('gold')}
+function openBasicCase(){return safeOpenCase('basic')}
+function openSilverCase(){return safeOpenCase('silver')}
+function openDiamondCase(){return safeOpenCase('diamond')}
+
+window.safeOpenCase=safeOpenCase;
+window.openGoldCase=openGoldCase;
+window.openBasicCase=openBasicCase;
+window.openSilverCase=openSilverCase;
+window.openDiamondCase=openDiamondCase;
+
 function renderSkins(){
  const grid=$('#skinGrid');
  const activeName=$('#activeSkinName');

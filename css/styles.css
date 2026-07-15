@@ -1800,3 +1800,10 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  font-family:'Courier New',monospace!important;
  text-shadow:3px 3px 0 #111,0 0 18px #4dffad!important;
 }
+
+.case-button:disabled,
+[id*="Case"]:disabled{
+ opacity:.55;
+ cursor:not-allowed;
+ filter:saturate(.55);
+}
