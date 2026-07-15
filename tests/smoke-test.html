@@ -1,3 +1,17 @@
-<!doctype html><meta charset=utf-8>
-<button id=r>Test</button><div id=o></div><script>
-r.onclick=async()=>{let p=await fetch('../js/profile-admin.js?v=06cprofilerpccompat').then(x=>x.text()),s=await fetch('../js/systems.js?v=06cprofilerpccompat').then(x=>x.text());let chunks=[...p.matchAll(/save_player_profile/g)].map(m=>p.slice(m.index,m.index+700));let c=[['Brak nowych argumentów RPC',!chunks.some(x=>/\b(?:p_)?profile_(?:frame|background)\s*:/.test(x))],['Pełny zapis trafia do save_data',p.includes('p_save_data:state')],['Ranking czyta save_data',p.includes('save.profileFrame||row.profile_frame')],['Status zapisu online',s.includes('onlineSaved=true')]];o.innerHTML=c.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Test real online profile style 0.6c</title>
+<button id="run">Uruchom test</button>
+<div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const s=await fetch('../js/systems.js?v=06cprofilerealonline',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['Prawdziwa funkcja profilu',s.includes('await savePlayerProfile(true)')],
+  ['Weryfikacja tabeli players',s.includes(".from('players')")],
+  ['Weryfikacja save_data',s.includes('parseRemoteSaveData(row.save_data)')],
+  ['Natychmiastowe odświeżenie rankingu',s.includes('await loadBoard()')]
+ ];
+ out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
+}
+</script>

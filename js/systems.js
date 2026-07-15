@@ -1745,50 +1745,68 @@ async function saveProfileStyleNow(){
 
  try{
   if(button)button.disabled=true;
-  if(status)status.textContent='Zapisywanie wyglądu profilu...';
+  if(status)status.textContent='Zapisywanie wyglądu profilu online...';
 
   normalizeProfileStyles();
-  save();
-
-  let onlineSaved=false;
-
-  if(typeof saveOnlineProfile==='function'){
-   await saveOnlineProfile({force:true});
-   onlineSaved=true
-  }else if(typeof saveOnlineScore==='function'){
-   await saveOnlineScore(true);
-   onlineSaved=true
-  }
-
   state.profileStyleDirty=false;
   save();
 
-  if(typeof loadOnlineLeaderboard==='function'){
-   await loadOnlineLeaderboard();
+  if(typeof savePlayerProfile!=='function'){
+   throw new Error('Funkcja zapisu profilu nie została załadowana')
   }
-  if(Array.isArray(onlineBoard)){
-   const own=onlineBoard.find(row=>row.player_id===state.playerId||row.player_name===state.playerName);
-   if(own){
-    own.profile_frame=state.profileFrame||'default';
-    own.profile_background=state.profileBackground||'default';
-    const parsed=typeof parseAdminSaveData==='function'?parseAdminSaveData(own.save_data):{};
-    own.save_data={...parsed,profileFrame:state.profileFrame||'default',profileBackground:state.profileBackground||'default'}
-   }
+
+  const profileSaved=await savePlayerProfile(true);
+  if(profileSaved!==true){
+   throw new Error('Supabase odrzucił zapis profilu')
   }
+
+  if(!db||!playerId){
+   throw new Error('Brak połączenia z Supabase')
+  }
+
+  const {data:row,error:verifyError}=await db
+   .from('players')
+   .select('player_id,save_data,last_seen')
+   .eq('player_id',playerId)
+   .maybeSingle();
+
+  if(verifyError)throw verifyError;
+  if(!row)throw new Error('Nie znaleziono profilu po zapisie');
+
+  const saved=parseRemoteSaveData(row.save_data)||{};
+  const expectedFrame=state.profileFrame||'default';
+  const expectedBackground=state.profileBackground||'default';
+
+  if((saved.profileFrame||'default')!==expectedFrame){
+   throw new Error('Ramka nie została zapisana w profilu online')
+  }
+  if((saved.profileBackground||'default')!==expectedBackground){
+   throw new Error('Tło nie zostało zapisane w profilu online')
+  }
+
+  if(typeof loadBoard==='function'){
+   await loadBoard()
+  }else if(typeof loadOnlineLeaderboard==='function'){
+   await loadOnlineLeaderboard()
+  }
+
   if(typeof renderBoard==='function')renderBoard();
 
   if(status){
-   status.textContent=onlineSaved
-    ?'Wygląd profilu zapisany i zaktualizowany w rankingu.'
-    :'Wygląd zapisany lokalnie. Ranking online nie jest teraz dostępny.'
+   status.textContent='Wygląd profilu zapisany online i zaktualizowany w rankingu.'
   }
-
   return true
  }catch(error){
-  console.error('Profile style save:',error);
-  if(status)status.textContent='Nie udało się zapisać wyglądu profilu.';
+  console.error('Profile style online save:',error);
+  if(status){
+   status.textContent='Błąd zapisu online: '+(error?.message||'nieznany błąd')
+  }
   if(typeof saveDiagnostic==='function'){
-   saveDiagnostic('Profile style save',error.message,error.stack||'')
+   saveDiagnostic(
+    'Profile style online save',
+    error?.message||String(error),
+    error?.stack||''
+   )
   }
   return false
  }finally{
