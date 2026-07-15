@@ -936,3 +936,5 @@ document.addEventListener('click',event=>{
  const background=event.target.closest('[data-profile-background]');
  if(background)window.equipProfileBackground?.(background.dataset.profileBackground)
 });
+
+bindClick('#saveProfileStyle',()=>window.saveProfileStyleNow?.());

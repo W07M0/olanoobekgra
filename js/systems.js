@@ -1720,19 +1720,83 @@ function equipProfileFrame(id){
  normalizeProfileStyles();
  if(!state.ownedProfileFrames.includes(id))return;
  state.profileFrame=id;
+ state.profileStyleDirty=true;
  renderProfileStyleSettings();
  save();
- if(typeof saveOnlineProfile==='function')saveOnlineProfile()
+ const status=$('#profileStyleSaveStatus');
+ if(status)status.textContent='Niezapisane zmiany wyglądu.'
 }
 
 function equipProfileBackground(id){
  normalizeProfileStyles();
  if(!state.ownedProfileBackgrounds.includes(id))return;
  state.profileBackground=id;
+ state.profileStyleDirty=true;
  renderProfileStyleSettings();
  save();
- if(typeof saveOnlineProfile==='function')saveOnlineProfile()
+ const status=$('#profileStyleSaveStatus');
+ if(status)status.textContent='Niezapisane zmiany wyglądu.'
 }
+
+
+async function saveProfileStyleNow(){
+ const button=$('#saveProfileStyle');
+ const status=$('#profileStyleSaveStatus');
+
+ try{
+  if(button)button.disabled=true;
+  if(status)status.textContent='Zapisywanie wyglądu profilu...';
+
+  normalizeProfileStyles();
+  save();
+
+  let onlineSaved=false;
+
+  if(typeof saveOnlineProfile==='function'){
+   const result=await saveOnlineProfile({force:true});
+   onlineSaved=result!==false
+  }else if(typeof saveOnlineScore==='function'){
+   await saveOnlineScore(true);
+   onlineSaved=true
+  }
+
+  state.profileStyleDirty=false;
+  save();
+
+  if(typeof loadOnlineLeaderboard==='function'){
+   await loadOnlineLeaderboard();
+  }
+  if(Array.isArray(onlineBoard)){
+   const own=onlineBoard.find(row=>row.player_id===state.playerId||row.player_name===state.playerName);
+   if(own){
+    own.profile_frame=state.profileFrame||'default';
+    own.profile_background=state.profileBackground||'default';
+    const parsed=typeof parseAdminSaveData==='function'?parseAdminSaveData(own.save_data):{};
+    own.save_data={...parsed,profileFrame:state.profileFrame||'default',profileBackground:state.profileBackground||'default'}
+   }
+  }
+  if(typeof renderBoard==='function')renderBoard();
+
+  if(status){
+   status.textContent=onlineSaved
+    ?'Wygląd profilu zapisany i zaktualizowany w rankingu.'
+    :'Wygląd zapisany lokalnie. Ranking online nie jest teraz dostępny.'
+  }
+
+  return true
+ }catch(error){
+  console.error('Profile style save:',error);
+  if(status)status.textContent='Nie udało się zapisać wyglądu profilu.';
+  if(typeof saveDiagnostic==='function'){
+   saveDiagnostic('Profile style save',error.message,error.stack||'')
+  }
+  return false
+ }finally{
+  if(button)button.disabled=false
+ }
+}
+
+window.saveProfileStyleNow=saveProfileStyleNow;
 
 window.equipProfileFrame=equipProfileFrame;
 window.equipProfileBackground=equipProfileBackground;

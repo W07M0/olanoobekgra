@@ -1975,3 +1975,21 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
   max-height:none;
  }
 }
+
+.profile-style-actions{
+ display:grid;
+ gap:8px;
+ margin-top:13px;
+}
+#saveProfileStyle{
+ width:100%;
+ min-height:42px;
+}
+#saveProfileStyle:disabled{
+ opacity:.65;
+ cursor:wait;
+}
+#profileStyleSaveStatus{
+ font-size:12px;
+ padding:9px 11px;
+}

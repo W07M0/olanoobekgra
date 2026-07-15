@@ -147,7 +147,7 @@ async function savePlayerProfile(showError=false){
 
  let result=await db.rpc('save_player_full_profile',{
   p_player_id:playerId,
-  p_player_name:state.playerName,
+  p_player_name:state.playerName,profile_frame:state.profileFrame||'default',profile_background:state.profileBackground||'default',
   p_best_score:Math.floor(state.points),
   p_level:state.level,
   p_rebirths:state.rebirths,
@@ -159,7 +159,7 @@ async function savePlayerProfile(showError=false){
  if(result.error&&/save_player_full_profile|schema cache|function/i.test(result.error.message||'')){
   result=await db.rpc('save_player_profile',{
    p_player_id:playerId,
-   p_player_name:state.playerName,
+   p_player_name:state.playerName,profile_frame:state.profileFrame||'default',profile_background:state.profileBackground||'default',
    p_best_score:Math.floor(state.points),
    p_level:state.level,
    p_rebirths:state.rebirths,
@@ -262,8 +262,8 @@ function renderBoard(){
  const suffix=metric==='level'?' Lv.':metric==='rebirths'?' ♻️':' ⭐';
  target.innerHTML=list.length?list.map((row,index)=>{
   const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
-  const frame=save.profileFrame||'default';
-  const background=save.profileBackground||'default';
+  const frame=row.profile_frame||save.profileFrame||'default';
+  const background=row.profile_background||save.profileBackground||'default';
   return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}">
    <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
   </div>`
@@ -282,7 +282,7 @@ async function saveOnline(){
  if(db){
   const legacy=await db.rpc('submit_score',{
    p_player_id:playerId,
-   p_player_name:state.playerName,
+   p_player_name:state.playerName,profile_frame:state.profileFrame||'default',profile_background:state.profileBackground||'default',
    p_score:Math.floor(state.points)
   });
   legacySaved=!legacy.error;
