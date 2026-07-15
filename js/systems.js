@@ -995,7 +995,7 @@ function grantAchievementSpecial(a){
   state.achievementBonuses.petLuck=Math.max(state.achievementBonuses.petLuck||0,.05)
  }
 }
-function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;if(a.reward)state[a.reward[0]]+=a.reward[1];grantAchievementSpecial(a);state.claimedAchievements.push(id);sfx('good');render();save()}
+function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;if(a.reward)state[a.reward[0]]+=a.reward[1];grantAchievementSpecial(a);state.claimedAchievements.push(id);syncProfileStyleRewardsFromAchievements();renderProfileStyleSettings();sfx('good');render();save()}
 function renderDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000),can=today>last,rewards=[1,2,3,5,7,10,20];$('#dailyGrid').innerHTML=rewards.map((r,i)=>`<div class="daily ${i===state.dailyStreak%7?'today':''}"><b>Dzień ${i+1}</b><div>💎 ${r}</div></div>`).join('');$('#dailyBtn').disabled=!can;$('#dailyBtn').textContent=can?'Odbierz nagrodę':'Wróć jutro'}
 function claimDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000);if(today<=last)return;if(today-last>1)state.dailyStreak=0;let rewards=[1,2,3,5,7,10,20],r=rewards[state.dailyStreak%7];state.gems+=r;state.dailyStreak++;state.lastDaily=Date.now();confetti();sfx('good');toast('Dzienna nagroda: +'+r+' 💎');render()}
 
@@ -1637,16 +1637,43 @@ const PROFILE_FRAME_NAMES={
  default:'Domyślna',
  arcade:'Arcade',
  collector:'Kolekcjoner',
- developer:'Developer'
+ developer:'Developer',neon:'Neon',gold:'Złota'
 };
 const PROFILE_BACKGROUND_NAMES={
  default:'Domyślne',
  wealth:'Bogactwo',
  casino:'Kasyno',
- reflex:'Reflex'
+ reflex:'Reflex',gold:'Złote'
 };
 
+
+function syncProfileStyleRewardsFromAchievements(){
+ state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)?state.ownedProfileFrames:['default'];
+ state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)?state.ownedProfileBackgrounds:['default'];
+
+ const claimed=new Set(
+  Array.isArray(state.claimedAchievements)
+   ?state.claimedAchievements
+   :Array.isArray(state.achievementsClaimed)
+    ?state.achievementsClaimed
+    :[]
+ );
+
+ achievements.forEach(achievement=>{
+  if(!claimed.has(achievement.id)||!achievement.special)return;
+  const reward=achievement.special;
+
+  if(reward.type==='frame'&&!state.ownedProfileFrames.includes(reward.id)){
+   state.ownedProfileFrames.push(reward.id)
+  }
+  if(reward.type==='background'&&!state.ownedProfileBackgrounds.includes(reward.id)){
+   state.ownedProfileBackgrounds.push(reward.id)
+  }
+ })
+}
+
 function normalizeProfileStyles(){
+ syncProfileStyleRewardsFromAchievements();
  state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)?state.ownedProfileFrames:['default'];
  state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)?state.ownedProfileBackgrounds:['default'];
  if(!state.ownedProfileFrames.includes('default'))state.ownedProfileFrames.unshift('default');
@@ -1656,6 +1683,7 @@ function normalizeProfileStyles(){
 }
 
 function renderProfileStyleSettings(){
+ syncProfileStyleRewardsFromAchievements();
  normalizeProfileStyles();
 
  const frameOptions=$('#profileFrameOptions');

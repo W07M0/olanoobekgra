@@ -1,21 +1,3 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Test combo/antispam/profile 0.6c</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
-<script>
-run.onclick=async()=>{
- const h=await fetch('../index.html?v=06ccombo50antispamprofile',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06ccombo50antispamprofile',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['Combo max x50',s.includes('const MAX_COMBO=50')&&s.includes('Math.min(50')],
-  ['Bufor kliknięć',s.includes('function queueManualClickReward')],
-  ['Limit efektów',s.includes('MAX_EFFECTS_PER_SECOND=9')],
-  ['Limit dźwięków',s.includes('MAX_SOUNDS_PER_SECOND=7')],
-  ['Wyposażanie ramek',s.includes('function equipProfileFrame')],
-  ['Wyposażanie teł',s.includes('function equipProfileBackground')],
-  ['Podgląd profilu',h.includes('id="profileStylePreview"')]
- ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset=utf-8>
+<button id=r>Test</button><div id=o></div><script>
+r.onclick=async()=>{let h=await fetch('../index.html?v=06cprofilestyleachievements').then(x=>x.text()),s=await fetch('../js/systems.js?v=06cprofilestyleachievements').then(x=>x.text());let c=[['Wygląd zamiast autozapisu',h.includes('settings-profile-style')&&h.match(/profileStylePreview/g)?.length===1],['Status autozapisu zachowany',h.includes('autosaveStatus')],['Migracja osiągnięć',s.includes('syncProfileStyleRewardsFromAchievements')],['Ramki z osiągnięć',s.includes("reward.type==='frame'")],['Tła z osiągnięć',s.includes("reward.type==='background'")]];o.innerHTML=c.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>

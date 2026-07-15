@@ -1940,3 +1940,38 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 @media(max-width:720px){
  .profile-style-grid{grid-template-columns:1fr}
 }
+
+/* 0.6c — profile appearance moved into settings grid */
+.settings-profile-style{
+ min-height:0;
+}
+.settings-profile-style .profile-style-preview{
+ margin:10px 0 14px;
+ padding:11px 12px;
+}
+.settings-profile-style .profile-style-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+}
+.settings-profile-style .profile-style-options{
+ grid-template-columns:1fr;
+ max-height:220px;
+ overflow:auto;
+ padding-right:3px;
+}
+.settings-profile-style .profile-style-option{
+ min-height:48px;
+}
+.settings-profile-style .compact-save-status{
+ margin-top:13px;
+ font-size:12px;
+ padding:9px 11px;
+}
+@media(max-width:720px){
+ .settings-profile-style .profile-style-grid{
+  grid-template-columns:1fr;
+ }
+ .settings-profile-style .profile-style-options{
+  max-height:none;
+ }
+}
