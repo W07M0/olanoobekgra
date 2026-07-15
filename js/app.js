@@ -909,3 +909,12 @@ document.addEventListener('click',event=>{
 });
 
 setInterval(()=>{if(typeof refreshComboDisplay==='function')refreshComboDisplay()},250);
+
+document.addEventListener('click',event=>{
+ const clicker=event.target.closest('#clicker,.click-button,.main-click-button');
+ if(!clicker||event.__comboRegistered)return;
+ event.__comboRegistered=true;
+ registerManualCombo()
+},{capture:true});
+
+setInterval(()=>{if(typeof decayComboIfNeeded==='function')decayComboIfNeeded()},150);

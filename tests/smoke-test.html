@@ -1,19 +1,2 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Test case handlers 0.6c</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
-<script>
-run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06ccasehandlersfix',{cache:'no-store'}).then(r=>r.text());
- const a=await fetch('../js/app.js?v=06ccasehandlersfix',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['openGoldCase istnieje',s.includes('function openGoldCase()')],
-  ['Uniwersalny dispatcher',s.includes('function safeOpenCase(')],
-  ['Eksport do window',s.includes('window.openGoldCase=openGoldCase')],
-  ['Bezpieczne akcje',a.includes('function safeAction(')],
-  ['Bezpieczny bindClick',a.includes('element.onclick=safeAction(selector,handler)')]
- ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>
+r.onclick=async()=>{let s=await fetch('../js/systems.js?v=06ccomboworldfix').then(x=>x.text()),a=await fetch('../js/app.js?v=06ccomboworldfix').then(x=>x.text()),d=await fetch('../js/data.js?v=06ccomboworldfix').then(x=>x.text());let c=[['Combo rośnie',s.includes('function registerManualCombo')],['Klik rejestruje combo',a.includes('event.__comboRegistered')],['Combo spada po przerwie',s.includes('decayComboIfNeeded')],['Boss daje dostęp do świata',s.includes('state.availableWorlds.push(next.id)')],['Zakup świata naprawiony',s.includes('const previousBossOk=')],['Migracja starych zapisów',s.includes('migrateWorldAvailability')],['Pole dostępnych światów',d.includes("availableWorlds:['neon']")]];o.innerHTML=c.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>

@@ -79,12 +79,13 @@ function unlockNextWorldAfterBoss(worldId){
  const idx=worldIndex(worldId);
  const next=worlds[idx+1];
  if(!next)return false;
- state.unlockedWorlds=Array.isArray(state.unlockedWorlds)?state.unlockedWorlds:['neon'];
- if(!state.unlockedWorlds.includes(next.id)){
-  state.unlockedWorlds.push(next.id);
-  return true
- }
- return false
+
+ state.worldBossesDefeated=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated:[];
+ if(!state.worldBossesDefeated.includes(worldId))state.worldBossesDefeated.push(worldId);
+
+ state.availableWorlds=Array.isArray(state.availableWorlds)?state.availableWorlds:['neon'];
+ if(!state.availableWorlds.includes(next.id))state.availableWorlds.push(next.id);
+ return true
 }
 
 function ensureWorldBossProgress(worldId){
@@ -137,11 +138,16 @@ function refreshBossUnlockUi(){
  }
 }
 
+
+function isWorldBossDefeated(worldId){
+ state.worldBossesDefeated=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated:[];
+ return state.worldBossesDefeated.includes(worldId)
+}
 function worldIndex(id){return worlds.findIndex(w=>w.id===id)}
-function worldBossDefeated(id){return state.worldBossesDefeated.includes(id)}
+function worldBossDefeated(id){return isWorldBossDefeated(id)}
 function canUnlockWorld(w){
  if(!w.requiresBoss)return true;
- return worldBossDefeated(w.requiresBoss)
+ return isWorldBossDefeated(w.requiresBoss)||(state.availableWorlds||[]).includes(w.id)
 }
 function markWorldBossDefeated(worldId){
  state.worldBossesDefeated=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated:[];
@@ -745,7 +751,22 @@ function openCrate(){
 }
 
 function renderWorldPath(){}
-function renderWorlds(){
+
+function migrateWorldAvailability(){
+ state.availableWorlds=Array.isArray(state.availableWorlds)?state.availableWorlds:['neon'];
+ state.unlockedWorlds=Array.isArray(state.unlockedWorlds)?state.unlockedWorlds:['neon'];
+ state.worldBossesDefeated=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated:[];
+
+ worlds.forEach((w,idx)=>{
+  if(idx===0)return;
+  const prev=worlds[idx-1];
+  if(isWorldBossDefeated(prev.id)&&!state.unlockedWorlds.includes(w.id)&&!state.availableWorlds.includes(w.id)){
+   state.availableWorlds.push(w.id)
+  }
+ })
+}
+
+function renderWorlds(){migrateWorldAvailability();
 
  $('#worldGrid').innerHTML=worlds.map((w,i)=>{
   let unlocked=state.unlockedWorlds.includes(w.id),active=state.world===w.id;
@@ -777,16 +798,35 @@ function renderWorlds(){
  }).join('')
 }
 function selectWorld(id){
- let w=worlds.find(x=>x.id===id);if(!w)return;
+ const w=worlds.find(x=>x.id===id);
+ if(!w)return;
+
  let newlyUnlocked=false;
  if(!state.unlockedWorlds.includes(id)){
-  if(!canUnlockWorld(w))return toast('Najpierw pokonaj bossa poprzedniego świata');
+  const idx=worldIndex(id);
+  const previousBossOk=
+   idx===0
+   ||isWorldBossDefeated(worlds[idx-1].id)
+   ||(state.availableWorlds||[]).includes(id);
+
+  if(!previousBossOk)return toast('Najpierw pokonaj bossa poprzedniego świata');
   if(state.level<w.minLevel)return toast('Potrzebujesz poziomu '+w.minLevel);
   if(state.rebirths<w.rebirths)return toast('Potrzebujesz '+w.rebirths+' rebirthów');
   if(state[w.currency]<w.cost)return toast('Masz za mało '+currencyIcon(w.currency));
-  state[w.currency]-=w.cost;state.unlockedWorlds.push(id);newlyUnlocked=true;toast('Odblokowano '+w.name+'!')
+
+  state[w.currency]-=w.cost;
+  state.unlockedWorlds.push(id);
+  state.availableWorlds=(state.availableWorlds||[]).filter(worldId=>worldId!==id);
+  newlyUnlocked=true;
+  toast('Odblokowano '+w.name+'!')
  }
- state.world=id;ensureWorldBossProgress(id);showWorldTransition(w,newlyUnlocked);refreshBossUnlockUi();render()
+
+ state.world=id;
+ ensureWorldBossProgress(id);
+ showWorldTransition(w,newlyUnlocked);
+ refreshBossUnlockUi();
+ save();
+ render()
 }
 function achievementRewardLabel(a){
  const currency=a.reward?.[0]==='gems'?'💎':a.reward?.[0]==='coins'?'🟡':'⭐';
@@ -1291,20 +1331,36 @@ function applySkinTextTheme(){
  }
 }
 
+
+let lastManualClickAt=0;
+const COMBO_WINDOW_MS=1150;
+
+function registerManualCombo(){
+ const now=Date.now();
+ if(lastManualClickAt&&now-lastManualClickAt<=COMBO_WINDOW_MS){
+  state.combo=Math.max(1,Number(state.combo)||1)+1
+ }else{
+  state.combo=1
+ }
+ lastManualClickAt=now;
+ state.maxCombo=Math.max(Number(state.maxCombo)||0,state.combo);
+ refreshComboDisplay()
+}
+
+function decayComboIfNeeded(){
+ if(lastManualClickAt&&Date.now()-lastManualClickAt>COMBO_WINDOW_MS&&Number(state.combo)>1){
+  refreshComboDisplay()
+ }
+}
+
 function refreshComboDisplay(){
  const comboValue=Math.max(1,Number(state.combo)||1);
  const text=formatSkinCombo(comboValue);
- const elements=[
-  $('#comboText'),
-  $('#combo'),
-  document.querySelector('.combo-text'),
-  document.querySelector('.combo-label')
- ].filter(Boolean);
-
- elements.forEach(element=>{
-  element.textContent=text;
-  element.dataset.combo=String(comboValue);
-  applySkinTextClass(element)
+ const nodes=[...document.querySelectorAll('#comboText,#combo,.combo-text,.combo-label,[data-combo-display]')];
+ [...new Set(nodes)].forEach(el=>{
+  el.textContent=text;
+  el.dataset.combo=String(comboValue);
+  applySkinTextClass(el)
  })
 }
 function applySkinTextClass(element){
