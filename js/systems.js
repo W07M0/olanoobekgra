@@ -53,7 +53,7 @@ function clearBoss(){
  }
 }
 
-const WORLD_BOSS_FIXED_HP=[50000, 250000, 1200000, 6000000, 30000000, 150000000, 750000000, 4000000000, 18000000000, 75000000000, 300000000000, 1100000000000, 4000000000000, 14000000000000, 50000000000000];
+const WORLD_BOSS_FIXED_HP=[50000,180000,650000,2200000,7000000,22000000,70000000,210000000,650000000,2000000000,6000000000,18000000000,55000000000,160000000000,450000000000];
 function calculatedWorldBossHp(w){
  const idx=Math.max(0,worldIndex(w.id));
  return WORLD_BOSS_FIXED_HP[idx]||WORLD_BOSS_FIXED_HP[WORLD_BOSS_FIXED_HP.length-1]
@@ -74,7 +74,7 @@ function ensureWorldBossProgress(worldId){
  }
 }
 function worldBossUnlockTarget(w){
- return Math.ceil(calculatedWorldBossHp(w)*.5)
+ return Math.ceil(calculatedWorldBossHp(w)*.30)
 }
 function worldBossUnlockProgress(w){
  ensureWorldBossProgress(w.id);
@@ -115,7 +115,7 @@ function spawnWorldBoss(){
  if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
  let t=currentWorldBossTemplate();
  let maxHp=calculatedWorldBossHp(w);
- boss={...t,hp:maxHp,maxHp,time:65,rewardPoints:Math.floor(maxHp*2.25),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
+ boss={...t,hp:maxHp,maxHp,time:Math.min(110,65+worldIndex(w)*3),rewardPoints:Math.floor(maxHp*2.25),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
  $('#bossPanel').classList.remove('hidden');renderBoss();scheduleBossBlocker(true);
  clearInterval(bossTimer);bossTimer=setInterval(()=>{
   if(!boss)return clearInterval(bossTimer);
@@ -297,12 +297,32 @@ function applyFeatureViewLocks(){
 
 
 function renderHud(){
+ const bossHint=$('#bossUnlockHint');
+ if(bossHint){
+  const hw=world();
+  ensureWorldBossProgress(hw.id);
+  const done=worldBossDefeated(hw.id)&&hw.id!=='dev';
+  const current=worldBossUnlockProgress(hw);
+  const target=worldBossUnlockTarget(hw);
+  bossHint.classList.toggle('hidden',done||!!boss);
+  bossHint.textContent=done
+   ?''
+   :worldBossFightUnlocked(hw)
+    ?'⚔️ Walka z bossem odblokowana'
+    :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`;
+ }
+
  const bossButton=$('#challengeBossBtn');
  if(bossButton){
-  const bw=world();ensureWorldBossProgress(bw.id);
-  const ready=worldBossFightUnlocked(bw),done=worldBossDefeated(bw.id)&&bw.id!=='dev';
-  bossButton.disabled=done||!ready;
-  bossButton.textContent=done?'✅ Boss pokonany':ready?'⚔️ Zmierz się z bossem':`🔒 ${fmt(worldBossUnlockProgress(bw))}/${fmt(worldBossUnlockTarget(bw))} ⭐`;
+  const bw=world();
+  ensureWorldBossProgress(bw.id);
+  const done=worldBossDefeated(bw.id)&&bw.id!=='dev';
+  const ready=worldBossFightUnlocked(bw);
+  const fightActive=!!boss;
+
+  bossButton.classList.toggle('hidden',done||fightActive||!ready);
+  bossButton.disabled=done||fightActive||!ready;
+  bossButton.textContent=done?'✅ Boss pokonany':fightActive?'⚔️ Walka trwa':'⚔️ Zmierz się z bossem';
  }try{
  const activeBoss=typeof boss!=='undefined'?boss:null;
 
@@ -920,7 +940,7 @@ function renderSkinSideFx(skin){
   rainbow:['✦','●','✨'],gold:['🪙','✨','◆'],dev:['</>','0','1']
  }[skin.id]||['✨','✦','•'];
  layer.querySelectorAll('.skin-side').forEach((side,sideIndex)=>{
-  side.innerHTML=Array.from({length:7},(_,i)=>`<span style="--i:${i};--side:${sideIndex}">${symbols[i%symbols.length]}</span>`).join('')
+  side.innerHTML=Array.from({length:10},(_,i)=>`<span style="--i:${i};--side:${sideIndex}">${symbols[i%symbols.length]}</span>`).join('')
  })
 }
 function applySkin(){

@@ -1384,3 +1384,18 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  from{transform:rotate(calc(var(--orbit-index)*120deg)) translateX(142px) rotate(calc(var(--orbit-index)*-120deg))}
  to{transform:rotate(calc(360deg + var(--orbit-index)*120deg)) translateX(142px) rotate(calc(-360deg - var(--orbit-index)*120deg))}
 }
+
+/* 0.6c — symetryczne efekty skinów */
+.arena{position:relative!important;overflow:visible!important}
+.game-panel,#view-game{overflow:visible!important}
+.skin-side-fx{position:absolute!important;inset:0!important;display:none;pointer-events:none;z-index:3;overflow:visible!important}
+.skin-side-fx.active{display:block}
+.skin-side{position:absolute!important;top:12%!important;bottom:12%!important;width:30%!important;overflow:visible!important}
+.skin-side.left{right:74%!important;left:auto!important}
+.skin-side.right{left:74%!important;right:auto!important}
+.skin-side span{position:absolute!important;width:34px;height:34px;display:grid;place-items:center;font-size:clamp(16px,2vw,28px);opacity:.82;filter:drop-shadow(0 0 9px currentColor);animation:skinSideFloatSymmetric 3.8s ease-in-out infinite;animation-delay:calc(var(--i)*-.46s)}
+.skin-side.left span{right:calc((var(--i) % 3)*18%)!important;left:auto!important;top:calc(4% + var(--i)*9%)!important}
+.skin-side.right span{left:calc((var(--i) % 3)*18%)!important;right:auto!important;top:calc(4% + var(--i)*9%)!important}
+@keyframes skinSideFloatSymmetric{0%,100%{transform:translate3d(0,8px,0) scale(.75) rotate(-4deg);opacity:.24}50%{transform:translate3d(0,-18px,0) scale(1.12) rotate(5deg);opacity:1}}
+.boss-unlock-hint{margin:10px auto;max-width:420px;text-align:center;padding:9px 12px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-weight:800}
+@media(max-width:800px){.skin-side{width:24%!important}.skin-side.left{right:77%!important}.skin-side.right{left:77%!important}.skin-side span{font-size:18px;width:26px;height:26px}}
