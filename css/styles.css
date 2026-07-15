@@ -1993,3 +1993,192 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  font-size:12px;
  padding:9px 11px;
 }
+
+.profile-style-preview,.profile-style-mini,.board-row,.leaderboard-row{
+ position:relative;isolation:isolate;
+ background-image:var(--row-background-texture,var(--profile-background-texture));
+ background-size:100% 100%;background-position:center;background-repeat:no-repeat;
+}
+.profile-style-preview::after,.board-row::after,.leaderboard-row::after{
+ content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+ background-image:var(--row-frame-texture,var(--profile-frame-texture));
+ background-size:100% 100%;background-position:center;background-repeat:no-repeat;border-radius:inherit;
+}
+.profile-style-preview>*,.board-row>*,.leaderboard-row>*{position:relative;z-index:5}
+#clicker,.click-button,.main-click-button{
+ background-image:var(--skin-texture),var(--skin-gradient,linear-gradient(135deg,#ef4ac7,#7e46ff))!important;
+ background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+}
+
+/* 0.6c — pełne obrazy ramek bez przezroczystego środka */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ position:relative!important;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ background-image:var(--row-background-texture,var(--profile-background-texture))!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/* Pełny obraz ramki jako dolna warstwa dekoracyjna. */
+.profile-style-preview::before,
+.board-row::before,
+.leaderboard-row::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ z-index:1;
+ pointer-events:none;
+ background-image:var(--row-frame-texture,var(--profile-frame-texture));
+ background-size:100% 100%;
+ background-position:center;
+ background-repeat:no-repeat;
+ border-radius:inherit;
+}
+
+/* Automatyczne przyciemnienie środka dla czytelnego tekstu. */
+.profile-style-preview::after,
+.board-row::after,
+.leaderboard-row::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ z-index:2;
+ pointer-events:none;
+ background:
+  linear-gradient(
+   90deg,
+   rgba(5,7,18,.42) 0%,
+   rgba(5,7,18,.22) 18%,
+   rgba(5,7,18,.34) 50%,
+   rgba(5,7,18,.22) 82%,
+   rgba(5,7,18,.42) 100%
+  );
+ border-radius:inherit;
+}
+
+/* Cała zawartość rankingu nad teksturą i przyciemnieniem. */
+.profile-style-preview > *,
+.board-row > *,
+.leaderboard-row > *{
+ position:relative!important;
+ z-index:3!important;
+}
+
+/* Nick ma dodatkową osłonę, gdy grafika jest bardzo jasna. */
+.profile-style-preview [id*="Name"],
+.board-row .player-name,
+.board-row .board-name,
+.leaderboard-row .player-name,
+.leaderboard-row .leaderboard-name{
+ display:inline-flex;
+ align-items:center;
+ min-height:30px;
+ padding:4px 10px;
+ border-radius:9px;
+ background:rgba(5,7,18,.28);
+ box-shadow:0 1px 0 rgba(255,255,255,.08) inset;
+ backdrop-filter:blur(2px);
+}
+
+/* Miniatury wyboru również obsługują pełne obrazy. */
+.profile-style-mini{
+ position:relative!important;
+ overflow:hidden!important;
+ background-image:var(--profile-frame-texture)!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ color:#fff!important;
+ text-shadow:0 2px 4px rgba(0,0,0,.85);
+}
+.profile-style-mini::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ background:rgba(5,7,18,.28);
+ z-index:1;
+}
+.profile-style-mini{
+ z-index:0;
+}
+.profile-style-mini > *{
+ position:relative;
+ z-index:2;
+}
+
+/* 0.6c — dowolne rozdzielczości tekstur */
+
+/*
+ Ramki i tła:
+ - dowolna rozdzielczość,
+ - zachowane proporcje,
+ - automatyczne kadrowanie do wymiarów wpisu.
+*/
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+.profile-style-preview::before,
+.board-row::before,
+.leaderboard-row::before{
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/*
+ Skiny:
+ - dowolny kwadratowy lub prostokątny obraz,
+ - środek obrazu pozostaje widoczny,
+ - nadmiar jest automatycznie przycinany do koła.
+*/
+#clicker,
+.click-button,
+.main-click-button{
+ background-size:cover!important;
+ background-position:center center!important;
+ background-repeat:no-repeat!important;
+ overflow:hidden!important;
+}
+
+/*
+ Miniatury wyboru tekstur również nie wymagają konkretnego rozmiaru.
+*/
+.profile-style-mini{
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/*
+ Zapobiega deformowaniu bardzo małych i bardzo dużych plików.
+*/
+.profile-style-preview,
+.board-row,
+.leaderboard-row,
+.profile-style-mini,
+#clicker,
+.click-button,
+.main-click-button{
+ image-rendering:auto;
+}
+
+/*
+ Alternatywny tryb bez kadrowania.
+ Dodanie klasy texture-contain pokaże cały obraz,
+ ale może pozostawić puste marginesy.
+*/
+.texture-contain,
+.texture-contain::before{
+ background-size:contain!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}

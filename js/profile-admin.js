@@ -246,6 +246,13 @@ async function loadBoard(){
   renderBoard()
  }
 }
+
+function profileTextureStyle(frame,background){
+ const framePath=window.PROFILE_FRAME_TEXTURES?.[frame]||window.PROFILE_FRAME_TEXTURES?.default||'';
+ const backgroundPath=window.PROFILE_BACKGROUND_TEXTURES?.[background]||window.PROFILE_BACKGROUND_TEXTURES?.default||'';
+ return `--row-frame-texture:url("${framePath}");--row-background-texture:url("${backgroundPath}")`
+}
+
 function renderBoard(){
  const target=$('#leaderboard');if(!target)return;
  const metric=['score','level','rebirths'].includes(boardMode)?boardMode:'score';
@@ -264,7 +271,7 @@ function renderBoard(){
   const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
   const frame=save.profileFrame||row.profile_frame||'default';
   const background=save.profileBackground||row.profile_background||'default';
-  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}">
+  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" style="${profileTextureStyle(frame,background)}">
    <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
   </div>`
  }).join(''):'<p class="muted">Brak wyników.</p>'

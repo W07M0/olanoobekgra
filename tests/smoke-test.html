@@ -1,16 +1,16 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test real online profile style 0.6c</title>
+<title>Test elastycznych tekstur 0.6c</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06cprofilerealonline',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../css/styles.css?v=06cflextextures',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Prawdziwa funkcja profilu',s.includes('await savePlayerProfile(true)')],
-  ['Weryfikacja tabeli players',s.includes(".from('players')")],
-  ['Weryfikacja save_data',s.includes('parseRemoteSaveData(row.save_data)')],
-  ['Natychmiastowe odświeżenie rankingu',s.includes('await loadBoard()')]
+  ['Ramki używają cover',c.includes('.board-row::before')&&c.includes('background-size:cover!important')],
+  ['Skiny są kadrowane centralnie',c.includes('background-position:center center!important')],
+  ['Miniatury obsługują różne rozmiary',c.includes('.profile-style-mini')],
+  ['Dostępny tryb contain',c.includes('.texture-contain')]
  ];
  out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
 }

@@ -1560,7 +1560,7 @@ function skinCriticalLabel(){
  return skinTextTheme().crit
 }
 
-function applySkin(){
+function applySkin(){if(typeof applyTextureVariables==='function')applyTextureVariables();
  try{
   const storedSkin=localStorage.getItem('unc_active_skin');
   const storedRevision=Number(localStorage.getItem('unc_active_skin_revision')||0);
@@ -1587,6 +1587,7 @@ function equipSkin(id){
  if(!state.ownedSkins.includes(id))return toast('Nie posiadasz tego skina');
 
  state.activeSkin=id;
+ if(typeof applyTextureVariables==='function')applyTextureVariables();
  state.activeSkinRevision=Date.now();
  localStorage.setItem('unc_active_skin',id);
  localStorage.setItem('unc_active_skin_revision',String(state.activeSkinRevision));
@@ -1684,6 +1685,7 @@ function normalizeProfileStyles(){
 
 function renderProfileStyleSettings(){
  syncProfileStyleRewardsFromAchievements();
+ if(typeof applyTextureVariables==='function')applyTextureVariables();
  normalizeProfileStyles();
 
  const frameOptions=$('#profileFrameOptions');
@@ -1720,6 +1722,7 @@ function equipProfileFrame(id){
  normalizeProfileStyles();
  if(!state.ownedProfileFrames.includes(id))return;
  state.profileFrame=id;
+ if(typeof applyTextureVariables==='function')applyTextureVariables();
  state.profileStyleDirty=true;
  renderProfileStyleSettings();
  save();
@@ -1731,6 +1734,7 @@ function equipProfileBackground(id){
  normalizeProfileStyles();
  if(!state.ownedProfileBackgrounds.includes(id))return;
  state.profileBackground=id;
+ if(typeof applyTextureVariables==='function')applyTextureVariables();
  state.profileStyleDirty=true;
  renderProfileStyleSettings();
  save();
