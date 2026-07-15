@@ -434,7 +434,7 @@ function renderHud(){
  $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';
  $('#expMult').textContent='x'+expMultiplier().toFixed(2);
  $('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));
- $('#combo').textContent=formatSkinCombo(state.combo||1);
+ $('#combo').textContent=formatSkinCombo(state.combo);
  $('#combo').classList.toggle('hot',combo>=8);
  $('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);
@@ -467,7 +467,7 @@ function render(){
  $('#points').textContent=fmt(state.points);if($('#playerTitle'))$('#playerTitle').remove();
  if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
- $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent=formatSkinCombo(state.combo||1);$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
+ $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent=formatSkinCombo(state.combo);$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);$('#quickClick').disabled=state.points<state.clickCost;$('#quickAuto').disabled=state.points<state.autoCost;
  $('#rebirthGain').textContent=rebirthGain()+' 🟡';$('#rebirthBtn').disabled=rebirthGain()<1;
  $('#soundBtn').textContent=state.sound?'🔊':'🔇';$('#musicBtn').textContent=state.music?'🎶':'🎵';
@@ -1145,6 +1145,38 @@ function applySkinArenaEffects(skin){
 }
 
 
+
+function createSkinClickText(text,x,y,options={}){
+ const layer=$('#effectLayer')||$('.arena')||document.body;
+ if(!layer)return null;
+
+ const theme=skinTextTheme();
+ const el=document.createElement('div');
+ el.className=`effect skin-click-text ${theme.className} ${options.critical?'critical':''}`;
+ el.textContent=text;
+
+ const rect=layer.getBoundingClientRect?.();
+ const localX=Number.isFinite(x)&&rect?x-rect.left:rect?.width/2||0;
+ const localY=Number.isFinite(y)&&rect?y-rect.top:rect?.height/2||0;
+
+ el.style.left=localX+'px';
+ el.style.top=localY+'px';
+ el.style.setProperty('--text-drift-x',(-28+Math.random()*56)+'px');
+ el.style.setProperty('--text-rotate',(-8+Math.random()*16)+'deg');
+
+ layer.appendChild(el);
+ setTimeout(()=>el.remove(),options.critical?1250:950);
+ return el
+}
+
+function showSkinClickValue(value,x,y,critical=false){
+ const amount=Math.max(1,Math.floor(Number(value)||1));
+ const label=critical
+  ?`${skinCriticalLabel()} +${fmt(amount)}`
+  :`+${fmt(amount)}`;
+ return createSkinClickText(label,x,y,{critical})
+}
+
 function skinTextTheme(){
  const id=state.activeSkin||'classic';
  const themes={
@@ -1174,7 +1206,8 @@ function applySkinTextTheme(){
 }
 function formatSkinCombo(value){
  const theme=skinTextTheme();
- return `${theme.combo} x${value}`
+ const comboValue=Math.max(1,Number(value ?? state.combo ?? 1)||1);
+ return `${theme.combo} x${comboValue}`
 }
 function skinCriticalLabel(){
  return skinTextTheme().crit

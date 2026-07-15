@@ -1672,3 +1672,50 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  from{filter:brightness(.95)}
  to{filter:brightness(1.35)}
 }
+
+/* 0.6c — click text fix */
+#effectLayer{
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ z-index:12;
+ overflow:visible;
+}
+
+.skin-click-text{
+ position:absolute;
+ transform:translate(-50%,-50%) rotate(var(--text-rotate));
+ pointer-events:none;
+ z-index:20;
+ white-space:nowrap;
+ font-size:clamp(17px,2vw,28px);
+ animation:skinClickFloat .95s ease-out forwards;
+}
+
+.skin-click-text.critical{
+ font-size:clamp(22px,2.5vw,34px);
+ animation-duration:1.25s;
+}
+
+@keyframes skinClickFloat{
+ 0%{
+  opacity:0;
+  transform:translate(-50%,-35%) scale(.55) rotate(var(--text-rotate));
+ }
+ 18%{
+  opacity:1;
+ }
+ 72%{
+  opacity:.95;
+ }
+ 100%{
+  opacity:0;
+  transform:
+   translate(
+    calc(-50% + var(--text-drift-x)),
+    calc(-50% - 78px)
+   )
+   scale(1.15)
+   rotate(var(--text-rotate));
+ }
+}

@@ -878,3 +878,13 @@ document.addEventListener('click',event=>{
  const tab=event.target.closest('[data-collection-tab]');
  if(tab)showCollectionTab(tab.dataset.collectionTab)
 });
+
+document.addEventListener('click',event=>{
+ const clicker=event.target.closest('#clicker,.click-button,.main-click-button');
+ if(!clicker)return;
+ if(event.__skinTextShown)return;
+
+ const approxValue=typeof clickPower==='function'?clickPower():1;
+ const critical=clicker.classList.contains('critical-hit');
+ showSkinClickValue(approxValue,event.clientX,event.clientY,critical)
+});

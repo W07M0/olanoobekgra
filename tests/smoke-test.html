@@ -1,2 +1,20 @@
-<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>
-r.onclick=async()=>{let s=await fetch('../js/systems.js?v=06cskintextbossupgrades').then(x=>x.text()),d=await fetch('../js/data.js?v=06cskintextbossupgrades').then(x=>x.text()),c=await fetch('../css/styles.css?v=06cskintextbossupgrades').then(x=>x.text());let a=[['Style skinów',s.includes('function skinTextTheme')],['Combo',s.includes('formatSkinCombo')],['Crit',s.includes('skinCriticalLabel')],['Cooldown upgrade',d.includes("id:'bossCooldown'")],['Loot upgrade',d.includes("id:'bossRepeatLoot'")],['Damage upgrade',d.includes("id:'bossRematchDamage'")],['Instant reset',d.includes("id:'bossInstantReset'")],['CSS',c.includes('.text-glitch')&&c.includes('.text-gold')]];o.innerHTML=a.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Test combo/text 0.6c</title>
+<button id="run">Uruchom test</button>
+<div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const s=await fetch('../js/systems.js?v=06ccombotextfix',{cache:'no-store'}).then(r=>r.text());
+ const a=await fetch('../js/app.js?v=06ccombotextfix',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../css/styles.css?v=06ccombotextfix',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['Combo bierze state.combo',s.includes('value ?? state.combo ?? 1')],
+  ['Tematyczny floating text',s.includes('function createSkinClickText')],
+  ['Wartość kliknięcia',s.includes('function showSkinClickValue')],
+  ['Hook klikera',a.includes('showSkinClickValue(approxValue')],
+  ['Animacja tekstu',c.includes('@keyframes skinClickFloat')]
+ ];
+ out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
+}
+</script>
