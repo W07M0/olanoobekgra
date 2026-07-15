@@ -474,38 +474,48 @@ function ensurePetState(){
  const valid=new Set(state.pets.map(p=>p?.uid||p?.instanceId||p?.id).filter(Boolean));
  state.equipped=[...new Set(state.equipped.filter(uid=>valid.has(uid)))].slice(0,3)
 }
-function renderPets(){try{
- ensurePetState();
+function renderPets(){
+ try{
+  sanitizeEquippedPets();
+  const setText=(s,v)=>{const el=$(s);if(el)el.textContent=v};
+  setText('#petDot',state.pets.length);
+  setText('#equippedCount',state.equipped.length+'/'+maxPetSlots());
+  setText('#petBonus','x'+petMultiplier().toFixed(2));
+  setText('#petExpBonus','x'+petExpMultiplier().toFixed(2));
 
- sanitizeEquippedPets();
- $('#petDot').textContent=state.pets.length;
- $('#equippedCount').textContent=state.equipped.length+'/'+maxPetSlots();
- $('#petBonus').textContent='x'+petMultiplier().toFixed(2);
- $('#petExpBonus').textContent='x'+petExpMultiplier().toFixed(2);
+  const orbit=$('#petOrbit');
+  if(orbit){
+   orbit.innerHTML=state.equipped.map(uid=>{
+    const instance=getPetInstance(uid),base=getPetBase(instance),evo=PET_EVOLUTIONS[instance?.evolution||0];
+    return instance?`<span class="orbit-pet rarity-${base.rarity}" style="filter:drop-shadow(0 0 ${8+instance.evolution*5}px ${evo.color})">${base.emoji}</span>`:''
+   }).join('')
+  }
 
- $('#petOrbit').innerHTML=state.equipped.map(uid=>{
-  const instance=getPetInstance(uid),base=getPetBase(instance),evo=PET_EVOLUTIONS[instance?.evolution||0];
-  return instance?`<span class="orbit-pet rarity-${base.rarity}" style="filter:drop-shadow(0 0 ${8+instance.evolution*5}px ${evo.color})">${base.emoji}</span>`:''
- }).join('');
+  const container=$('#petGroups')||$('#petGrid')||$('#petsGrid');
+  if(!container)return;
 
- const groups=pets.map(base=>{
-  const instances=state.pets.filter(p=>p.type===base.id).sort((a,b)=>b.evolution-a.evolution||b.level-a.level);
-  if(!instances.length)return'';
-  const fusionButtons=[0,1,2].map(tier=>{
-   const available=instances.filter(p=>p.evolution===tier&&!state.equipped.includes(p.uid)).length;
-   const next=PET_EVOLUTIONS[tier+1];
-   return`<button class="small-btn fusion-btn" onclick="fusePets('${base.id}',${tier})" ${available<3?'disabled':''}>Połącz 3× ${PET_EVOLUTIONS[tier].short} → ${next.short} <small>(${available}/3)</small></button>`
+  const html=pets.map(base=>{
+   const instances=state.pets.filter(p=>p.type===base.id).sort((a,b)=>b.evolution-a.evolution||b.level-a.level);
+   if(!instances.length)return'';
+   const fusion=[0,1,2].map(tier=>{
+    const available=instances.filter(p=>p.evolution===tier&&!state.equipped.includes(p.uid)).length;
+    const next=PET_EVOLUTIONS[tier+1];
+    return`<button class="small-btn fusion-btn" onclick="fusePets('${base.id}',${tier})" ${available<3?'disabled':''}>Połącz 3× ${PET_EVOLUTIONS[tier].short} → ${next.short} <small>(${available}/3)</small></button>`
+   }).join('');
+   return`<div class="pet-group card rarity-${base.rarity}">
+    <div class="pet-group-head"><div class="big">${base.emoji}</div><div><h3>${base.name}</h3><p class="muted">${base.rarity.toUpperCase()} • bazowo x${base.mult.toFixed(2)} • egzemplarze: ${instances.length}</p></div></div>
+    <div class="pet-instance-list">${instances.map(renderPetInstance).join('')}</div>
+    <div class="fusion-row">${fusion}</div>
+   </div>`
   }).join('');
-  return`<div class="pet-group card rarity-${base.rarity}">
-   <div class="pet-group-head"><div class="big">${base.emoji}</div><div><h3>${base.name}</h3><p class="muted">${base.rarity.toUpperCase()} • bazowo x${base.mult.toFixed(2)} • egzemplarze: ${instances.length}</p></div></div>
-   <div class="pet-instance-list">${instances.map(renderPetInstance).join('')}</div>
-   <div class="pet-fusions"><b>🧬 Ewolucja noobka</b>${fusionButtons}</div>
-  </div>`
- }).join('');
- $('#petGrid').innerHTML=groups||'<div class="card"><h3>Brak petów</h3><p class="muted">Otwórz pierwszą skrzynkę, aby zdobyć noobka.</p></div>'
- const petGrid=$('#petGrid')||$('#petsGrid');
- if(petGrid&&!state.pets.length)petGrid.innerHTML='<div class="card pet-empty-state">🐾 Nie masz jeszcze petów. Otwórz jajko, aby zdobyć pierwszego.</div>';
-}catch(error){console.error('renderPets:',error)}}
+
+  container.innerHTML=html||'<div class="card pet-empty-state">🐾 Nie masz jeszcze petów. Otwórz jajko, aby zdobyć pierwszego.</div>'
+ }catch(error){
+  console.error('renderPets:',error);
+  const container=$('#petGroups')||$('#petGrid')||$('#petsGrid');
+  if(container)container.innerHTML='<div class="card pet-empty-state">Nie udało się wyświetlić petów. Sprawdź diagnostykę.</div>'
+ }
+}
 function togglePetInstance(uid){
  const instance=getPetInstance(uid);if(!instance)return;
  if(state.equipped.includes(uid))state.equipped=state.equipped.filter(x=>x!==uid);
@@ -829,6 +839,20 @@ function renderSkinOrbit(){
  const symbols={gold:['🪙','✨','💰'],matrix:['0','1','⌁'],void:['✦','◆','●'],dev:['</>','⚙','⌘'],classic:['✨']},pool=symbols[skin.id]||['✨','✦','•'];
  orbit.innerHTML=Array.from({length:count},(_,i)=>`<span class="skin-orbit-particle" style="--delay:${-(i*(5.5/Math.max(1,count))).toFixed(2)}s;--radius:${118+(i%2)*18}px;--skin-color:${skin.color||'#fff'}">${pool[i%pool.length]}</span>`).join('')
 }
+
+function clearSkinArenaEffects(){
+ document.body.classList.remove('arena-skin-epic','arena-skin-legendary','arena-skin-mythic','arena-skin-secret','arena-effect-glitch','arena-effect-lava','arena-effect-ice','arena-effect-void','arena-effect-rainbow','arena-effect-gold')
+}
+function applySkinArenaEffects(skin){
+ clearSkinArenaEffects();
+ if(!skin||state.ecoMode)return;
+ const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
+ if((ranks[skin.rarity]||0)<3)return;
+ document.body.classList.add('arena-skin-'+skin.rarity);
+ const map={glitch:'arena-effect-glitch',lava:'arena-effect-lava',ice:'arena-effect-ice',void:'arena-effect-void',rainbow:'arena-effect-rainbow',gold:'arena-effect-gold',dev:'arena-effect-glitch'};
+ if(map[skin.id])document.body.classList.add(map[skin.id])
+}
+
 function applySkin(){
  try{
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
@@ -846,6 +870,8 @@ function applySkin(){
   console.error('Skin render error:',error);
   saveDiagnostic?.('Skin render',error.message,error.stack||'')
  }
+
+ applySkinArenaEffects(skin);
 }
 function equipSkin(id){if(state.ownedSkins.includes(id)){state.activeSkin=id;sfx('buy');render()}}
 function randomSkin(){let a=skins.filter(s=>s.id!=='classic'),r=Math.random()*a.reduce((n,s)=>n+s.weight,0),sum=0;for(let s of a){sum+=s.weight;if(r<=sum)return s}return a[0]}

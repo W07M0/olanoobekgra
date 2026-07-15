@@ -864,7 +864,17 @@ document.addEventListener('change',event=>{
  if(event.target.id==='achievementSort'){state.achievementSort=event.target.value;renderAchievements();save()}
 });
 
+
+
+function showCollectionTab(tab){
+ state.collectionTab=tab||'pets';
+ document.querySelectorAll('[data-collection-tab]').forEach(b=>b.classList.toggle('active',b.dataset.collectionTab===state.collectionTab));
+ document.querySelectorAll('[data-collection-panel]').forEach(p=>p.classList.toggle('active',p.dataset.collectionPanel===state.collectionTab));
+ const renderers={pets:renderPets,skins:renderSkins,worlds:renderWorlds,awards:renderAchievements};
+ try{renderers[state.collectionTab]?.()}catch(error){console.error('Collection tab:',error)}
+ save()
+}
 document.addEventListener('click',event=>{
- const open=event.target.closest('[data-collection-open]');
- if(open)showView(open.dataset.collectionOpen)
+ const tab=event.target.closest('[data-collection-tab]');
+ if(tab)showCollectionTab(tab.dataset.collectionTab)
 });

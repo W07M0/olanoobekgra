@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6c</title>
-<link href="css/styles.css?v=06cruntimefix" rel="stylesheet"/>
+<link href="css/styles.css?v=06ccleanup" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -14,13 +14,9 @@
 <div class="logo">ULTIMATE<br/><span>NOOB CLICKER</span><small class="version-badge">v0.6c</small></div>
 <button class="nav-btn active" data-view="game">🎮 <span class="label">Gra</span></button>
 <button class="nav-btn" data-view="shop">🛒 <span class="label">Sklep</span></button>
-
 <button class="nav-btn" data-view="minigames">🎯 <span class="label">Minigry</span></button>
-
 <button class="nav-btn" data-view="casino">🎰 <span class="label">Kasyno</span><span class="dot" id="casinoDot">🔒</span></button>
-
 <button class="nav-btn" data-view="rebirth">♻️ <span class="label">Rebirth</span></button>
-
 <button class="nav-btn" data-view="collection">📚 <span class="label">Kolekcja</span></button>
 <button class="nav-btn" data-view="feedback">💬 <span class="label">Feedback</span></button>
 <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
@@ -77,10 +73,6 @@
 <div class="permanent-currency-section"><h3>💎 Ulepszenia za diamenty</h3><p class="muted">Wygoda, kolekcje, EXP i minigry.</p><div class="grid" id="permanentGemShopGrid"></div></div>
 <div class="permanent-currency-section"><h3>🟡 Ulepszenia za Noob Coiny</h3><p class="muted">Endgame, bossowie i trwałe mnożniki.</p><div class="grid" id="permanentCoinShopGrid"></div></div>
 </div>
-</section><section class="view" id="view-pets">
-<div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn action-secondary" id="openCrate">Otwórz jajko — 30 💎</button></div>
-<div class="inventory-info">Wyposażone: <b id="equippedCount">0/3</b> • Łączny bonus petów: <b id="petBonus">x1.00</b> • EXP z petów: <b id="petExpBonus">x1.00</b></div>
-<div id="petGrid"></div>
 </section><section class="view" id="view-minigames">
 <div class="section-title">
 <div><h1>🎮 Noob Arcade</h1><p class="muted">Wynik zależy od umiejętności. Każda gra ma osobny cooldown 30 sekund.</p></div>
@@ -154,18 +146,6 @@
 <button id="miniResultClose">Dalej</button>
 </div>
 </div>
-</section><section class="view" id="view-skins">
-<div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
-<div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div>
-<div class="skin-toolbar card">
-<div class="skin-filter-tabs">
-<button class="active" data-skin-filter="all">Wszystkie</button>
-<button data-skin-filter="owned">Posiadane</button>
-<button data-skin-filter="locked">Nieposiadane</button>
-</div>
-<span class="muted">Skiny Epic+ zmieniają też otoczenie klikera.</span>
-</div>
-<div id="skinGrid"></div>
 </section><section class="view" id="view-casino">
 <div class="section-title">
 <div><h1>🎰 Noob Casino</h1><p class="muted">Kasyno używa wyłącznie wirtualnych żetonów. Bez prawdziwych pieniędzy.</p></div>
@@ -233,9 +213,6 @@
 </div>
 </div>
 </div>
-</section><section class="view" id="view-worlds">
-<div class="section-title"><div><h1>🌍 Światy</h1><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
-<div class="grid" id="worldGrid"></div>
 </section><section class="view" id="view-rebirth">
 <div class="rebirth-box">
 <div class="rebirth-icon">♻️</div><h1>Rebirth</h1>
@@ -244,7 +221,32 @@
 <p>Noob Coiny dają trwały mnożnik z malejącą skutecznością — kolejne monety są coraz słabsze.</p>
 <button class="buy" id="rebirthBtn" style="max-width:360px;text-align:center">WYKONAJ REBIRTH</button>
 </div>
-</section><section class="view" id="view-awards">
+</section><section class="view" id="view-collection">
+<div class="section-title"><div><h1>📚 Kolekcja</h1><p class="muted">Pety, skiny, światy i osiągnięcia w jednym miejscu.</p></div><div class="chip">Postęp: <b id="collectionProgress">0%</b></div></div>
+<div class="collection-tabs"><button class="active" data-collection-tab="pets">🐾 Pety</button><button data-collection-tab="skins">🎨 Skiny</button><button data-collection-tab="worlds">🌍 Światy</button><button data-collection-tab="awards">🏆 Osiągnięcia</button></div>
+<div class="collection-panel active" data-collection-panel="pets">
+<div class="section-title"><div><h1>🐾 Pety i jajka</h1><p class="muted">Każdy pet jest osobnym egzemplarzem. Zdobywaj EXP, wyposażaj duplikaty i łącz noobki w potężniejsze formy.</p></div><button class="small-btn action-secondary" id="openCrate">Otwórz jajko — 30 💎</button></div>
+<div class="inventory-info">Wyposażone: <b id="equippedCount">0/3</b> • Łączny bonus petów: <b id="petBonus">x1.00</b> • EXP z petów: <b id="petExpBonus">x1.00</b></div>
+<div id="petGrid"></div>
+</div>
+<div class="collection-panel" data-collection-panel="skins">
+<div class="section-title"><div><h1>🎨 Skiny Nooba</h1><p class="muted">Odblokowuj wyglądy i specjalne animacje klikera.</p></div><button class="small-btn gold-btn" id="openGoldCrate">Gold Noob Case — 25 💎</button></div>
+<div class="inventory-info">Aktywny: <b id="activeSkinName">Klasyczny Noob</b> • Posiadane: <b id="ownedSkinCount">1</b></div>
+<div class="skin-toolbar card">
+<div class="skin-filter-tabs">
+<button class="active" data-skin-filter="all">Wszystkie</button>
+<button data-skin-filter="owned">Posiadane</button>
+<button data-skin-filter="locked">Nieposiadane</button>
+</div>
+<span class="muted">Skiny Epic+ zmieniają też otoczenie klikera.</span>
+</div>
+<div id="skinGrid"></div>
+</div>
+<div class="collection-panel" data-collection-panel="worlds">
+<div class="section-title"><div><h1>🌍 Światy</h1><p class="muted">Każdy świat daje stały bonus do punktów.</p></div></div>
+<div class="grid" id="worldGrid"></div>
+</div>
+<div class="collection-panel" data-collection-panel="awards">
 <div class="section-title"><div><h1>🏆 Nagrody i osiągnięcia</h1><p class="muted">Codzienna nagroda, misje i kolekcja odznak.</p></div></div>
 <h2>🎁 Nagroda dzienna</h2><div class="daily-grid" id="dailyGrid"></div><button class="small-btn action-secondary" id="dailyBtn" style="margin:12px 0 24px">Odbierz nagrodę</button>
 <h2>🎖️ Osiągnięcia</h2>
@@ -268,24 +270,15 @@
 </div>
 </div>
 <div class="grid" id="achievementGrid"></div>
-</section><section class="view" id="view-collection"><div class="section-title"><div><h1>📚 Kolekcja</h1><p class="muted">Pety, skiny, światy i osiągnięcia w jednym miejscu.</p></div><div class="chip">Postęp: <b id="collectionProgress">0%</b></div></div>
-<div class="collection-hub-tabs">
-<button data-collection-open="pets">🐾 Pety</button>
-<button data-collection-open="skins">🎨 Skiny</button>
-<button data-collection-open="awards">🏆 Osiągnięcia</button>
-<button data-collection-open="worlds">🌍 Światy</button>
 </div>
-<div class="collection-overview">
-<h2>🐾 Kolekcja petów</h2><div class="grid" id="petCollectionGrid"></div>
-<h2>🎨 Kolekcja skinów</h2><div class="grid" id="skinCollectionGrid"></div>
-</div></section><section class="view" id="view-feedback">
+</section><section class="view" id="view-feedback">
 <div class="section-title">
 <div><h1>💬 Player Feedback</h1><p class="muted">Napisz opinię, zgłoś błąd albo zaproponuj nową funkcję.</p></div>
 <div class="chip">Online przez Supabase</div>
 </div>
 <div class="feedback-form card">
 <label>Nazwa gracza</label>
-<input id="feedbackName" maxlength="20" placeholder="Twój nick">
+<input id="feedbackName" maxlength="20" placeholder="Twój nick"/>
 <label>Typ wiadomości</label>
 <select id="feedbackType">
 <option value="opinia">Opinia</option>
@@ -299,7 +292,7 @@
 <span class="muted"><span id="feedbackCount">0</span>/500</span>
 <button class="small-btn action-secondary" id="sendFeedback">Wyślij feedback</button>
 </div>
-</input></div>
+</div>
 <div class="feedback-toolbar">
 <h2>Ostatnie komentarze</h2>
 <button class="small-btn action-secondary" id="refreshFeedback">Odśwież</button>
@@ -444,7 +437,7 @@
 <p class="muted">Możesz zmienić poziom, EXP i ewolucję każdego egzemplarza. Usuwanie peta jest dostępne przy jego karcie.</p>
 <div class="admin-all-pets" id="adminAllPets"></div>
 <button class="admin-section-save" data-admin-save-section="pets" type="button">Zapisz wszystkie pety</button></div>
-<div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div class="admin-equipped-pets" id="adminEquippedPets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></input></input></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button><button class="admin-section-save" data-admin-save-section="equipped" type="button">Zapisz wyposażone pety</button></div>
+<div class="admin-pet-editor"><h3>🐾 Wyposażone pety</h3><p class="muted">Możesz usunąć błędnego petka widmo albo ustawić maksymalnie 3 istniejące pety po UID.</p><div class="admin-equipped-pets" id="adminEquippedPets"></div><div class="admin-pet-id-grid"><input id="adminPetSlot1" placeholder="Slot 1 — UID peta"/><input id="adminPetSlot2" placeholder="Slot 2 — UID peta"/><input id="adminPetSlot3" placeholder="Slot 3 — UID peta"/></div><button id="adminClearEquippedPets" type="button">Wyczyść wyposażone pety</button><button class="admin-section-save" data-admin-save-section="equipped" type="button">Zapisz wyposażone pety</button></div>
 <div class="admin-editor-section admin-repair-section" id="adminRepairSave">
 <h3>🧹 Napraw zapis</h3>
 <p class="muted">Narzędzia usuwają osierocone dane po starszych wersjach gry. Najpierw pobierz profil gracza.</p>
@@ -512,11 +505,11 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06cruntimefix"></script>
-<script defer="" src="js/core.js?v=06cruntimefix"></script>
-<script defer="" src="js/systems.js?v=06cruntimefix"></script>
-<script defer="" src="js/integrations.js?v=06cruntimefix"></script>
-<script defer="" src="js/profile-admin.js?v=06cruntimefix"></script>
-<script defer="" src="js/app.js?v=06cruntimefix"></script>
+<script defer="" src="js/data.js?v=06ccleanup"></script>
+<script defer="" src="js/core.js?v=06ccleanup"></script>
+<script defer="" src="js/systems.js?v=06ccleanup"></script>
+<script defer="" src="js/integrations.js?v=06ccleanup"></script>
+<script defer="" src="js/profile-admin.js?v=06ccleanup"></script>
+<script defer="" src="js/app.js?v=06ccleanup"></script>
 </body>
 </html>

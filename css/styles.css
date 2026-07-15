@@ -1327,3 +1327,24 @@ button:disabled{
  text-align:center;
  padding:28px;
 }
+
+.collection-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.collection-tabs button{min-height:52px;background:rgba(255,255,255,.055);color:#fff}
+.collection-tabs button.active{background:linear-gradient(135deg,#36e7ff,#8c4dff);box-shadow:0 10px 24px rgba(80,105,255,.20)}
+.collection-panel{display:none}.collection-panel.active{display:block}
+.achievement-toolbar input,.achievement-toolbar select,.admin-editor-section input,.admin-editor-section select,.admin-editor-section textarea{
+ background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:13px;min-height:44px;padding:10px 14px;outline:none;transition:.15s
+}
+.achievement-toolbar input:focus,.achievement-toolbar select:focus,.admin-editor-section input:focus,.admin-editor-section select:focus,.admin-editor-section textarea:focus{
+ border-color:#36e7ff;box-shadow:0 0 0 3px rgba(54,231,255,.12),0 0 18px rgba(54,231,255,.08);background:rgba(255,255,255,.07)
+}
+body.arena-effect-glitch .arena::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(54,231,255,.045) 8px 9px);animation:glitchScan 1.8s steps(2,end) infinite}
+body.arena-effect-lava .arena{background:radial-gradient(circle at 50% 110%,rgba(255,86,36,.28),transparent 45%),var(--panel)}
+body.arena-effect-ice .arena{background:radial-gradient(circle at 50% 0%,rgba(90,210,255,.20),transparent 42%),var(--panel)}
+body.arena-effect-void .arena{background:radial-gradient(circle at 50% 50%,rgba(96,46,160,.20),rgba(10,3,18,.98) 68%)}
+body.arena-effect-rainbow .arena{animation:arenaRainbow 6s linear infinite}
+body.arena-effect-gold .arena{box-shadow:0 0 55px rgba(255,205,70,.30),inset 0 0 38px rgba(255,205,70,.08)}
+@keyframes glitchScan{0%,100%{transform:translateX(0);opacity:.45}40%{transform:translateX(3px);opacity:.75}60%{transform:translateX(-3px);opacity:.3}}
+@keyframes arenaRainbow{0%{box-shadow:0 0 45px rgba(255,75,110,.22)}33%{box-shadow:0 0 45px rgba(70,220,255,.22)}66%{box-shadow:0 0 45px rgba(160,90,255,.22)}100%{box-shadow:0 0 45px rgba(255,75,110,.22)}}
+.pet-empty-state{grid-column:1/-1;text-align:center;padding:28px}
+@media(max-width:760px){.collection-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}

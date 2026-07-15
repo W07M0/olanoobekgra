@@ -1,18 +1,2 @@
-<!doctype html><meta charset="utf-8">
-<title>Test 0.6c runtime fix</title>
-<button id="run">Uruchom test</button><div id="out"></div>
-<script>
-run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06cruntimefix',{cache:'no-store'}).then(r=>r.text());
- const h=await fetch('../index.html?v=06cruntimefix',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['Zmienna boss istnieje',s.includes('let boss=null')],
-  ['maybeSpawnBoss istnieje',s.includes('function maybeSpawnBoss(')],
-  ['renderHud zabezpieczony',s.includes("console.error('renderHud:'")],
-  ['renderPets istnieje',s.includes('function renderPets(')],
-  ['Główny render zabezpieczony',s.includes('function safeGameRender(')],
-  ['Cache 06cruntimefix',h.includes('?v=06cruntimefix')]
- ];
- out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset=utf-8><button id=r>Test</button><div id=o></div><script>
+r.onclick=async()=>{let h=await fetch('../index.html?v=06ccleanup').then(x=>x.text()),s=await fetch('../js/systems.js?v=06ccleanup').then(x=>x.text()),a=await fetch('../js/app.js?v=06ccleanup').then(x=>x.text());let c=[['Kolekcja',h.includes('data-collection-panel="pets"')&&!h.includes('id="view-pets"')],['Pety',s.includes("$('#petGroups')||$('#petGrid')||$('#petsGrid')")],['Zakładki',a.includes('showCollectionTab')],['Skin FX',s.includes('applySkinArenaEffects')]];o.innerHTML=c.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
