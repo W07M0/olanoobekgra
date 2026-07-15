@@ -7,6 +7,7 @@ if(typeof window.renderMiniCooldowns!=='function')window.renderMiniCooldowns=fun
 if(typeof window.loadMinigameLeaderboards!=='function')window.loadMinigameLeaderboards=async function(){};
 
 
+let bossTimer=null;
 let boss=null;
 let bossSpawnTimer=0;
 
@@ -28,7 +29,7 @@ function clearBoss(){
  }
 }
 
-const WORLD_BOSS_FIXED_HP=[50000,180000,650000,2200000,7000000,22000000,70000000,210000000,650000000,2000000000,6000000000,18000000000,55000000000,160000000000,450000000000];
+const WORLD_BOSS_FIXED_HP=[50000,150000,450000,1400000,4200000,12000000,35000000,100000000,280000000,750000000,2000000000,5500000000,15000000000,40000000000,110000000000];
 function calculatedWorldBossHp(w){
  const idx=Math.max(0,worldIndex(w.id));
  return WORLD_BOSS_FIXED_HP[idx]||WORLD_BOSS_FIXED_HP[WORLD_BOSS_FIXED_HP.length-1]
@@ -122,7 +123,7 @@ function spawnWorldBoss(){
  if(worldBossDefeated(w.id) && w.id!=='dev'){toast('Boss tego świata został już pokonany');return}
  let t=currentWorldBossTemplate();
  let maxHp=calculatedWorldBossHp(w);
- boss={...t,hp:maxHp,maxHp,time:Math.min(110,65+worldIndex(w)*3),rewardPoints:Math.floor(maxHp*2.25),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
+ boss={...t,hp:maxHp,maxHp,time:Math.min(125,80+worldIndex(w)*4),rewardPoints:Math.floor(maxHp*.08),rewardGems:Math.max(2,Math.ceil((worldIndex(w.id)+1)/2)),rewardCoins:Math.max(1,Math.floor(worldIndex(w.id)/3)+1),blocked:false,blockersCleared:0};
  $('#bossPanel').classList.remove('hidden');renderBoss();scheduleBossBlocker(true);
  clearInterval(bossTimer);bossTimer=setInterval(()=>{
   if(!boss)return clearInterval(bossTimer);
@@ -197,9 +198,23 @@ function currentTitle(){return ''}
 
 function spawnBoss(){spawnWorldBoss()}
 function damageBoss(amount){
- if(!boss)return;if(boss.blocked)return
- let capped=Math.min(Math.max(1,amount),(boss?.maxHp||1)*.035);boss.hp=Math.max(0,(boss?.hp||0)-capped);
- renderBoss();if((boss?.hp||0)<=0)finishBoss(true)
+ if(!boss||boss.blocked)return;
+
+ const raw=Math.max(1,Number(amount)||1);
+ const upgraded=Math.max(
+  1,
+  raw
+  *1.35
+  *bossDamageUpgradeMultiplier()
+  *(1+(state.worldExpBoost||0)*.05)
+  *(1+(state.achievementBonuses?.bossDamage||0))
+ );
+
+ const capped=Math.min(upgraded,(boss?.maxHp||1)*.05);
+ boss.hp=Math.max(0,(boss?.hp||0)-capped);
+
+ renderBoss();
+ if((boss?.hp||0)<=0)finishBoss(true)
 }
 function renderBoss(){
  if(!boss)return;
@@ -885,15 +900,7 @@ function renderSkinOrbit(){
 function clearSkinArenaEffects(){
  document.body.classList.remove('arena-skin-epic','arena-skin-legendary','arena-skin-mythic','arena-skin-secret','arena-effect-glitch','arena-effect-lava','arena-effect-ice','arena-effect-void','arena-effect-rainbow','arena-effect-gold')
 }
-function applySkinArenaEffects(skin){
- clearSkinArenaEffects();
- if(!skin||state.ecoMode)return;
- const ranks={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythic:5,secret:6};
- if((ranks[skin.rarity]||0)<3)return;
- document.body.classList.add('arena-skin-'+skin.rarity);
- const map={glitch:'arena-effect-glitch',lava:'arena-effect-lava',ice:'arena-effect-ice',void:'arena-effect-void',rainbow:'arena-effect-rainbow',gold:'arena-effect-gold',dev:'arena-effect-glitch'};
- if(map[skin.id])document.body.classList.add(map[skin.id])
-}
+
 
 let skinFxTimer=null;
 let skinFxSignature='';
@@ -907,7 +914,7 @@ function ensureSkinEffectField(){
   field=document.createElement('div');
   field.id='skinEffectField';
   field.className='skin-effect-field';
-  arena.appendChild(field)
+  arena.insertBefore(field,arena.firstChild)
  }
  return field
 }
@@ -941,28 +948,25 @@ function spawnSkinEffectParticle(skin){
  const particle=document.createElement('span');
  particle.className=`skin-fx-particle ${config.className}`;
 
- const side=Math.random()<.5?'left':'right';
- const angle=(side==='left'
-  ?130+Math.random()*100
-  :-50+Math.random()*100)*Math.PI/180;
-
- const radius=46+Math.random()*28;
+ // Losowy punkt w pierścieniu za klikerem.
+ const angle=Math.random()*Math.PI*2;
+ const radius=34+Math.random()*18;
  const x=50+Math.cos(angle)*radius;
- const y=50+Math.sin(angle)*radius*.72;
+ const y=50+Math.sin(angle)*radius*.82;
 
  particle.style.left=x+'%';
  particle.style.top=y+'%';
- particle.style.setProperty('--fx-size',(14+Math.random()*22)+'px');
- particle.style.setProperty('--fx-rotate',(-35+Math.random()*70)+'deg');
- particle.style.setProperty('--fx-drift-x',(-24+Math.random()*48)+'px');
- particle.style.setProperty('--fx-drift-y',(-40-Math.random()*45)+'px');
+ particle.style.setProperty('--fx-size',(15+Math.random()*24)+'px');
+ particle.style.setProperty('--fx-rotate',(-45+Math.random()*90)+'deg');
+ particle.style.setProperty('--fx-drift-x',(-30+Math.random()*60)+'px');
+ particle.style.setProperty('--fx-drift-y',(-35-Math.random()*55)+'px');
 
  const life=config.life[0]+Math.random()*(config.life[1]-config.life[0]);
  particle.style.animationDuration=life+'ms';
  particle.textContent=config.symbols[Math.floor(Math.random()*config.symbols.length)];
 
  field.appendChild(particle);
- setTimeout(()=>particle.remove(),life+120)
+ setTimeout(()=>particle.remove(),life+150)
 }
 
 function stopSkinEffectField(){
@@ -997,14 +1001,14 @@ function startSkinEffectField(skin){
    return
   }
 
-  const burst=Math.random()<.22?2:1;
+  const burst=Math.random()<.38?2:1;
   for(let i=0;i<burst;i++)spawnSkinEffectParticle(skin);
 
   const delay=config.interval[0]+Math.random()*(config.interval[1]-config.interval[0]);
   skinFxTimer=setTimeout(loop,delay)
  };
 
- for(let i=0;i<8;i++){
+ for(let i=0;i<14;i++){
   setTimeout(()=>spawnSkinEffectParticle(skin),i*90)
  }
  skinFxTimer=setTimeout(loop,250)
@@ -1037,7 +1041,7 @@ function applySkinArenaEffects(skin){
  if(map[skin.id])document.body.classList.add(map[skin.id]);
 
  const signature=skin.id+'|'+skin.rarity;
- if(signature!==skinFxSignature)startSkinEffectField(skin)
+ if(signature!==skinFxSignature||!$('#skinEffectField')?.classList.contains('active'))startSkinEffectField(skin)
 }
 
 function applySkin(){

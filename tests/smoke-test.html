@@ -1,19 +1,20 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test pet/boss 0.6c</title>
+<title>Test boss/skin/ring 0.6c</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06cpetbossfix',{cache:'no-store'}).then(r=>r.text());
- const c=await fetch('../css/styles.css?v=06cpetbossfix',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06cbossskinringfix',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../css/styles.css?v=06cbossskinringfix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Brak automatycznego bossa',!s.slice(s.indexOf('function render(){'),s.indexOf('function nextFeatureUnlock')).includes('maybeSpawnBoss()')],
-  ['Ręczna walka',s.includes('Boss może zostać uruchomiony tylko ręcznie')],
-  ['Przycisk sterowany progiem',s.includes("button.style.display=shouldShow?'block':'none'")],
-  ['Większa orbita petów',c.includes('translateX(184px)')],
-  ['Pety nad klikerem',c.includes('z-index:8!important')],
-  ['Efekty za petami',c.includes('.skin-effect-field')&&c.includes('z-index:2!important')]
+  ['bossTimer istnieje',s.includes('let bossTimer=null')],
+  ['Jedna funkcja efektów',s.match(/function applySkinArenaEffects\(skin\)/g)?.length===1],
+  ['Większe obrażenia bossom',s.includes('*1.35')],
+  ['Łagodniejsze HP',s.includes('750000000')&&s.includes('2000000000')],
+  ['Efekty w pierścieniu',s.includes('const radius=34+Math.random()*18')],
+  ['Pole efektów widoczne',c.includes('.skin-effect-field.active')&&c.includes('display:block!important')],
+  ['Kliker mniejszy',c.includes('width:78%!important')]
  ];
  out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
 }
