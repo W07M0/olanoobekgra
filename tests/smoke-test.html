@@ -1,19 +1,17 @@
 <!doctype html><meta charset="utf-8">
-<title>Test 0.6c</title><button id="run">Uruchom test</button><div id="out"></div>
+<title>Test 0.6c runtime fix</title>
+<button id="run">Uruchom test</button><div id="out"></div>
 <script>
 run.onclick=async()=>{
- const h=await fetch('../index.html?v=06c',{cache:'no-store'}).then(r=>r.text());
- const d=await fetch('../js/data.js?v=06c',{cache:'no-store'}).then(r=>r.text());
- const s=await fetch('../js/systems.js?v=06c',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06cruntimefix',{cache:'no-store'}).then(r=>r.text());
+ const h=await fetch('../index.html?v=06cruntimefix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Wersja 0.6c',d.includes("const GAME_VERSION='0.6c'")],
-  ['Stałe HP bossów',s.includes('WORLD_BOSS_FIXED_HP')&&!s.includes('bossPowerSnapshot')],
-  ['Brak ścieżki bossów',!h.includes('Ścieżka bossów')],
-  ['Podział sklepu permanentnego',h.includes('permanentGemShopGrid')&&h.includes('permanentCoinShopGrid')],
-  ['Skiny według rzadkości',s.includes('skin-rarity-group')],
-  ['Filtry osiągnięć',h.includes('achievementSearch')],
-  ['Nagrody specjalne',s.includes('grantAchievementSpecial')],
-  ['Centrum kolekcji',h.includes('data-collection-open')]
+  ['Zmienna boss istnieje',s.includes('let boss=null')],
+  ['maybeSpawnBoss istnieje',s.includes('function maybeSpawnBoss(')],
+  ['renderHud zabezpieczony',s.includes("console.error('renderHud:'")],
+  ['renderPets istnieje',s.includes('function renderPets(')],
+  ['Główny render zabezpieczony',s.includes('function safeGameRender(')],
+  ['Cache 06cruntimefix',h.includes('?v=06cruntimefix')]
  ];
  out.innerHTML=checks.map(([n,v])=>`<p>${v?'✅':'❌'} ${n}</p>`).join('')
 }

@@ -6,6 +6,53 @@ if(typeof window.renderMiniStats!=='function')window.renderMiniStats=function(){
 if(typeof window.renderMiniCooldowns!=='function')window.renderMiniCooldowns=function(){};
 if(typeof window.loadMinigameLeaderboards!=='function')window.loadMinigameLeaderboards=async function(){};
 
+
+let boss=null;
+let bossSpawnTimer=0;
+
+function activeBossWorld(){
+ if(!boss)return null;
+ return worlds.find(world=>world.id===boss.worldId)||world()
+}
+
+function maybeSpawnBoss(){
+ if(boss)return boss;
+ const current=world();
+ if(!current)return null;
+
+ // Boss pojawia się tylko w głównej grze i po osiągnięciu wymagań świata.
+ if(typeof currentView!=='undefined'&&currentView!=='game')return null;
+ if((state.level||1)<Math.max(1,current.unlockLevel||1))return null;
+
+ const now=Date.now();
+ if(now-bossSpawnTimer<12000)return null;
+ bossSpawnTimer=now;
+
+ const maxHp=calculatedWorldBossHp(current);
+ boss={
+  worldId:current.id,
+  name:current.bossName||current.boss||('Boss '+current.name),
+  emoji:current.bossEmoji||'👹',
+  maxHp,
+  hp:maxHp,
+  startedAt:now,
+  blockers:[],
+  active:true
+ };
+
+ if(typeof startBossBlockers==='function'){
+  try{startBossBlockers()}catch(error){console.warn('Boss blockers:',error)}
+ }
+ return boss
+}
+
+function clearBoss(){
+ boss=null;
+ if(typeof clearBossBlockers==='function'){
+  try{clearBossBlockers()}catch(error){console.warn('Clear boss blockers:',error)}
+ }
+}
+
 const WORLD_BOSS_FIXED_HP=[50000, 250000, 1200000, 6000000, 30000000, 150000000, 750000000, 4000000000, 18000000000, 75000000000, 300000000000, 1100000000000, 4000000000000, 14000000000000, 50000000000000];
 function calculatedWorldBossHp(w){
  const idx=Math.max(0,worldIndex(w.id));
@@ -118,15 +165,15 @@ function currentTitle(){return ''}
 function spawnBoss(){spawnWorldBoss()}
 function damageBoss(amount){
  if(!boss)return;if(boss.blocked)return
- let capped=Math.min(Math.max(1,amount),boss.maxHp*.035);boss.hp=Math.max(0,boss.hp-capped);
- renderBoss();if(boss.hp<=0)finishBoss(true)
+ let capped=Math.min(Math.max(1,amount),(boss?.maxHp||1)*.035);boss.hp=Math.max(0,(boss?.hp||0)-capped);
+ renderBoss();if((boss?.hp||0)<=0)finishBoss(true)
 }
 function renderBoss(){
  if(!boss)return;
- $('#bossName').textContent=boss.emoji+' '+boss.name;$('#bossDesc').textContent=boss.desc;
- $('#bossTime').textContent=boss.time;$('#bossHp').textContent=fmt(boss.hp)+'/'+fmt(boss.maxHp);
+ $('#bossName').textContent=(boss?.emoji||'👹')+' '+(boss?.name||'Boss');$('#bossDesc').textContent=boss.desc;
+ $('#bossTime').textContent=boss.time;$('#bossHp').textContent=fmt((boss?.hp||0))+'/'+fmt((boss?.maxHp||1));
  $('#bossReward').textContent=fmt(boss.rewardPoints)+' ⭐ + '+boss.rewardGems+' 💎 + '+(boss.rewardCoins||0)+' 🟡';
- $('#bossHealthBar').style.width=(boss.hp/boss.maxHp*100)+'%'
+ $('#bossHealthBar').style.width=((boss&&(boss?.maxHp||1)?(boss?.hp||0)/(boss?.maxHp||1):0)*100)+'%'
 }
 function finishBoss(win){
  if(!boss)return;clearInterval(bossTimer);clearTimeout(blockerTimeout);$('#bossBlockerLayer').classList.add('hidden');$('#bossBlockerLayer').innerHTML='';$('#bossPanel').classList.remove('blocked');let defeated={...boss};
@@ -223,7 +270,9 @@ function applyFeatureViewLocks(){
 }
 
 
-function renderHud(){
+function renderHud(){try{
+ const activeBoss=typeof boss!=='undefined'?boss:null;
+
  $('#points').textContent=fmt(state.points);
  if($('#gems'))$('#gems').textContent=fmt(state.gems);
  if($('#coins'))$('#coins').textContent=fmt(state.coins);
@@ -244,8 +293,8 @@ function renderHud(){
  $('#quickClick').disabled=state.points<state.clickCost;
  $('#quickAuto').disabled=state.points<state.autoCost;
  if($('#playerTitle'))$('#playerTitle').remove();
- if(boss)renderBoss();
-}
+ if(activeBoss)renderBoss();
+}catch(error){console.error('renderHud:',error)}}
 function trimEffects(){
  const limits=[['.float',8],['.skin-local-particle',30],['.weather-particle',20],['.world-particle',12],['.rain',55]];
  for(const [selector,max] of limits){
@@ -254,6 +303,14 @@ function trimEffects(){
  }
 }
 
+
+function safeGameRender(name,callback){
+ try{if(typeof callback==='function')callback()}
+ catch(error){
+  console.error(`Render ${name}:`,error);
+  if(typeof saveDiagnostic==='function')saveDiagnostic('Render',`${name}: ${error.message}`,error.stack||'')
+ }
+}
 function render(){
  if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
@@ -269,7 +326,7 @@ function render(){
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
- if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}maybeSpawnBoss();if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}renderQuests();renderStats();renderSettingsStatistics();renderDaily();renderBoard();applySkin();save()
+ if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof maybeSpawnBoss==='function'){try{maybeSpawnBoss()}catch(error){console.error('maybeSpawnBoss:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -410,7 +467,16 @@ function renderPetInstance(instance){
   </div>
  </div>`
 }
-function renderPets(){
+
+function ensurePetState(){
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+ state.equipped=Array.isArray(state.equipped)?state.equipped:[];
+ const valid=new Set(state.pets.map(p=>p?.uid||p?.instanceId||p?.id).filter(Boolean));
+ state.equipped=[...new Set(state.equipped.filter(uid=>valid.has(uid)))].slice(0,3)
+}
+function renderPets(){try{
+ ensurePetState();
+
  sanitizeEquippedPets();
  $('#petDot').textContent=state.pets.length;
  $('#equippedCount').textContent=state.equipped.length+'/'+maxPetSlots();
@@ -437,7 +503,9 @@ function renderPets(){
   </div>`
  }).join('');
  $('#petGrid').innerHTML=groups||'<div class="card"><h3>Brak petów</h3><p class="muted">Otwórz pierwszą skrzynkę, aby zdobyć noobka.</p></div>'
-}
+ const petGrid=$('#petGrid')||$('#petsGrid');
+ if(petGrid&&!state.pets.length)petGrid.innerHTML='<div class="card pet-empty-state">🐾 Nie masz jeszcze petów. Otwórz jajko, aby zdobyć pierwszego.</div>';
+}catch(error){console.error('renderPets:',error)}}
 function togglePetInstance(uid){
  const instance=getPetInstance(uid);if(!instance)return;
  if(state.equipped.includes(uid))state.equipped=state.equipped.filter(x=>x!==uid);

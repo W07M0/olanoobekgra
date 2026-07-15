@@ -1263,3 +1263,67 @@ body.arena-skin-secret .arena{box-shadow:0 0 55px rgba(77,255,173,.30);filter:co
  .achievement-toolbar .achievement-tabs{grid-column:auto}
  .collection-hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* 0.6c runtime/UI consistency */
+button,
+.button,
+.small-btn,
+.buy-upgrade-btn,
+.skin-equip-btn,
+.achievement-claim-btn,
+.admin-section-save{
+ font:inherit;
+ border-radius:12px;
+ border:1px solid rgba(255,255,255,.12);
+ min-height:40px;
+ padding:9px 14px;
+ font-weight:850;
+ transition:transform .12s ease,filter .12s ease,opacity .12s ease,box-shadow .12s ease;
+}
+button:not(:disabled):hover,
+.button:not(:disabled):hover{
+ transform:translateY(-1px);
+ filter:brightness(1.08);
+}
+button:not(:disabled):active,
+.button:not(:disabled):active{
+ transform:translateY(1px) scale(.985);
+}
+button:disabled{
+ opacity:.5;
+ cursor:not-allowed;
+}
+.buy-upgrade-btn,
+.skin-equip-btn,
+.achievement-claim-btn.ready,
+.admin-section-save{
+ background:linear-gradient(135deg,#31dff4,#7768ff);
+ color:#fff;
+ box-shadow:0 8px 20px rgba(73,118,255,.16);
+}
+.small-btn,
+.secondary-btn{
+ background:rgba(255,255,255,.06);
+ color:#fff;
+}
+.danger-btn{
+ background:linear-gradient(135deg,#ff496f,#d52b59)!important;
+ color:#fff!important;
+}
+#clickButton,
+.main-click-button,
+.click-button{
+ border-radius:50%!important;
+ aspect-ratio:1/1;
+ display:grid;
+ place-items:center;
+ font-weight:1000;
+ letter-spacing:.08em;
+ text-transform:uppercase;
+ box-shadow:0 0 30px rgba(101,77,255,.30),inset 0 0 22px rgba(255,255,255,.08);
+}
+.pet-empty-state{
+ grid-column:1/-1;
+ text-align:center;
+ padding:28px;
+}
