@@ -918,3 +918,9 @@ document.addEventListener('click',event=>{
 },{capture:true});
 
 setInterval(()=>{if(typeof decayComboIfNeeded==='function')decayComboIfNeeded()},150);
+
+bindClick('#bossResultClose',()=>closeBossResult());
+bindClick('#bossResultContinue',()=>closeBossResult());
+document.addEventListener('click',event=>{
+ if(event.target?.id==='bossResult')closeBossResult()
+});

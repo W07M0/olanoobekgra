@@ -281,6 +281,57 @@ function renderBoss(){
  $('#bossReward').textContent=fmt(boss.rewardPoints)+' ⭐ + '+boss.rewardGems+' 💎 + '+(boss.rewardCoins||0)+' 🟡';
  $('#bossHealthBar').style.width=((boss&&(boss?.maxHp||1)?(boss?.hp||0)/(boss?.maxHp||1):0)*100)+'%'
 }
+
+function closeBossResult(){
+ const overlay=$('#bossResult');
+ if(!overlay)return;
+ overlay.classList.add('hidden');
+ overlay.classList.remove('show')
+}
+
+function showBossResult({won,first,points=0,gems=0,coins=0,unlockedNext=false,cooldownMs=0}){
+ const overlay=$('#bossResult');
+ if(!overlay){
+  toast(won
+   ?`Boss pokonany! +${fmt(points)} ⭐ +${gems} 💎 +${coins} 🟡`
+   :'Boss uciekł');
+  return
+ }
+
+ const icon=$('#bossResultIcon');
+ const title=$('#bossResultTitle');
+ const desc=$('#bossResultDesc');
+ const rewards=$('#bossResultRewards');
+
+ if(icon)icon.textContent=won?'🏆':'💨';
+ if(title)title.textContent=won
+  ?first?'Pierwsze zwycięstwo!':'Boss pokonany ponownie!'
+  :'Boss uciekł';
+
+ if(desc){
+  desc.textContent=won
+   ?unlockedNext
+    ?'Pokonano strażnika i odblokowano możliwość kupna kolejnego świata.'
+    :`Boss wróci za ${formatBossCooldown(cooldownMs)}.`
+   :`Spróbuj ponownie za ${formatBossCooldown(cooldownMs)}.`
+ }
+
+ if(rewards){
+  rewards.innerHTML=won
+   ?`<div><b>+${fmt(points)}</b><span>⭐ Punkty</span></div>
+      <div><b>+${gems}</b><span>💎 Diamenty</span></div>
+      <div><b>+${coins}</b><span>🟡 Noob Coiny</span></div>`
+   :'<div class="boss-result-empty">Brak nagród za przegraną walkę.</div>'
+ }
+
+ overlay.classList.remove('hidden');
+ overlay.classList.add('show');
+
+ requestAnimationFrame(()=>{
+  overlay.scrollIntoView({behavior:'smooth',block:'center'})
+ })
+}
+
 function finishBoss(win){
  if(!boss)return;
 
@@ -305,27 +356,30 @@ function finishBoss(win){
   bossPanel.classList.remove('blocked')
  }
 
+ let rewardPoints=0;
+ let rewardGems=0;
+ let rewardCoins=0;
+ let unlockedNext=false;
+
  if(win){
   const lootMult=1+(state.permBossLoot||0)*.10;
   const repeatScale=wasFirst?1:.40*bossRepeatRewardMultiplier();
 
-  defeated.rewardPoints=Math.max(1,Math.floor(defeated.rewardPoints*lootMult*repeatScale));
-  defeated.rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()*(wasFirst?1:.75)));
-  defeated.rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()*(wasFirst?1:.75)));
+  rewardPoints=Math.max(1,Math.floor(defeated.rewardPoints*lootMult*repeatScale));
+  rewardGems=Math.max(1,Math.floor(defeated.rewardGems*lootMult*gemRewardMultiplier()*(wasFirst?1:.75)));
+  rewardCoins=Math.max(1,Math.floor((defeated.rewardCoins||0)*lootMult*coinRewardMultiplier()*(wasFirst?1:.75)));
 
-  addPoints(defeated.rewardPoints);
-  state.gems+=defeated.rewardGems;
-  state.coins+=defeated.rewardCoins;
+  addPoints(rewardPoints);
+  state.gems+=rewardGems;
+  state.coins+=rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
   registerBossKill(w.id);
 
-  let unlockedNext=false;
   if(defeated.isWorldBoss&&wasFirst){
    markWorldBossDefeated(w.id);
    unlockedNext=unlockNextWorldAfterBoss(w.id)
   }
 
-  // Postęp odblokowania pozostaje zapisany i nigdy nie jest zerowany.
   ensureWorldBossProgress(w.id);
   state.worldBossProgress[w.id]=Math.max(
    state.worldBossProgress[w.id]||0,
@@ -339,36 +393,30 @@ function finishBoss(win){
 
   grantPetXp(70+Math.max(0,worldIndex(w.id))*18);
   sfx('good');
-  confetti();
-
-  const icon=$('#bossResultIcon');
-  const title=$('#bossResultTitle');
-  const desc=$('#bossResultDesc');
-  if(icon)icon.textContent='🏆';
-  if(title)title.textContent=wasFirst?'Pierwsze zwycięstwo!':'Boss pokonany ponownie!';
-  if(desc)desc.textContent=
-   `+${fmt(defeated.rewardPoints)} ⭐ +${defeated.rewardGems} 💎 +${defeated.rewardCoins||0} 🟡`
-   +(unlockedNext?' • Odblokowano kolejny świat!':'');
-
-  const result=$('#bossResult');
-  if(result)result.classList.remove('hidden')
+  confetti()
  }else{
-  setBossCooldown(w.id);
-
-  const icon=$('#bossResultIcon');
-  const title=$('#bossResultTitle');
-  const desc=$('#bossResultDesc');
-  if(icon)icon.textContent='💨';
-  if(title)title.textContent='Boss uciekł';
-  if(desc)desc.textContent='Spróbuj ponownie po cooldownie.';
-  const result=$('#bossResult');
-  if(result)result.classList.remove('hidden')
+  setBossCooldown(w.id)
  }
+
+ const cooldownMs=bossCooldownRemaining(w.id);
 
  save();
  renderWorlds();
  refreshBossUnlockUi();
- render()
+ renderCollection();
+ render();
+
+ setTimeout(()=>{
+  showBossResult({
+   won:win,
+   first:wasFirst,
+   points:rewardPoints,
+   gems:rewardGems,
+   coins:rewardCoins,
+   unlockedNext,
+   cooldownMs
+  })
+ },0)
 }
 function showWorldTransition(w,newUnlock=false){
  $('#transitionEmoji').textContent=w.emoji;$('#transitionName').textContent=w.name;$('#transitionDesc').textContent=w.desc;
@@ -398,18 +446,69 @@ function playWorldMusicNote(){
 }
 
 
+function collectionProgressData(){
+ const ownedPetTypes=new Set(
+  (state.pets||[])
+   .map(pet=>pet?.type)
+   .filter(type=>pets.some(base=>base.id===type))
+ );
+
+ const ownedSkinIds=new Set(
+  (state.ownedSkins||[])
+   .filter(id=>skins.some(skin=>skin.id===id))
+ );
+
+ const unlockedWorldIds=new Set(
+  (state.unlockedWorlds||[])
+   .filter(id=>worlds.some(world=>world.id===id))
+ );
+
+ const claimedAchievementIds=new Set(
+  (state.claimedAchievements||[])
+   .filter(id=>achievements.some(achievement=>achievement.id===id))
+ );
+
+ const sections=[
+  {key:'pets',owned:ownedPetTypes.size,total:pets.length},
+  {key:'skins',owned:ownedSkinIds.size,total:skins.filter(skin=>skin.id!=='dev').length},
+  {key:'worlds',owned:unlockedWorldIds.size,total:worlds.filter(world=>world.id!=='dev').length},
+  {key:'awards',owned:claimedAchievementIds.size,total:achievements.length}
+ ];
+
+ const owned=sections.reduce((sum,section)=>sum+Math.min(section.owned,section.total),0);
+ const total=sections.reduce((sum,section)=>sum+Math.max(0,section.total),0);
+ const percent=total>0?Math.min(100,Math.round(owned/total*100)):0;
+
+ return{owned,total,percent,sections}
+}
+
 function renderCollection(){
- let petCounts={};state.pets.forEach(instance=>petCounts[instance.type]=(petCounts[instance.type]||0)+1);
- $('#petCollectionGrid').innerHTML=pets.map(p=>{
-  let owned=(petCounts[p.id]||0)>0;
-  return`<div class="card collection-card ${owned?'':'locked'}">
-   <div class="big">${owned?p.emoji:'❓'}</div><h3>${owned?p.name:'Nieodkryty pet'}</h3>
-   <p class="chance">Szansa: ${p.chance}%</p><p class="${owned?'owned':'muted'}">${owned?'Posiadasz: '+petCounts[p.id]:'Nie zdobyto'}</p>
-  </div>`
- }).join('');
- $('#skinCollectionGrid').innerHTML=skins.map(s=>{let owned=state.ownedSkins.includes(s.id);return`<div class="card collection-card ${owned?'':'locked'}" style="border-top:4px solid ${s.color}"><div class="big">${owned?s.emoji:'❓'}</div><h3>${owned?s.name:'Nieodkryty skin'}</h3><p class="chance">Waga losowania: ${s.weight}</p><p class="${owned?'owned':'muted'}">${owned?'Odblokowany':'Nie zdobyto'}</p></div>`}).join('');
- let ownedPets=new Set(state.pets.map(p=>p.type)).size,totalOwned=ownedPets+state.ownedSkins.length,total=pets.length+skins.length;
- $('#collectionProgress').textContent=Math.floor(totalOwned/total*100)+'%'
+ const progress=collectionProgressData();
+ const progressText=$('#collectionProgress');
+ if(progressText)progressText.textContent=progress.percent+'%';
+
+ const chip=progressText?.closest('.chip');
+ if(chip){
+  chip.title=`${progress.owned} / ${progress.total} elementów kolekcji`
+ }
+
+ const petCollection=$('#petCollectionGrid');
+ if(petCollection&&typeof renderPetCollection==='function'){
+  try{renderPetCollection()}catch(error){console.error('Pet collection:',error)}
+ }
+
+ const skinCollection=$('#skinCollectionGrid');
+ if(skinCollection&&typeof renderSkinCollection==='function'){
+  try{renderSkinCollection()}catch(error){console.error('Skin collection:',error)}
+ }
+
+ const tab=state.collectionTab||'pets';
+ document.querySelectorAll('[data-collection-tab]').forEach(button=>{
+  button.classList.toggle('active',button.dataset.collectionTab===tab)
+ });
+ document.querySelectorAll('[data-collection-panel]').forEach(panel=>{
+  panel.classList.toggle('active',panel.dataset.collectionPanel===tab)
+ })
 }
 
 function renderFeatureLocks(){
@@ -505,6 +604,8 @@ function render(){
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
  if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
  if(typeof refreshBossUnlockUi==='function')refreshBossUnlockUi();
+
+ safeGameRender('renderCollection',()=>typeof renderCollection==='function'&&renderCollection());
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);

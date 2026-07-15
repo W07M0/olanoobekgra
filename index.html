@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6c</title>
-<link href="css/styles.css?v=06ccomboworldfix" rel="stylesheet"/>
+<link href="css/styles.css?v=06ccollectionbossresult" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -505,11 +505,23 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06ccomboworldfix"></script>
-<script defer="" src="js/core.js?v=06ccomboworldfix"></script>
-<script defer="" src="js/systems.js?v=06ccomboworldfix"></script>
-<script defer="" src="js/integrations.js?v=06ccomboworldfix"></script>
-<script defer="" src="js/profile-admin.js?v=06ccomboworldfix"></script>
-<script defer="" src="js/app.js?v=06ccomboworldfix"></script>
+<script defer="" src="js/data.js?v=06ccollectionbossresult"></script>
+<script defer="" src="js/core.js?v=06ccollectionbossresult"></script>
+<script defer="" src="js/systems.js?v=06ccollectionbossresult"></script>
+<script defer="" src="js/integrations.js?v=06ccollectionbossresult"></script>
+<script defer="" src="js/profile-admin.js?v=06ccollectionbossresult"></script>
+<script defer="" src="js/app.js?v=06ccollectionbossresult"></script>
+
+<div class="modal-overlay hidden" id="bossResult">
+ <div class="modal boss-result-modal">
+  <button class="modal-close" id="bossResultClose" type="button">×</button>
+  <div class="boss-result-icon" id="bossResultIcon">🏆</div>
+  <h2 id="bossResultTitle">Boss pokonany!</h2>
+  <p id="bossResultDesc"></p>
+  <div class="boss-result-rewards" id="bossResultRewards"></div>
+  <button type="button" id="bossResultContinue">Kontynuuj</button>
+ </div>
+</div>
+
 </body>
 </html>

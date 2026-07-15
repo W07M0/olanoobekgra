@@ -1807,3 +1807,76 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  cursor:not-allowed;
  filter:saturate(.55);
 }
+
+/* 0.6c — collection progress and boss result */
+#collectionProgress{
+ font-size:1.05em;
+ color:#4dffad;
+ text-shadow:0 0 10px rgba(77,255,173,.35);
+}
+
+#bossResult{
+ position:fixed;
+ inset:0;
+ z-index:10000;
+ display:grid;
+ place-items:center;
+ padding:18px;
+ background:rgba(5,7,18,.78);
+ backdrop-filter:blur(8px);
+}
+#bossResult.hidden{
+ display:none!important;
+}
+#bossResult.show{
+ display:grid!important;
+}
+.boss-result-modal{
+ position:relative;
+ width:min(520px,100%);
+ text-align:center;
+ padding:28px;
+ border:1px solid rgba(255,255,255,.13);
+ box-shadow:0 24px 80px rgba(0,0,0,.45),0 0 40px rgba(91,91,255,.18);
+}
+.boss-result-icon{
+ font-size:64px;
+ margin-bottom:8px;
+ filter:drop-shadow(0 0 18px rgba(255,215,80,.45));
+}
+.boss-result-rewards{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:10px;
+ margin:20px 0;
+}
+.boss-result-rewards>div{
+ padding:14px 10px;
+ border-radius:13px;
+ background:rgba(255,255,255,.055);
+ border:1px solid rgba(255,255,255,.08);
+}
+.boss-result-rewards b{
+ display:block;
+ font-size:20px;
+ margin-bottom:4px;
+}
+.boss-result-rewards span{
+ font-size:12px;
+ color:var(--muted);
+}
+.boss-result-empty{
+ grid-column:1/-1;
+}
+.modal-close{
+ position:absolute;
+ right:12px;
+ top:12px;
+ width:38px;
+ min-height:38px;
+ padding:0;
+ border-radius:50%;
+}
+@media(max-width:560px){
+ .boss-result-rewards{grid-template-columns:1fr}
+}
