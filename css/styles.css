@@ -1381,8 +1381,8 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  transform-origin:center!important;
 }
 @keyframes petOrbitStable{
- from{transform:rotate(calc(var(--orbit-index)*120deg)) translateX(142px) rotate(calc(var(--orbit-index)*-120deg))}
- to{transform:rotate(calc(360deg + var(--orbit-index)*120deg)) translateX(142px) rotate(calc(-360deg - var(--orbit-index)*120deg))}
+ from{transform:rotate(calc(var(--orbit-index)*120deg)) translateX(184px) rotate(calc(var(--orbit-index)*-120deg))}
+ to{transform:rotate(calc(360deg + var(--orbit-index)*120deg)) translateX(184px) rotate(calc(-360deg - var(--orbit-index)*120deg))}
 }
 
 /* 0.6c — symetryczne efekty skinów */
@@ -1499,4 +1499,55 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 @media(max-width:800px){
  .skin-effect-field{width:138%}
  .skin-fx-particle{font-size:calc(var(--fx-size)*.78)}
+}
+
+/* 0.6c — pet orbit visibility fix */
+#petOrbit{
+ position:absolute!important;
+ inset:0!important;
+ z-index:8!important;
+ pointer-events:none!important;
+ overflow:visible!important;
+ transform:none!important;
+}
+#petOrbit .orbit-pet{
+ position:absolute!important;
+ left:50%!important;
+ top:50%!important;
+ width:44px!important;
+ height:44px!important;
+ display:grid!important;
+ place-items:center!important;
+ margin:-22px 0 0 -22px!important;
+ font-size:34px!important;
+ line-height:1!important;
+ z-index:9!important;
+ will-change:transform;
+}
+#clicker,
+.click-button,
+.main-click-button{
+ z-index:6!important;
+}
+.skin-effect-field{
+ z-index:2!important;
+ width:172%!important;
+}
+.skin-fx-particle{
+ z-index:2!important;
+}
+@media(max-width:800px){
+ #petOrbit .orbit-pet{
+  width:36px!important;
+  height:36px!important;
+  margin:-18px 0 0 -18px!important;
+  font-size:28px!important;
+ }
+ #petOrbit .orbit-pet{
+  animation-name:petOrbitStableMobile!important;
+ }
+ @keyframes petOrbitStableMobile{
+  from{transform:rotate(calc(var(--orbit-index)*120deg)) translateX(150px) rotate(calc(var(--orbit-index)*-120deg))}
+  to{transform:rotate(calc(360deg + var(--orbit-index)*120deg)) translateX(150px) rotate(calc(-360deg - var(--orbit-index)*120deg))}
+ }
 }

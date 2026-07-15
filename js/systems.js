@@ -16,33 +16,8 @@ function activeBossWorld(){
 }
 
 function maybeSpawnBoss(){
- if(boss)return boss;
- const current=world();
- if(!current)return null;
-
- // Boss pojawia się tylko w głównej grze i po osiągnięciu wymagań świata.
- if(typeof currentView!=='undefined'&&currentView!=='game')return null;
- if((state.level||1)<Math.max(1,current.unlockLevel||1))return null;
-
- const now=Date.now();
- if(now-bossSpawnTimer<12000)return null;
- bossSpawnTimer=now;
-
- const maxHp=calculatedWorldBossHp(current);
- boss={
-  worldId:current.id,
-  name:current.bossName||current.boss||('Boss '+current.name),
-  emoji:current.bossEmoji||'👹',
-  maxHp,
-  hp:maxHp,
-  startedAt:now,
-  blockers:[],
-  active:true
- };
-
- if(typeof startBossBlockers==='function'){
-  try{startBossBlockers()}catch(error){console.warn('Boss blockers:',error)}
- }
+ // Zachowane wyłącznie dla zgodności ze starszym kodem.
+ // Boss może zostać uruchomiony tylko ręcznie przez spawnWorldBoss().
  return boss
 }
 
@@ -88,24 +63,30 @@ function refreshBossUnlockUi(){
  ensureWorldBossProgress(w.id);
 
  const done=worldBossDefeated(w.id)&&w.id!=='dev';
- const ready=worldBossFightUnlocked(w);
- const fightActive=!!boss;
+ const fightActive=!!(boss&&boss.active!==false);
  const current=worldBossUnlockProgress(w);
  const target=worldBossUnlockTarget(w);
+ const ready=current>=target;
 
  if(button){
-  button.classList.toggle('hidden',done||fightActive||!ready);
-  button.disabled=done||fightActive||!ready;
-  button.textContent=done?'✅ Boss pokonany':fightActive?'⚔️ Walka trwa':'⚔️ Zmierz się z bossem'
+  const shouldShow=!done&&!fightActive&&ready;
+  button.classList.toggle('hidden',!shouldShow);
+  button.style.display=shouldShow?'block':'none';
+  button.disabled=!shouldShow;
+  button.textContent=done
+   ?'✅ Boss pokonany'
+   :fightActive
+    ?'⚔️ Walka trwa'
+    :'⚔️ Zmierz się z bossem'
  }
 
  if(hint){
-  hint.classList.toggle('hidden',done||fightActive);
-  hint.textContent=done
-   ?''
-   :ready
-    ?'⚔️ Walka z bossem odblokowana'
-    :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`
+  const shouldShowHint=!done&&!fightActive;
+  hint.classList.toggle('hidden',!shouldShowHint);
+  hint.style.display=shouldShowHint?'block':'none';
+  hint.textContent=ready
+   ?'⚔️ Walka z bossem odblokowana'
+   :`🔒 Odblokowanie bossa: ${fmt(Math.min(current,target))} / ${fmt(target)} ⭐`
  }
 }
 
@@ -132,7 +113,9 @@ function spawnWorldBoss(){
  if(boss)return toast('Walka z bossem już trwa');
  let w=world();
  ensureWorldBossProgress(w.id);
- if(!worldBossFightUnlocked(w)){
+ const currentProgress=worldBossUnlockProgress(w);
+ const requiredProgress=worldBossUnlockTarget(w);
+ if(currentProgress<requiredProgress){
   const current=worldBossUnlockProgress(w),target=worldBossUnlockTarget(w);
   return toast(`Najpierw zdobądź w tym świecie ${fmt(target-current)} punktów`)
  }
@@ -367,8 +350,7 @@ function render(){
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
  $('#points').textContent=fmt(state.points);if($('#playerTitle'))$('#playerTitle').remove();
- let wb=worldBossDefeated(world().id);$('#challengeBossBtn').textContent=wb&&state.world!=='dev'?'✅ Boss świata pokonany':'⚔️ Zmierz się z '+world().bossName;
- $('#challengeBossBtn').disabled=wb&&state.world!=='dev';if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
+ if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
  $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent='COMBO x'+combo;$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);$('#quickClick').disabled=state.points<state.clickCost;$('#quickAuto').disabled=state.points<state.autoCost;
@@ -377,7 +359,7 @@ function render(){
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
  $('#worldEmoji').textContent=cw.emoji;$('#worldName').textContent=cw.name;$('#worldFlavor').textContent=cw.desc;
- if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof maybeSpawnBoss==='function'){try{maybeSpawnBoss()}catch(error){console.error('maybeSpawnBoss:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
+ if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
  if(typeof refreshBossUnlockUi==='function')refreshBossUnlockUi();
 }
 function nextFeatureUnlock(){

@@ -1,19 +1,19 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Test arena/boss 0.6c</title>
+<title>Test pet/boss 0.6c</title>
 <button id="run">Uruchom test</button>
 <div id="out"></div>
 <script>
 run.onclick=async()=>{
- const s=await fetch('../js/systems.js?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
- const c=await fetch('../js/core.js?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
- const css=await fetch('../css/styles.css?v=06carenabossfix',{cache:'no-store'}).then(r=>r.text());
+ const s=await fetch('../js/systems.js?v=06cpetbossfix',{cache:'no-store'}).then(r=>r.text());
+ const c=await fetch('../css/styles.css?v=06cpetbossfix',{cache:'no-store'}).then(r=>r.text());
  const checks=[
-  ['Losowe cząsteczki',s.includes('function spawnSkinEffectParticle')],
-  ['Obszar za klikerem',css.includes('.skin-effect-field')],
-  ['Postęp bossa per świat',c.includes('state.worldBossProgress[activeWorld.id]')],
-  ['Natychmiastowe odświeżenie',s.includes('function refreshBossUnlockUi')],
-  ['Brak starego baseline',!s.includes('worldBossStartedAt')]
+  ['Brak automatycznego bossa',!s.slice(s.indexOf('function render(){'),s.indexOf('function nextFeatureUnlock')).includes('maybeSpawnBoss()')],
+  ['Ręczna walka',s.includes('Boss może zostać uruchomiony tylko ręcznie')],
+  ['Przycisk sterowany progiem',s.includes("button.style.display=shouldShow?'block':'none'")],
+  ['Większa orbita petów',c.includes('translateX(184px)')],
+  ['Pety nad klikerem',c.includes('z-index:8!important')],
+  ['Efekty za petami',c.includes('.skin-effect-field')&&c.includes('z-index:2!important')]
  ];
  out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
 }
