@@ -144,6 +144,7 @@ function canUnlockWorld(w){
  return worldBossDefeated(w.requiresBoss)
 }
 function markWorldBossDefeated(worldId){
+ state.worldBossesDefeated=Array.isArray(state.worldBossesDefeated)?state.worldBossesDefeated:[];
  if(!state.worldBossesDefeated.includes(worldId))state.worldBossesDefeated.push(worldId)
 }
 function currentWorldBossTemplate(){
@@ -280,17 +281,23 @@ function finishBoss(win){
  clearInterval(bossTimer);
  clearTimeout(blockerTimeout);
 
+ const defeated={...boss};
+ const w=worlds.find(item=>item.id===defeated.worldId)||world();
+ const wasFirst=defeated.isWorldBoss&&!worldBossDefeated(w.id);
+
  const blockerLayer=$('#bossBlockerLayer');
  if(blockerLayer){
   blockerLayer.classList.add('hidden');
   blockerLayer.innerHTML=''
  }
- const bossPanel=$('#bossPanel');
- if(bossPanel)bossPanel.classList.remove('blocked');
 
- const defeated={...boss};
- const w=worlds.find(item=>item.id===defeated.worldId)||world();
- const wasFirst=defeated.isWorldBoss&&!worldBossDefeated(w.id);
+ boss=null;
+
+ const bossPanel=$('#bossPanel');
+ if(bossPanel){
+  bossPanel.classList.add('hidden');
+  bossPanel.classList.remove('blocked')
+ }
 
  if(win){
   const lootMult=1+(state.permBossLoot||0)*.10;
@@ -304,42 +311,58 @@ function finishBoss(win){
   state.gems+=defeated.rewardGems;
   state.coins+=defeated.rewardCoins;
   state.bossWins=(state.bossWins||0)+1;
-
   registerBossKill(w.id);
 
+  let unlockedNext=false;
   if(defeated.isWorldBoss&&wasFirst){
    markWorldBossDefeated(w.id);
-   unlockNextWorldAfterBoss(w.id)
+   unlockedNext=unlockNextWorldAfterBoss(w.id)
+  }
+
+  // Postęp odblokowania pozostaje zapisany i nigdy nie jest zerowany.
+  ensureWorldBossProgress(w.id);
+  state.worldBossProgress[w.id]=Math.max(
+   state.worldBossProgress[w.id]||0,
+   worldBossUnlockTarget(w)
+  );
+
+  setBossCooldown(w.id);
+  if(!wasFirst&&Math.random()<bossInstantResetChance()){
+   state.bossCooldowns[w.id]=0
   }
 
   grantPetXp(70+Math.max(0,worldIndex(w.id))*18);
-  setBossCooldown(w.id);
-  if(!wasFirst&&Math.random()<bossInstantResetChance()){
-   state.bossCooldowns[w.id]=0;
-   toast('⚡ Boss wrócił natychmiast!')
-  }
   sfx('good');
-  confetti()
+  confetti();
+
+  const icon=$('#bossResultIcon');
+  const title=$('#bossResultTitle');
+  const desc=$('#bossResultDesc');
+  if(icon)icon.textContent='🏆';
+  if(title)title.textContent=wasFirst?'Pierwsze zwycięstwo!':'Boss pokonany ponownie!';
+  if(desc)desc.textContent=
+   `+${fmt(defeated.rewardPoints)} ⭐ +${defeated.rewardGems} 💎 +${defeated.rewardCoins||0} 🟡`
+   +(unlockedNext?' • Odblokowano kolejny świat!':'');
+
+  const result=$('#bossResult');
+  if(result)result.classList.remove('hidden')
  }else{
-  setBossCooldown(w.id)
+  setBossCooldown(w.id);
+
+  const icon=$('#bossResultIcon');
+  const title=$('#bossResultTitle');
+  const desc=$('#bossResultDesc');
+  if(icon)icon.textContent='💨';
+  if(title)title.textContent='Boss uciekł';
+  if(desc)desc.textContent='Spróbuj ponownie po cooldownie.';
+  const result=$('#bossResult');
+  if(result)result.classList.remove('hidden')
  }
 
- const icon=$('#bossResultIcon');
- const title=$('#bossResultTitle');
- const desc=$('#bossResultDesc');
- if(icon)icon.textContent=win?'🏆':'💨';
- if(title)title.textContent=win?(wasFirst?'Pierwsze zwycięstwo!':'Boss pokonany ponownie!'):'Boss uciekł';
- if(desc)desc.textContent=win
-  ?`+${fmt(defeated.rewardPoints)} ⭐ +${defeated.rewardGems} 💎 +${defeated.rewardCoins||0} 🟡`
-  :'Spróbuj ponownie po cooldownie.';
-
- const result=$('#bossResult');
- if(result)result.classList.remove('hidden');
-
- boss=null;
  save();
- render();
- refreshBossUnlockUi()
+ renderWorlds();
+ refreshBossUnlockUi();
+ render()
 }
 function showWorldTransition(w,newUnlock=false){
  $('#transitionEmoji').textContent=w.emoji;$('#transitionName').textContent=w.name;$('#transitionDesc').textContent=w.desc;
@@ -434,7 +457,7 @@ function renderHud(){
  $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';
  $('#expMult').textContent='x'+expMultiplier().toFixed(2);
  $('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));
- $('#combo').textContent=formatSkinCombo(state.combo);
+ refreshComboDisplay();
  $('#combo').classList.toggle('hot',combo>=8);
  $('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);
@@ -467,7 +490,7 @@ function render(){
  $('#points').textContent=fmt(state.points);if($('#playerTitle'))$('#playerTitle').remove();
  if($('#gems'))$('#gems').textContent=fmt(state.gems);if($('#coins'))$('#coins').textContent=fmt(state.coins);
  $('#perClick').textContent=fmt(clickValue());$('#pps').textContent=fmt(pps());$('#level').textContent=state.level;$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);
- $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));$('#combo').textContent=formatSkinCombo(state.combo);$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
+ $('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';$('#expMult').textContent='x'+expMultiplier().toFixed(2);$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));refreshComboDisplay();$('#combo').classList.toggle('hot',combo>=8);$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
  $('#quickClickCost').textContent='Koszt: '+fmt(state.clickCost);$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);$('#quickClick').disabled=state.points<state.clickCost;$('#quickAuto').disabled=state.points<state.autoCost;
  $('#rebirthGain').textContent=rebirthGain()+' 🟡';$('#rebirthBtn').disabled=rebirthGain()<1;
  $('#soundBtn').textContent=state.sound?'🔊':'🔇';$('#musicBtn').textContent=state.music?'🎶':'🎵';
@@ -1152,17 +1175,19 @@ function createSkinClickText(text,x,y,options={}){
 
  const theme=skinTextTheme();
  const el=document.createElement('div');
- el.className=`effect skin-click-text ${theme.className} ${options.critical?'critical':''}`;
+ el.className=`effect skin-click-text skin-theme-${theme.className} ${options.critical?'critical':''}`;
  el.textContent=text;
 
- const rect=layer.getBoundingClientRect?.();
- const localX=Number.isFinite(x)&&rect?x-rect.left:rect?.width/2||0;
- const localY=Number.isFinite(y)&&rect?y-rect.top:rect?.height/2||0;
+ const rect=layer.getBoundingClientRect();
+ const fallbackX=rect.width/2;
+ const fallbackY=rect.height/2;
+ const localX=Number.isFinite(x)?x-rect.left:fallbackX;
+ const localY=Number.isFinite(y)?y-rect.top:fallbackY;
 
- el.style.left=localX+'px';
- el.style.top=localY+'px';
- el.style.setProperty('--text-drift-x',(-28+Math.random()*56)+'px');
- el.style.setProperty('--text-rotate',(-8+Math.random()*16)+'deg');
+ el.style.left=Math.max(20,Math.min(rect.width-20,localX))+'px';
+ el.style.top=Math.max(20,Math.min(rect.height-20,localY))+'px';
+ el.style.setProperty('--text-drift-x',(-30+Math.random()*60)+'px');
+ el.style.setProperty('--text-rotate',(-7+Math.random()*14)+'deg');
 
  layer.appendChild(el);
  setTimeout(()=>el.remove(),options.critical?1250:950);
@@ -1204,9 +1229,35 @@ function applySkinTextTheme(){
   combo.classList.add('skin-text-'+theme.className)
  }
 }
+
+function refreshComboDisplay(){
+ const comboValue=Math.max(1,Number(state.combo)||1);
+ const text=formatSkinCombo(comboValue);
+ const elements=[
+  $('#comboText'),
+  $('#combo'),
+  document.querySelector('.combo-text'),
+  document.querySelector('.combo-label')
+ ].filter(Boolean);
+
+ elements.forEach(element=>{
+  element.textContent=text;
+  element.dataset.combo=String(comboValue);
+  applySkinTextClass(element)
+ })
+}
+function applySkinTextClass(element){
+ if(!element)return;
+ const theme=skinTextTheme();
+ [...element.classList]
+  .filter(className=>className.startsWith('skin-theme-'))
+  .forEach(className=>element.classList.remove(className));
+ element.classList.add('skin-theme-'+theme.className)
+}
+
 function formatSkinCombo(value){
  const theme=skinTextTheme();
- const comboValue=Math.max(1,Number(value ?? state.combo ?? 1)||1);
+ const comboValue=Math.max(1,Number(value ?? state.combo)||1);
  return `${theme.combo} x${comboValue}`
 }
 function skinCriticalLabel(){
@@ -1215,6 +1266,12 @@ function skinCriticalLabel(){
 
 function applySkin(){
  try{
+  const storedSkin=localStorage.getItem('unc_active_skin');
+  const storedRevision=Number(localStorage.getItem('unc_active_skin_revision')||0);
+  if(storedSkin&&skins.some(x=>x.id===storedSkin)&&storedRevision>Number(state.activeSkinRevision||0)){
+   state.activeSkin=storedSkin;
+   state.activeSkinRevision=storedRevision
+  }
   const skin=skins.find(x=>x.id===state.activeSkin)||skins[0];
   if(!skin)return;
   const button=$('#clicker');
@@ -1229,33 +1286,19 @@ function applySkin(){
   if(typeof saveDiagnostic==='function')saveDiagnostic('Skin render',error.message,error.stack||'')
  }
 }
-function equipSkin(id){if(state.ownedSkins.includes(id)){state.activeSkin=id;sfx('buy');render()}}
-function randomSkin(){let a=skins.filter(s=>s.id!=='classic'),r=Math.random()*a.reduce((n,s)=>n+s.weight,0),sum=0;for(let s of a){sum+=s.weight;if(r<=sum)return s}return a[0]}
-function openGoldCase(){
- if(!featureUnlocked('skins'))return toast(lockedFeatureMessage('skins'));
- if(state.gems<25)return toast('Potrzebujesz 25 diamentów');
- state.gems-=25;
- const winner=randomSkin(),isDuplicate=state.ownedSkins.includes(winner.id),targetIndex=24;
- const pool=Array.from({length:30},(_,i)=>i===targetIndex?winner:randomSkin());
- $('#goldCrateOverlay').classList.add('show');$('#goldClose').classList.add('hidden');$('#goldDismiss').classList.add('hidden');$('#goldResult').textContent='';$('#goldTitle').textContent='GOLD NOOB CASE';
- const strip=$('#rouletteStrip');
- strip.innerHTML=pool.map((skin,i)=>`<div class="roulette-item ${i===targetIndex?'winner-preview':''}" data-index="${i}" style="--c:${skin.color}">${skin.emoji}</div>`).join('');
- strip.style.transition='none';strip.style.transform='translateX(0)';
- requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  const win=document.querySelector('.roulette-window'),target=strip.querySelector(`[data-index="${targetIndex}"]`);
-  const translate=win.clientWidth/2-(target.offsetLeft+target.offsetWidth/2);
-  strip.style.transition='transform 4s cubic-bezier(.12,.7,.12,1)';
-  strip.style.transform=`translateX(${translate}px)`
- }));
- setTimeout(()=>{
-  if(!isDuplicate)state.ownedSkins.push(winner.id);
-  if(isDuplicate)state.gems+=10;
-  $('#goldTitle').textContent=winner.emoji+' '+winner.name;
-  $('#goldResult').innerHTML=`Rzadkość: <b style="color:${winner.color}">${winner.rarity.toUpperCase()}</b><br>${winner.desc}${isDuplicate?'<br><span class="skin-duplicate-reward">Powtórka — +10 💎</span>':''}`;
-  $('#goldClose').classList.remove('hidden');$('#goldDismiss').classList.remove('hidden');$('#goldClose').dataset.skin=winner.id;
-  if(winner.id==='gold'||['legendary','mythic','secret'].includes(winner.rarity))confetti();
-  sfx('good');render()
- },4200)
+function equipSkin(id){
+ if(!skins.some(skin=>skin.id===id))return;
+ if(!state.ownedSkins.includes(id))return toast('Nie posiadasz tego skina');
+
+ state.activeSkin=id;
+ state.activeSkinRevision=Date.now();
+ localStorage.setItem('unc_active_skin',id);
+ localStorage.setItem('unc_active_skin_revision',String(state.activeSkinRevision));
+
+ applySkin();
+ renderSkins();
+ save();
+ toast('Wyposażono skin: '+(skins.find(s=>s.id===id)?.name||id))
 }
 
 

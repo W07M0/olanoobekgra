@@ -882,9 +882,11 @@ document.addEventListener('click',event=>{
 document.addEventListener('click',event=>{
  const clicker=event.target.closest('#clicker,.click-button,.main-click-button');
  if(!clicker)return;
- if(event.__skinTextShown)return;
+ if(event.__skinTextShown)return;event.__skinTextShown=true;
 
  const approxValue=typeof clickPower==='function'?clickPower():1;
  const critical=clicker.classList.contains('critical-hit');
  showSkinClickValue(approxValue,event.clientX,event.clientY,critical)
 });
+
+setInterval(()=>{if(typeof refreshComboDisplay==='function')refreshComboDisplay()},250);

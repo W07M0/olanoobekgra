@@ -1719,3 +1719,84 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
    rotate(var(--text-rotate));
  }
 }
+
+/* 0.6c — unified skin typography */
+.skin-click-text,
+#comboText,
+#combo,
+.combo-text,
+.combo-label{
+ font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif!important;
+ font-weight:1000!important;
+ letter-spacing:.045em!important;
+}
+
+.skin-theme-text-classic{
+ color:#fff!important;
+ text-shadow:0 4px 0 #291945,0 0 14px rgba(255,255,255,.45)!important;
+}
+.skin-theme-text-banana{
+ color:#ffe45c!important;
+ font-family:'Trebuchet MS',sans-serif!important;
+ font-style:italic!important;
+ text-shadow:0 4px 0 #8a5a00,0 0 18px #ffd84e!important;
+}
+.skin-theme-text-matrix{
+ color:#52ff80!important;
+ font-family:'Courier New',monospace!important;
+ letter-spacing:.11em!important;
+ text-shadow:0 0 7px #52ff80,0 0 20px rgba(82,255,128,.75)!important;
+}
+.skin-theme-text-cyber{
+ color:#4cecff!important;
+ text-shadow:3px 2px 0 #8f46ff,-3px -2px 0 #ff3fa4,0 0 18px #4cecff!important;
+}
+.skin-theme-text-lava{
+ color:#ff9c45!important;
+ font-family:Georgia,serif!important;
+ text-shadow:0 4px 0 #8a1c00,0 0 20px #ff4d1f!important;
+}
+.skin-theme-text-ice{
+ color:#e7fbff!important;
+ font-family:'Arial Black',sans-serif!important;
+ letter-spacing:.09em!important;
+ text-shadow:0 4px 0 #367a99,0 0 22px #8eeaff!important;
+}
+.skin-theme-text-toxic{
+ color:#a6ff4f!important;
+ font-family:'Trebuchet MS',sans-serif!important;
+ transform:skew(-5deg);
+ text-shadow:0 4px 0 #275c00,0 0 18px #75ff1f!important;
+}
+.skin-theme-text-glitch{
+ color:#fff!important;
+ font-family:'Courier New',monospace!important;
+ text-shadow:4px 0 #00eaff,-4px 0 #ff2d95,0 0 15px #fff!important;
+ animation:glitchText .42s steps(2,end) infinite!important;
+}
+.skin-theme-text-rainbow{
+ font-family:'Arial Black',sans-serif!important;
+ background:linear-gradient(90deg,#ff4f82,#ffd84e,#4dffad,#45d9ff,#a65cff)!important;
+ background-size:300% 100%!important;
+ -webkit-background-clip:text!important;
+ background-clip:text!important;
+ color:transparent!important;
+ -webkit-text-stroke:1px rgba(255,255,255,.35);
+ animation:rainbowText 2.1s linear infinite!important;
+}
+.skin-theme-text-void{
+ color:#d09aff!important;
+ font-family:Georgia,serif!important;
+ letter-spacing:.12em!important;
+ text-shadow:0 0 10px #7b35ff,0 0 25px #21004d!important;
+}
+.skin-theme-text-gold{
+ color:#ffd75a!important;
+ font-family:Georgia,serif!important;
+ text-shadow:0 4px 0 #8d5b00,0 0 22px rgba(255,215,90,.9)!important;
+}
+.skin-theme-text-dev{
+ color:#4dffad!important;
+ font-family:'Courier New',monospace!important;
+ text-shadow:3px 3px 0 #111,0 0 18px #4dffad!important;
+}

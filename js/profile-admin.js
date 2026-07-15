@@ -82,6 +82,8 @@ function mergeRemoteState(remoteSave){
  }
 
  const preserved={
+  activeSkin:state.activeSkin,
+  activeSkinRevision:state.activeSkinRevision||0,
   soundEnabled:state.soundEnabled,
   musicEnabled:state.musicEnabled,
   effectIntensity:state.effectIntensity,
@@ -125,7 +127,7 @@ async function syncRemoteProfileToPlayer(force=false){
    try{applySkin()}catch(error){console.warn('Skin after remote sync:',error)}
   }
 
-  toast('🔄 Profil został zaktualizowany przez administratora');
+  
   return true
  }finally{
   setTimeout(()=>{remoteProfileApplying=false},800)
