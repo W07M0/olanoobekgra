@@ -1,0 +1,7 @@
+Wrzuć tutaj własne pliki MP3, OGG lub WAV.
+
+Następnie dopisz je w:
+js/music-playlist.js
+
+Przykład:
+{ title: "Noob Anthem", file: "assets/music/noob-anthem.mp3" },
