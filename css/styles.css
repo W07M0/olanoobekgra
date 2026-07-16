@@ -2820,3 +2820,187 @@ body [id="clicker"]{
 #clicker .clicker-word{
  display:block!important;
 }
+
+/* 0.6c — polished compact music player */
+.sidebar-music-player{
+ --music-accent:#b16cff;
+ display:grid!important;
+ gap:9px!important;
+ width:100%!important;
+ padding:11px!important;
+ margin-top:12px!important;
+ box-sizing:border-box!important;
+ border:1px solid rgba(177,108,255,.26)!important;
+ border-radius:15px!important;
+ background:
+  radial-gradient(circle at 15% 0%,rgba(177,108,255,.20),transparent 42%),
+  linear-gradient(160deg,rgba(30,20,47,.98),rgba(13,10,24,.98))!important;
+ box-shadow:
+  inset 0 1px 0 rgba(255,255,255,.07),
+  0 12px 30px rgba(0,0,0,.24)!important;
+}
+
+.sidebar-music-track{
+ min-width:0!important;
+ display:grid!important;
+ grid-template-columns:32px minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:9px!important;
+ padding:0!important;
+ background:none!important;
+}
+
+.sidebar-music-icon{
+ width:32px!important;
+ height:32px!important;
+ display:grid!important;
+ place-items:center!important;
+ border-radius:10px!important;
+ font-size:16px!important;
+ background:linear-gradient(145deg,#a653ff,#5736c9)!important;
+ box-shadow:0 5px 14px rgba(126,70,255,.34)!important;
+}
+
+.sidebar-music-text{
+ min-width:0!important;
+ display:grid!important;
+ gap:2px!important;
+ line-height:1.1!important;
+}
+
+#musicTrackTitle{
+ display:block!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+ font-size:12px!important;
+ color:#fff!important;
+}
+
+#musicTrackStatus{
+ display:block!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+ font-size:9px!important;
+ color:#73e9ff!important;
+ opacity:.9!important;
+}
+
+#musicTrackCounter{
+ min-width:31px!important;
+ padding:5px 6px!important;
+ border-radius:8px!important;
+ text-align:center!important;
+ font-size:9px!important;
+ font-weight:900!important;
+ color:#ded5ff!important;
+ background:rgba(255,255,255,.07)!important;
+}
+
+.sidebar-music-controls{
+ display:grid!important;
+ grid-template-columns:36px minmax(42px,1fr) 36px 36px!important;
+ gap:6px!important;
+}
+
+.sidebar-music-controls button{
+ width:100%!important;
+ min-width:0!important;
+ height:36px!important;
+ min-height:36px!important;
+ padding:0!important;
+ display:grid!important;
+ place-items:center!important;
+ border:1px solid rgba(255,255,255,.10)!important;
+ border-radius:10px!important;
+ font-size:13px!important;
+ color:#fff!important;
+ background:rgba(255,255,255,.075)!important;
+ box-shadow:none!important;
+ transition:transform .15s ease,background .15s ease,border-color .15s ease!important;
+}
+
+.sidebar-music-controls button:hover{
+ transform:translateY(-1px)!important;
+ border-color:rgba(177,108,255,.54)!important;
+ background:rgba(177,108,255,.17)!important;
+}
+
+.sidebar-music-controls .music-main-button{
+ font-size:17px!important;
+ background:linear-gradient(135deg,#a653ff,#6c43ef)!important;
+ border-color:rgba(204,166,255,.45)!important;
+ box-shadow:0 6px 16px rgba(126,70,255,.26)!important;
+}
+
+.sidebar-music-volume{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) 34px!important;
+ align-items:center!important;
+ gap:8px!important;
+ padding:5px 2px 1px!important;
+ background:none!important;
+}
+
+#musicVolume{
+ width:100%!important;
+ height:5px!important;
+ appearance:none!important;
+ -webkit-appearance:none!important;
+ border-radius:999px!important;
+ outline:none!important;
+ background:linear-gradient(90deg,#a653ff,#55dbff)!important;
+ cursor:pointer!important;
+}
+
+#musicVolume::-webkit-slider-thumb{
+ width:14px!important;
+ height:14px!important;
+ appearance:none!important;
+ -webkit-appearance:none!important;
+ border:2px solid #fff!important;
+ border-radius:50%!important;
+ background:#9f55ff!important;
+ box-shadow:0 0 0 3px rgba(159,85,255,.20)!important;
+}
+
+#musicVolume::-moz-range-thumb{
+ width:11px!important;
+ height:11px!important;
+ border:2px solid #fff!important;
+ border-radius:50%!important;
+ background:#9f55ff!important;
+ box-shadow:0 0 0 3px rgba(159,85,255,.20)!important;
+}
+
+#musicVolumeValue{
+ font-size:9px!important;
+ font-weight:900!important;
+ color:#e9e1ff!important;
+ text-align:right!important;
+}
+
+/* NOOB label always stays in the exact center of the clicker. */
+#clicker{
+ position:relative!important;
+}
+
+#clickerWord,
+#clicker .clicker-word{
+ position:absolute!important;
+ top:50%!important;
+ left:50%!important;
+ right:auto!important;
+ bottom:auto!important;
+ margin:0!important;
+ translate:-50% -50%!important;
+ transform-origin:center center!important;
+ z-index:8!important;
+ display:block!important;
+ width:max-content!important;
+ max-width:82%!important;
+ text-align:center!important;
+ line-height:.92!important;
+ pointer-events:none!important;
+}

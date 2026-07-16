@@ -10,6 +10,8 @@ const MusicPlayer = (() => {
 
  let audio=null;
  let els={};
+ let autoplayWaiting=false;
+ let autoplayBound=false;
 
  function loadSaved(){
   try{
@@ -95,7 +97,7 @@ const MusicPlayer = (() => {
   player.muted=state.muted;
   player.load();
 
-  setStatus(track.title||file.split('/').pop());
+  setStatus('Teraz gra');
 
   if(autoplay){
    player.play().catch(()=>{
@@ -108,6 +110,48 @@ const MusicPlayer = (() => {
   render()
  }
 
+
+ function removeAutoplayUnlock(){
+  if(!autoplayBound)return;
+  autoplayBound=false;
+  document.removeEventListener('pointerdown',unlockAutoplay,true);
+  document.removeEventListener('keydown',unlockAutoplay,true);
+  document.removeEventListener('touchstart',unlockAutoplay,true)
+ }
+
+ function unlockAutoplay(){
+  if(!autoplayWaiting)return;
+  const player=ensureAudio();
+  player.play().then(()=>{
+   autoplayWaiting=false;
+   removeAutoplayUnlock();
+   setStatus('Teraz gra')
+  }).catch(()=>{})
+ }
+
+ function bindAutoplayUnlock(){
+  if(autoplayBound)return;
+  autoplayBound=true;
+  document.addEventListener('pointerdown',unlockAutoplay,true);
+  document.addEventListener('keydown',unlockAutoplay,true);
+  document.addEventListener('touchstart',unlockAutoplay,true)
+ }
+
+ function tryAutoplay(){
+  if(!playlist().length)return;
+
+  const player=ensureAudio();
+  player.play().then(()=>{
+   autoplayWaiting=false;
+   removeAutoplayUnlock();
+   setStatus('Teraz gra')
+  }).catch(()=>{
+   autoplayWaiting=true;
+   setStatus('Kliknij stronę, aby uruchomić muzykę');
+   bindAutoplayUnlock()
+  })
+ }
+
  function playPause(){
   const player=ensureAudio();
   if(!playlist().length){
@@ -117,7 +161,10 @@ const MusicPlayer = (() => {
   if(!player.src)loadTrack(false);
 
   if(player.paused){
-   player.play().catch(()=>{
+   player.play().then(()=>{
+    autoplayWaiting=false;
+    removeAutoplayUnlock()
+   }).catch(()=>{
     setStatus('Kliknij ponownie, aby uruchomić muzykę')
    })
   }else{
@@ -191,7 +238,8 @@ const MusicPlayer = (() => {
 
   if(playlist().length){
    state.index=Math.min(state.index,playlist().length-1);
-   loadTrack(false)
+   loadTrack(false);
+   tryAutoplay()
   }else{
    setStatus('Dodaj MP3 do assets/music i wpisy do playlisty')
   }
@@ -204,7 +252,8 @@ const MusicPlayer = (() => {
   previous,
   setVolume,
   toggleMute,
-  reloadPlaylist:()=>loadTrack(false)
+  reloadPlaylist:()=>loadTrack(false),
+  tryAutoplay
  }
 })();
 
