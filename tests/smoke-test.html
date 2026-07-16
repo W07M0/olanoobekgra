@@ -1,3 +1,17 @@
-<!doctype html><meta charset="utf-8">
-<button id=r>Test</button><div id=o></div><script>
-r.onclick=async()=>{let c=await fetch('../css/styles.css?v=06cframebordermask').then(x=>x.text());let a=[['Tło wypełnia wpis',c.includes('--row-background-texture,none')],['Ramka ma maskowany środek',c.includes('-webkit-mask-composite:xor')],['Standardowa maska',c.includes('mask-composite:exclude')],['Osobna grubość ramki',c.includes('--frame-thickness:4px')]];o.innerHTML=a.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Frame clip test</title>
+<button id="run">Uruchom test</button>
+<div id="out"></div>
+<script>
+run.onclick=async()=>{
+ const c=await fetch('../css/styles.css?v=06cframeclipfix',{cache:'no-store'}).then(r=>r.text());
+ const checks=[
+  ['overflow hidden',c.includes('overflow:hidden!important')],
+  ['rounded clip-path',c.includes('clip-path:inset(0 round 12px)!important')],
+  ['frame inset',c.includes('inset:1px!important')],
+  ['no leaking shadows',c.includes('box-shadow:none!important')]
+ ];
+ out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('');
+}
+</script>
