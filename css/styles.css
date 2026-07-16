@@ -2606,3 +2606,44 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  width:100%;
  min-height:42px;
 }
+
+/* 0.6c — working profile style texture previews */
+.profile-style-mini{
+ position:relative!important;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ background:none!important;
+ background-image:none!important;
+}
+.profile-style-mini::before{
+ content:""!important;
+ display:block!important;
+ position:absolute!important;
+ inset:4px!important;
+ z-index:0!important;
+ border-radius:7px!important;
+ background-image:var(--preview-background-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+.profile-style-mini::after{
+ content:""!important;
+ display:block!important;
+ position:absolute!important;
+ inset:0!important;
+ z-index:2!important;
+ pointer-events:none!important;
+ box-sizing:border-box!important;
+ padding:4px!important;
+ border-radius:10px!important;
+ background-image:var(--preview-frame-texture,none)!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0)!important;
+ -webkit-mask-composite:xor!important;
+ mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0)!important;
+ mask-composite:exclude!important;
+}
+.profile-style-mini>*{position:relative!important;z-index:3!important}

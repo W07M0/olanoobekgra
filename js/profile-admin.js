@@ -764,6 +764,68 @@ function renderAdminAllPets(save){
 }
 
 
+
+function adminParseIdList(value){
+ return [...new Set(String(value||'').split(',').map(item=>item.trim()).filter(Boolean))]
+}
+
+async function adminSaveWorldsAndSkins(){
+ if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
+ if(!adminEditedProfile)return toast('Najpierw pobierz profil gracza');
+
+ const button=$('#adminSaveWorldsSkins');
+ const status=$('#adminEditStatus');
+ const original=button?.textContent;
+
+ try{
+  if(button){button.disabled=true;button.textContent='Zapisywanie...'}
+
+  const save=adminCurrentRemoteSave();
+  const playerId=$('#adminEditPlayerId')?.value.trim();
+  if(!playerId)throw new Error('Brak Player ID');
+
+  const currentWorld=$('#adminEditWorld')?.value.trim()||save.currentWorld||save.activeWorld||'neon';
+  const activeSkin=$('#adminEditActiveSkin')?.value.trim()||save.activeSkin||'classic';
+  const unlockedWorlds=adminParseIdList($('#adminEditUnlockedWorlds')?.value);
+  const defeatedWorldBosses=adminParseIdList($('#adminEditWorldBosses')?.value);
+  const ownedSkins=adminParseIdList($('#adminEditOwnedSkins')?.value);
+
+  save.currentWorld=currentWorld;
+  save.activeWorld=currentWorld;
+  save.activeSkin=activeSkin;
+  save.unlockedWorlds=unlockedWorlds.length?unlockedWorlds:[currentWorld];
+  save.defeatedWorldBosses=defeatedWorldBosses;
+  save.ownedSkins=ownedSkins.length?ownedSkins:[activeSkin];
+
+  if(!save.unlockedWorlds.includes(currentWorld))save.unlockedWorlds.push(currentWorld);
+  if(!save.ownedSkins.includes(activeSkin))save.ownedSkins.push(activeSkin);
+
+  const result=await adminWithTimeout(
+   db.rpc('admin_update_player_full_profile',{
+    p_player_id:playerId,
+    p_player_name:save.playerName||adminEditedProfile.player_name||'Gracz',
+    p_save_data:normalizeAdminSaveIntegers(save)
+   }),
+   12000
+  );
+  if(result.error)throw result.error;
+
+  adminEditedProfile={...adminEditedProfile,player_name:save.playerName||adminEditedProfile.player_name,save_data:save,updated_at:new Date().toISOString()};
+  safeAdminRender('worlds and skins save',()=>populateAdminForm(save,adminEditedProfile));
+  if(status)status.textContent=`Zapisano światy (${save.unlockedWorlds.length}), bossów (${save.defeatedWorldBosses.length}) i skiny (${save.ownedSkins.length}).`;
+  toast('Światy i skiny zapisane');
+  return true
+ }catch(error){
+  console.error('Admin worlds and skins save:',error);
+  if(status)status.textContent='Błąd zapisu światów i skinów: '+(error.message||error);
+  toast('Nie udało się zapisać światów i skinów');
+  return false
+ }finally{
+  if(button){button.disabled=false;button.textContent=original}
+ }
+}
+window.adminSaveWorldsAndSkins=adminSaveWorldsAndSkins;
+
 async function adminGrantAllTestCosmetics(){
  if(typeof isAdminSession==='function'&&!isAdminSession()){
   return toast('Brak uprawnień administratora')
@@ -1386,3 +1448,10 @@ setTimeout(()=>{
  const button=$('#adminGrantTestCosmetics');
  if(button)button.onclick=adminGrantAllTestCosmetics
 },0);
+
+document.addEventListener('click',event=>{
+ const button=event.target.closest('#adminSaveWorldsSkins');
+ if(!button)return;
+ event.preventDefault();
+ adminSaveWorldsAndSkins()
+});

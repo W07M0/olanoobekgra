@@ -1730,6 +1730,10 @@ function renderProfileStyleSettings(){
  requestAnimationFrame(()=>{
   if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
  });
+
+ requestAnimationFrame(()=>{
+  if(typeof applyProfileStyleOptionTextures==='function')applyProfileStyleOptionTextures()
+ });
 }
 
 function equipProfileFrame(id){

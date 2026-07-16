@@ -124,6 +124,33 @@ function refreshVisibleTextures(){
 
  const clicker=document.querySelector('#clicker,.click-button,.main-click-button');
  applySkinTextureToElement(clicker,source.activeSkin||'classic')
+
+ applyProfileStyleOptionTextures();
+}
+
+
+function applyProfileStyleOptionTextures(){
+ document.querySelectorAll('[data-profile-frame]').forEach(button=>{
+  const preview=button.querySelector('.profile-style-mini');
+  if(!preview)return;
+  const frameId=button.dataset.profileFrame||'default';
+  const bgId=window.state?.profileBackground||'default';
+  const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frameId,'default');
+  const bgUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,bgId,'default');
+  preview.style.setProperty('--preview-frame-texture',frameUrl?`url("${frameUrl}")`:'none');
+  preview.style.setProperty('--preview-background-texture',bgUrl?`url("${bgUrl}")`:'none')
+ });
+
+ document.querySelectorAll('[data-profile-background]').forEach(button=>{
+  const preview=button.querySelector('.profile-style-mini');
+  if(!preview)return;
+  const frameId=window.state?.profileFrame||'default';
+  const bgId=button.dataset.profileBackground||'default';
+  const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frameId,'default');
+  const bgUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,bgId,'default');
+  preview.style.setProperty('--preview-frame-texture',frameUrl?`url("${frameUrl}")`:'none');
+  preview.style.setProperty('--preview-background-texture',bgUrl?`url("${bgUrl}")`:'none')
+ })
 }
 
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
@@ -136,6 +163,7 @@ window.applyTextureVariables=applyTextureVariables;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.refreshVisibleTextures=refreshVisibleTextures;
+window.applyProfileStyleOptionTextures=applyProfileStyleOptionTextures;
 document.addEventListener('DOMContentLoaded',()=>{
  requestAnimationFrame(()=>refreshVisibleTextures())
 });
