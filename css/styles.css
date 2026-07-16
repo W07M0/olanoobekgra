@@ -2417,3 +2417,53 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 .profile-style-preview::before{
  filter:none!important;
 }
+
+/* 0.6c — stronger inner clipping for profile frames */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ --frame-safe-inset:3px;
+ --frame-radius:10px;
+ border-radius:12px!important;
+ overflow:hidden!important;
+ clip-path:inset(0 round 12px)!important;
+}
+
+/*
+ The frame texture is now drawn inside a smaller rounded rectangle.
+ This prevents bright corners/edges from leaking beyond the outer row.
+*/
+.profile-style-preview::before,
+.board-row::before,
+.leaderboard-row::before{
+ inset:var(--frame-safe-inset)!important;
+ padding:3px!important;
+ border-radius:var(--frame-radius)!important;
+ clip-path:inset(0 round var(--frame-radius))!important;
+ overflow:hidden!important;
+ box-sizing:border-box!important;
+}
+
+/* Keep the dark readability layer under the inner frame edge. */
+.profile-style-preview::after,
+.board-row::after,
+.leaderboard-row::after{
+ inset:var(--frame-safe-inset)!important;
+ border-radius:var(--frame-radius)!important;
+ clip-path:inset(0 round var(--frame-radius))!important;
+}
+
+/* Prevent any inherited outline/glow from exceeding the row bounds. */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ outline:none!important;
+ filter:none!important;
+}
+
+/* Use an inner outline instead of an outer border/glow. */
+.board-row[data-frame]:not([data-frame="default"]),
+.leaderboard-row[data-frame]:not([data-frame="default"]),
+.profile-style-preview[data-frame]:not([data-frame="default"]){
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)!important;
+}

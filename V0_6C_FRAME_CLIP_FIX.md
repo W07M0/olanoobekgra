@@ -1,6 +1,7 @@
-# 0.6c Frame Clip Fix
+# 0.6c Frame Inner Clip Fix
 
-- Ramka i tło są przycinane do zaokrąglonego obszaru wpisu.
-- Ramka jest cofnięta o 1 px do środka.
-- Usunięto wyciekające cienie starszych stylów.
-- Paczka nie zawiera folderu `assets/textures/` ani żadnych PNG.
+- Ramka jest cofnięta o 3 px do środka.
+- Sama warstwa ramki ma osobny border-radius i clip-path.
+- Wyłączono zewnętrzne outline, glow i filter.
+- Zastosowano tylko wewnętrzny obrys.
+- Paczka nie zawiera folderu tekstur.
