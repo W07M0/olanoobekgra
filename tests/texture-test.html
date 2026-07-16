@@ -1,7 +1,48 @@
-<!doctype html><meta charset="utf-8"><title>Test tekstur</title>
-<style>body{font-family:system-ui;background:#111;color:white;padding:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{background:#222;padding:10px;border-radius:10px}img{width:100%;height:110px;object-fit:cover;background:#333}.ok{color:#71e38f}.bad{color:#ff7777}</style>
-<h1>Test tekstur</h1><div id="summary"></div><div class="grid" id="grid"></div>
-<script src="../js/textures.js?v=06ctextureloadfix"></script>
+<!doctype html>
+<meta charset="utf-8">
+<title>Test tekstur 0.6c</title>
+<style>
+body{font-family:system-ui;background:#111;color:#fff;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:#222;padding:10px;border-radius:10px}
+img{width:100%;height:110px;object-fit:cover;background:#333;border-radius:8px}
+.ok{color:#71e38f}.bad{color:#ff7777}
+code{word-break:break-all;color:#79e7ff}
+</style>
+<h1>Test tekstur</h1>
+<p>Główny katalog tekstur: <code id="root"></code></p>
+<div id="summary"></div>
+<div class="grid" id="grid"></div>
+<script src="../js/textures.js?v=06ctexturebasefix"></script>
 <script>
-(async()=>{const all=[...Object.entries(PROFILE_FRAME_TEXTURES).map(([i,p])=>['Ramka',i,p]),...Object.entries(PROFILE_BACKGROUND_TEXTURES).map(([i,p])=>['Tło',i,p]),...Object.entries(SKIN_TEXTURES).map(([i,p])=>['Skin',i,p])];let ok=0;for(const [t,i,p] of all){const u=texturePath({[i]:p},i);let good=false;try{good=(await fetch(u,{cache:'no-store'})).ok}catch{}if(good)ok++;grid.insertAdjacentHTML('beforeend',`<div class="card"><b>${t}: ${i}</b><p class="${good?'ok':'bad'}">${good?'✅ działa':'❌ brak'}</p><img src="${u}"><small>${p}</small></div>`)}summary.textContent=`Działa ${ok}/${all.length}`})();
+(async()=>{
+ root.textContent=String(TEXTURE_ROOT_URL);
+ const all=[
+  ...Object.entries(PROFILE_FRAME_TEXTURES).map(([i,p])=>['Ramka',i,p]),
+  ...Object.entries(PROFILE_BACKGROUND_TEXTURES).map(([i,p])=>['Tło',i,p]),
+  ...Object.entries(SKIN_TEXTURES).map(([i,p])=>['Skin',i,p])
+ ];
+ let ok=0;
+ for(const [type,id,path] of all){
+  const url=texturePath({[id]:path},id);
+  let good=false;
+  let status='';
+  try{
+   const response=await fetch(url,{cache:'no-store'});
+   good=response.ok;
+   status=`HTTP ${response.status}`;
+  }catch(error){
+   status=error.message;
+  }
+  if(good)ok++;
+  grid.insertAdjacentHTML('beforeend',`
+   <div class="card">
+    <b>${type}: ${id}</b>
+    <p class="${good?'ok':'bad'}">${good?'✅ działa':'❌ brak'} — ${status}</p>
+    <img src="${url}" alt="${id}">
+    <small><code>${url}</code></small>
+   </div>`);
+ }
+ summary.textContent=`Działa ${ok}/${all.length}`;
+})();
 </script>

@@ -25,11 +25,13 @@ const SKIN_TEXTURES={
   "void":"assets/textures/skins/void.png"
 };
 
-const TEXTURE_CACHE_VERSION='06ctextureloadfix';
+const TEXTURE_CACHE_VERSION='06ctexturebasefix';
+const TEXTURE_SCRIPT_URL=document.currentScript?.src||new URL('js/textures.js',document.baseURI).href;
+const TEXTURE_ROOT_URL=new URL('../',TEXTURE_SCRIPT_URL);
 function normalizeTextureUrl(path){
  if(!path)return '';
  const clean=String(path).replace(/^\.?\//,'');
- return new URL(clean,document.baseURI).href+`?v=${TEXTURE_CACHE_VERSION}`
+ return new URL(clean,TEXTURE_ROOT_URL).href+`?v=${TEXTURE_CACHE_VERSION}`
 }
 function texturePath(map,id,fallback='default'){
  return normalizeTextureUrl(map[id]||map[fallback]||'')
@@ -55,6 +57,7 @@ function textureStyleForProfile(frame='default',background='default'){
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
+window.TEXTURE_ROOT_URL=TEXTURE_ROOT_URL;
 window.texturePath=texturePath;
 window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
