@@ -33,7 +33,16 @@ function normalizeTextureUrl(path){
  const clean=String(path).replace(/^\.?\//,'');
  return new URL(clean,TEXTURE_ROOT_URL).href+`?v=${TEXTURE_CACHE_VERSION}`
 }
-function texturePath(map,id,fallback='default'){
+
+function resolveTextureId(map,id,fallback){
+ const raw=String(id||'').trim();
+ if(map[raw])return raw;
+ const lower=raw.toLowerCase();
+ const key=Object.keys(map).find(item=>item.toLowerCase()===lower);
+ return key||fallback
+}
+
+function texturePath(map,id,fallback='default'){id=resolveTextureId(map,id,fallback);
  return normalizeTextureUrl(map[id]||map[fallback]||'')
 }
 function applyTextureVariables(){

@@ -482,6 +482,17 @@ function collectionProgressData(){
  return{owned,total,percent,sections}
 }
 
+
+function getCollectionTab(){
+ return state.collectionTab||localStorage.getItem('noob_collection_tab')||'skins'
+}
+function setCollectionTab(tab){
+ const allowed=['skins','pets','frames','backgrounds','achievements'];
+ state.collectionTab=allowed.includes(tab)?tab:'skins';
+ localStorage.setItem('noob_collection_tab',state.collectionTab);
+ return state.collectionTab
+}
+
 function renderCollection(){
  const progress=collectionProgressData();
  const progressText=$('#collectionProgress');
@@ -588,7 +599,7 @@ function safeGameRender(name,callback){
   if(typeof saveDiagnostic==='function')saveDiagnostic('Render',`${name}: ${error.message}`,error.stack||'')
  }
 }
-function render(){
+function render(){ensureCosmeticUnlockAudit();syncClaimedAchievementRewards();
  if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}
  $('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
@@ -939,7 +950,28 @@ function achievementRewardLabel(a){
  const base=a.reward?`${a.reward[1]} ${currency}`:'Brak waluty';
  return a.special?`${base} + ${a.special.name}`:base
 }
-function renderAchievements(){
+
+
+function ensureCosmeticUnlockAudit(){
+ state.cosmeticUnlockAudit={
+  frames:["default", "arcade", "collector", "developer"],
+  backgrounds:["default", "wealth", "casino", "reflex"],
+  skins:["banana", "classic", "cyber", "dev", "glitch", "gold", "ice", "lava", "matrix", "rainbow", "toxic", "void"]
+ }
+}
+
+function syncClaimedAchievementRewards(){
+ const claimed=new Set([
+  ...(Array.isArray(state.claimedAchievements)?state.claimedAchievements:[]),
+  ...(Array.isArray(state.achievementsClaimed)?state.achievementsClaimed:[])
+ ]);
+ if(typeof achievements==='undefined'||!Array.isArray(achievements))return;
+ achievements.forEach(achievement=>{
+  if(claimed.has(achievement.id))grantAchievementRewardSafe(achievement)
+ })
+}
+
+function renderAchievements(){syncClaimedAchievementRewards();
  const grid=$('#achievementGrid');if(!grid)return;
  const category=state.achievementCategory||'all';
  const search=(state.achievementSearch||'').toLowerCase();
@@ -975,7 +1007,60 @@ function renderAchievements(){
  const searchBox=$('#achievementSearch');if(searchBox&&searchBox.value!==state.achievementSearch)searchBox.value=state.achievementSearch||'';
  const sortBox=$('#achievementSort');if(sortBox)sortBox.value=sort
 }
-function grantAchievementSpecial(a){
+
+function grantAchievementRewardSafe(achievement){
+ if(!achievement)return false;
+ const reward=achievement.special||achievement.rewardSpecial||achievement.reward_item;
+ if(!reward)return false;
+
+ state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)?state.ownedProfileFrames:['default'];
+ state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)?state.ownedProfileBackgrounds:['default'];
+ state.ownedSkins=Array.isArray(state.ownedSkins)?state.ownedSkins:['classic'];
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+
+ if(reward.type==='frame'){
+  if(!state.ownedProfileFrames.includes(reward.id))state.ownedProfileFrames.push(reward.id);
+  return true
+ }
+ if(reward.type==='background'){
+  if(!state.ownedProfileBackgrounds.includes(reward.id))state.ownedProfileBackgrounds.push(reward.id);
+  return true
+ }
+ if(reward.type==='skin'){
+  if(!state.ownedSkins.includes(reward.id))state.ownedSkins.push(reward.id);
+  return true
+ }
+ if(reward.type==='pet'){
+  const alreadyOwned=state.pets.some(pet=>pet.petId===reward.id||pet.id===reward.id);
+  if(!alreadyOwned){
+   state.pets.push({
+    uid:crypto.randomUUID?.()||('pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)),
+    petId:reward.id,
+    id:reward.id,
+    level:1,
+    exp:0,
+    evolution:0
+   })
+  }
+  return true
+ }
+ if(reward.type==='diamonds'){
+  state.diamonds=(Number(state.diamonds)||0)+(Number(reward.amount)||0);
+  return true
+ }
+ if(reward.type==='noobCoins'){
+  state.noobCoins=(Number(state.noobCoins)||0)+(Number(reward.amount)||0);
+  return true
+ }
+ if(reward.type==='multiplier'){
+  state.achievementMultipliers=state.achievementMultipliers||{};
+  state.achievementMultipliers[reward.id]=Math.max(Number(state.achievementMultipliers[reward.id])||1,Number(reward.value)||1);
+  return true
+ }
+ return false
+}
+
+function grantAchievementSpecial(a){if(grantAchievementRewardSafe(a))return;
  if(!a.special)return;
  const s=a.special;
  if(s.type==='frame'){
@@ -998,7 +1083,7 @@ function grantAchievementSpecial(a){
   state.achievementBonuses.petLuck=Math.max(state.achievementBonuses.petLuck||0,.05)
  }
 }
-function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;if(a.reward)state[a.reward[0]]+=a.reward[1];grantAchievementSpecial(a);state.claimedAchievements.push(id);syncProfileStyleRewardsFromAchievements();renderProfileStyleSettings();sfx('good');render();save()}
+function claimAchievement(id){let a=achievements.find(x=>x.id===id);if(!a||!a.test()||state.claimedAchievements.includes(id))return;if(a.reward)state[a.reward[0]]+=a.reward[1];grantAchievementSpecial(a);state.claimedAchievements.push(id);syncProfileStyleRewardsFromAchievements();renderProfileStyleSettings();renderLiveProfilePreview();sfx('good');render();save()}
 function renderDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000),can=today>last,rewards=[1,2,3,5,7,10,20];$('#dailyGrid').innerHTML=rewards.map((r,i)=>`<div class="daily ${i===state.dailyStreak%7?'today':''}"><b>Dzień ${i+1}</b><div>💎 ${r}</div></div>`).join('');$('#dailyBtn').disabled=!can;$('#dailyBtn').textContent=can?'Odbierz nagrodę':'Wróć jutro'}
 function claimDaily(){let today=Math.floor(Date.now()/86400000),last=Math.floor(state.lastDaily/86400000);if(today<=last)return;if(today-last>1)state.dailyStreak=0;let rewards=[1,2,3,5,7,10,20],r=rewards[state.dailyStreak%7];state.gems+=r;state.dailyStreak++;state.lastDaily=Date.now();confetti();sfx('good');toast('Dzienna nagroda: +'+r+' 💎');render()}
 
@@ -1688,7 +1773,22 @@ function normalizeProfileStyles(){
  if(!state.ownedProfileBackgrounds.includes(state.profileBackground))state.profileBackground='default'
 }
 
-function renderProfileStyleSettings(){
+
+function renderLiveProfilePreview(){
+ const preview=$('#profileStylePreview');
+ if(!preview)return;
+ const name=$('#profileStylePreviewName');
+ if(name)name.textContent=state.playerName||'Gracz';
+ const score=preview.querySelector('strong');
+ if(score)score.textContent=fmt(state.points||0)+' ⭐';
+ preview.dataset.frame=state.profileFrame||'default';
+ preview.dataset.background=state.profileBackground||'default';
+ if(typeof applyProfileTextureToElement==='function'){
+  applyProfileTextureToElement(preview,state.profileFrame||'default',state.profileBackground||'default')
+ }
+}
+
+function renderProfileStyleSettings(){renderLiveProfilePreview();
  syncProfileStyleRewardsFromAchievements();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
@@ -1743,7 +1843,7 @@ function equipProfileFrame(id){
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.profileStyleDirty=true;
- renderProfileStyleSettings();
+ renderProfileStyleSettings();renderLiveProfilePreview();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  save();
  const status=$('#profileStyleSaveStatus');
@@ -1757,7 +1857,7 @@ function equipProfileBackground(id){
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.profileStyleDirty=true;
- renderProfileStyleSettings();
+ renderProfileStyleSettings();renderLiveProfilePreview();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  save();
  const status=$('#profileStyleSaveStatus');

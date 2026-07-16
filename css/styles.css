@@ -2647,3 +2647,13 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  mask-composite:exclude!important;
 }
 .profile-style-mini>*{position:relative!important;z-index:3!important}
+
+/* 0.6c — persistent accurate profile preview */
+#profileStylePreview{
+ min-height:54px!important;
+ margin:12px 0 16px!important;
+}
+#profileStylePreview>*{
+ color:#fff!important;
+ text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 2px 4px rgba(0,0,0,.85)!important;
+}
