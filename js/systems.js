@@ -527,7 +527,7 @@ function setCollectionTab(tab){
  return state.collectionTab
 }
 
-function renderCollection(){
+function renderCollection(){syncClaimedAchievementRewards();
  const progress=collectionProgressData();
  const progressText=safe$('#collectionProgress');
  if(progressText)progressText.textContent=progress.percent+'%';
@@ -656,8 +656,6 @@ function render(){ensureCosmeticUnlockAudit();syncClaimedAchievementRewards();
 
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
-
- if(typeof forceApplySkinTexture==='function')forceApplySkinTexture();
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -805,7 +803,7 @@ function ensurePetState(){
  const valid=new Set(state.pets.map(p=>p?.uid||p?.instanceId||p?.id).filter(Boolean));
  state.equipped=[...new Set(state.equipped.filter(uid=>valid.has(uid)))].slice(0,3)
 }
-function renderPets(){
+function renderPets(){syncClaimedAchievementRewards();
  try{
   sanitizeEquippedPets();
   const setText=(s,v)=>{const el=safe$(s);if(el)el.textContent=v};
@@ -996,24 +994,193 @@ function ensureCosmeticUnlockAudit(){
  }
 }
 
+
+
+
+function getAchievementSpecialReward(achievement){
+ if(!achievement)return null;
+
+ return achievement.special||
+  achievement.specialReward||
+  achievement.rewardSpecial||
+  achievement.reward_item||
+  achievement.unlock||
+  (achievement.reward&&typeof achievement.reward==='object'
+   ?achievement.reward:null)||
+  (achievement.petReward
+   ?{type:'pet',id:achievement.petReward}:null)||
+  (achievement.frameReward
+   ?{type:'frame',id:achievement.frameReward}:null)||
+  (achievement.backgroundReward
+   ?{type:'background',id:achievement.backgroundReward}:null)||
+  (achievement.skinReward
+   ?{type:'skin',id:achievement.skinReward}:null)
+}
+
+function ensureAchievementRewardCollections(){
+ state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)
+  ?state.ownedProfileFrames:['default'];
+ state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)
+  ?state.ownedProfileBackgrounds:['default'];
+ state.ownedSkins=Array.isArray(state.ownedSkins)
+  ?state.ownedSkins:['classic'];
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+ state.discoveredPets=Array.isArray(state.discoveredPets)
+  ?state.discoveredPets:[];
+ state.petCollection=Array.isArray(state.petCollection)
+  ?state.petCollection:[]
+}
+
+function addPetRewardToCollection(petId){
+ if(!petId)return false;
+ ensureAchievementRewardCollections();
+
+ const alreadyOwned=state.pets.some(pet=>
+  pet?.petId===petId||
+  pet?.id===petId||
+  pet?.type===petId
+ );
+
+ if(!alreadyOwned){
+  state.pets.push({
+   uid:crypto.randomUUID?.()||
+    ('achievement_pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)),
+   petId,
+   id:petId,
+   level:1,
+   exp:0,
+   evolution:0,
+   source:'achievement'
+  })
+ }
+
+ if(!state.discoveredPets.includes(petId)){
+  state.discoveredPets.push(petId)
+ }
+ if(!state.petCollection.includes(petId)){
+  state.petCollection.push(petId)
+ }
+
+ return true
+}
+
+function grantAchievementRewardSafe(achievement){
+ const reward=getAchievementSpecialReward(achievement);
+ if(!reward)return false;
+
+ ensureAchievementRewardCollections();
+
+ const type=String(reward.type||reward.kind||'').toLowerCase();
+ const id=
+  reward.id||
+  reward.petId||
+  reward.skinId||
+  reward.frameId||
+  reward.backgroundId;
+
+ if(type==='pet')return addPetRewardToCollection(id);
+
+ if(type==='frame'){
+  if(id&&!state.ownedProfileFrames.includes(id)){
+   state.ownedProfileFrames.push(id)
+  }
+  return !!id
+ }
+
+ if(type==='background'||type==='profilebackground'){
+  if(id&&!state.ownedProfileBackgrounds.includes(id)){
+   state.ownedProfileBackgrounds.push(id)
+  }
+  return !!id
+ }
+
+ if(type==='skin'){
+  if(id&&!state.ownedSkins.includes(id)){
+   state.ownedSkins.push(id)
+  }
+  return !!id
+ }
+
+ if(type==='diamonds'||type==='gems'){
+  const amount=Number(reward.amount??reward.value)||0;
+  state.gems=(Number(state.gems)||0)+amount;
+  return amount>0
+ }
+
+ if(type==='noobcoins'||type==='coins'){
+  const amount=Number(reward.amount??reward.value)||0;
+  state.coins=(Number(state.coins)||0)+amount;
+  return amount>0
+ }
+
+ if(type==='multiplier'){
+  state.achievementMultipliers=state.achievementMultipliers||{};
+  if(id){
+   state.achievementMultipliers[id]=Math.max(
+    Number(state.achievementMultipliers[id])||1,
+    Number(reward.value)||1
+   )
+  }
+  return !!id
+ }
+
+ return false
+}
+
+function achievementIsClaimed(achievement){
+ const id=achievement?.id;
+ if(!id)return false;
+
+ return [
+  state.claimedAchievements,
+  state.achievementsClaimed,
+  state.unlockedAchievements,
+  state.achievements
+ ].some(collection=>
+  Array.isArray(collection)&&collection.includes(id)
+ )
+}
+
 function syncClaimedAchievementRewards(){
- const claimed=new Set([
-  ...(Array.isArray(state.claimedAchievements)?state.claimedAchievements:[]),
-  ...(Array.isArray(state.achievementsClaimed)?state.achievementsClaimed:[])
- ]);
  if(typeof achievements==='undefined'||!Array.isArray(achievements))return;
+
  achievements.forEach(achievement=>{
-  if(claimed.has(achievement.id))grantAchievementRewardSafe(achievement)
+  if(achievementIsClaimed(achievement)){
+   grantAchievementRewardSafe(achievement)
+  }
  })
 }
 
-function renderAchievements(){syncClaimedAchievementRewards();
+function isSecretAchievement(achievement){
+ return !!(
+  achievement?.secret||
+  achievement?.isSecret||
+  achievement?.hidden||
+  achievement?.visibility==='secret'
+ )
+}
+
+function isAchievementUnlocked(achievement){
+ if(!achievement)return false;
+ if(achievementIsClaimed(achievement))return true;
+
+ const id=achievement.id;
+ return [
+  state.unlockedAchievements,
+  state.completedAchievements,
+  state.achievementUnlocks
+ ].some(collection=>
+  Array.isArray(collection)&&collection.includes(id)
+ )
+}
+
+function renderAchievements(){syncClaimedAchievementRewards();syncClaimedAchievementRewards();
  const grid=safe$('#achievementGrid');if(!grid)return;
  const category=state.achievementCategory||'all';
  const search=(state.achievementSearch||'').toLowerCase();
  const sort=state.achievementSort||'ready';
 
- let list=achievements.filter(a=>(category==='all'||a.category===category)&&(!search||(a.name+' '+a.desc).toLowerCase().includes(search)));
+ let list=achievements.filter(a=>(!isSecretAchievement(a)||isAchievementUnlocked(a))&&(category==='all'||a.category===category)&&(!search||(a.name+' '+a.desc).toLowerCase().includes(search)));
  const info=a=>{
   const current=Math.max(0,Number(typeof a.progress==='function'?a.progress():(a.test()?1:0))||0);
   const target=Math.max(1,Number(a.target||1));
@@ -1044,59 +1211,9 @@ function renderAchievements(){syncClaimedAchievementRewards();
  const sortBox=safe$('#achievementSort');if(sortBox)sortBox.value=sort
 }
 
-function grantAchievementRewardSafe(achievement){
- if(!achievement)return false;
- const reward=achievement.special||achievement.rewardSpecial||achievement.reward_item;
- if(!reward)return false;
 
- state.ownedProfileFrames=Array.isArray(state.ownedProfileFrames)?state.ownedProfileFrames:['default'];
- state.ownedProfileBackgrounds=Array.isArray(state.ownedProfileBackgrounds)?state.ownedProfileBackgrounds:['default'];
- state.ownedSkins=Array.isArray(state.ownedSkins)?state.ownedSkins:['classic'];
- state.pets=Array.isArray(state.pets)?state.pets:[];
 
- if(reward.type==='frame'){
-  if(!state.ownedProfileFrames.includes(reward.id))state.ownedProfileFrames.push(reward.id);
-  return true
- }
- if(reward.type==='background'){
-  if(!state.ownedProfileBackgrounds.includes(reward.id))state.ownedProfileBackgrounds.push(reward.id);
-  return true
- }
- if(reward.type==='skin'){
-  if(!state.ownedSkins.includes(reward.id))state.ownedSkins.push(reward.id);
-  return true
- }
- if(reward.type==='pet'){
-  const alreadyOwned=state.pets.some(pet=>pet.petId===reward.id||pet.id===reward.id);
-  if(!alreadyOwned){
-   state.pets.push({
-    uid:crypto.randomUUID?.()||('pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)),
-    petId:reward.id,
-    id:reward.id,
-    level:1,
-    exp:0,
-    evolution:0
-   })
-  }
-  return true
- }
- if(reward.type==='diamonds'){
-  state.diamonds=(Number(state.diamonds)||0)+(Number(reward.amount)||0);
-  return true
- }
- if(reward.type==='noobCoins'){
-  state.noobCoins=(Number(state.noobCoins)||0)+(Number(reward.amount)||0);
-  return true
- }
- if(reward.type==='multiplier'){
-  state.achievementMultipliers=state.achievementMultipliers||{};
-  state.achievementMultipliers[reward.id]=Math.max(Number(state.achievementMultipliers[reward.id])||1,Number(reward.value)||1);
-  return true
- }
- return false
-}
-
-function grantAchievementSpecial(a){if(grantAchievementRewardSafe(a))return;
+function grantAchievementSpecial(a){if(grantAchievementRewardSafe(a))return;if(grantAchievementRewardSafe(a))return;
  if(!a.special)return;
  const s=a.special;
  if(s.type==='frame'){
@@ -1712,7 +1829,6 @@ function equipSkin(id){
  if(!state.ownedSkins.includes(id))return toast('Nie posiadasz tego skina');
 
  state.activeSkin=id;
- if(typeof forceApplySkinTexture==='function')forceApplySkinTexture();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.activeSkinRevision=Date.now();
