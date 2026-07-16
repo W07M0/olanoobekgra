@@ -3051,3 +3051,69 @@ body [id="clicker"]{
  right:auto!important;
  bottom:auto!important;
 }
+
+/* 0.6c — final NOOB text position lock */
+
+/*
+ Skin classes and keyframes were still changing transform/translate.
+ Position is now controlled only by the anchor.
+*/
+#clicker .clicker-word-anchor{
+ position:absolute!important;
+ inset:0!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ z-index:20!important;
+ pointer-events:none!important;
+ transform:none!important;
+ translate:none!important;
+ animation:none!important;
+ perspective:none!important;
+}
+
+#clicker .clicker-word-anchor #clickerWord,
+#clicker .clicker-word-anchor .clicker-word{
+ position:static!important;
+ inset:auto!important;
+ top:auto!important;
+ right:auto!important;
+ bottom:auto!important;
+ left:auto!important;
+
+ margin:0!important;
+ padding:0!important;
+
+ transform:none!important;
+ translate:none!important;
+ rotate:none!important;
+ scale:1!important;
+
+ animation-name:none!important;
+ animation-duration:0s!important;
+ animation-delay:0s!important;
+ animation-iteration-count:1!important;
+
+ width:auto!important;
+ max-width:82%!important;
+ text-align:center!important;
+ line-height:.9!important;
+ transform-origin:center!important;
+}
+
+/* Prevent skin-specific selectors from moving the label. */
+body [data-skin] #clickerWord,
+body[class*="skin-"] #clickerWord,
+#clicker[class*="skin-"] #clickerWord,
+#clicker[data-skin-texture] #clickerWord{
+ position:static!important;
+ top:auto!important;
+ left:auto!important;
+ right:auto!important;
+ bottom:auto!important;
+ transform:none!important;
+ translate:none!important;
+ rotate:none!important;
+ scale:1!important;
+ animation-name:none!important;
+}
