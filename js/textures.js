@@ -58,22 +58,20 @@ function textureStyleForProfile(frame='default',background='default'){
 function applyProfileTextureToElement(element,frame='default',background='default'){
  if(!element)return;
 
- const layers=ensureSafeProfileLayers(element);
- if(!layers)return;
-
  const safeFrame=frame||'default';
  const safeBackground=background||'default';
 
  const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,safeFrame,'default');
  const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,safeBackground,'default');
 
- layers.frame.style.backgroundImage=frameUrl?`url("${frameUrl}")`:'none';
- layers.background.style.backgroundImage=backgroundUrl?`url("${backgroundUrl}")`:'none';
-
- layers.frame.dataset.textureType='frame';
- layers.frame.dataset.textureId=safeFrame;
- layers.background.dataset.textureType='background';
- layers.background.dataset.textureId=safeBackground;
+ element.style.setProperty(
+  '--profile-row-frame',
+  frameUrl?`url("${frameUrl}")`:'none'
+ );
+ element.style.setProperty(
+  '--profile-row-background',
+  backgroundUrl?`url("${backgroundUrl}")`:'none'
+ );
 
  element.dataset.frame=safeFrame;
  element.dataset.background=safeBackground
@@ -91,75 +89,8 @@ function applySkinTextureToElement(element,skin='classic'){
 
 function refreshVisibleTextures(){
  const source=window.state||{};
+
  applyTextureVariables();
-
- const preview=document.querySelector('#profileStylePreview');
- applyProfileTextureToElement(
-  preview,
-  source.profileFrame||'default',
-  source.profileBackground||'default'
- );
-
- document.querySelectorAll('[data-profile-frame]').forEach(button=>{
-  const id=button.dataset.profileFrame||'default';
-  const mini=button.querySelector('.profile-style-mini');
-  if(!mini)return;
-  const url=texturePath(PROFILE_FRAME_TEXTURES,id);
-  mini.style.backgroundImage=url?`url("${url}")`:'none'
- });
-
- document.querySelectorAll('[data-profile-background]').forEach(button=>{
-  const id=button.dataset.profileBackground||'default';
-  const mini=button.querySelector('.profile-style-mini');
-  if(!mini)return;
-  const url=texturePath(PROFILE_BACKGROUND_TEXTURES,id);
-  mini.style.backgroundImage=url?`url("${url}")`:'none'
- });
-
- const clicker=document.querySelector('#clicker,.click-button,.main-click-button');
- applySkinTextureToElement(clicker,source.activeSkin||'classic')
-}
-
-
-function ensureSafeProfileLayers(element){
- if(!element)return null;
-
- let background=element.querySelector(':scope > .profile-layer-background');
- let frame=element.querySelector(':scope > .profile-layer-frame');
-
- if(!background){
-  background=document.createElement('span');
-  background.className='profile-layer-background';
-  background.setAttribute('aria-hidden','true');
-  element.prepend(background)
- }
-
- if(!frame){
-  frame=document.createElement('span');
-  frame.className='profile-layer-frame';
-  frame.setAttribute('aria-hidden','true');
-  element.append(frame)
- }
-
- return{background,frame}
-}
-
-function applyProfileTextureToElement(element,frame='default',background='default'){
- if(!element)return;
-
- const layers=ensureSafeProfileLayers(element);
- const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frame);
- const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
-
- layers.background.style.backgroundImage=backgroundUrl?`url("${backgroundUrl}")`:'none';
- layers.frame.style.backgroundImage=frameUrl?`url("${frameUrl}")`:'none';
-
- element.dataset.frame=frame;
- element.dataset.background=background
-}
-
-function refreshSafeProfileLayers(){
- const source=window.state||{};
 
  applyProfileTextureToElement(
   document.querySelector('#profileStylePreview'),
@@ -168,10 +99,31 @@ function refreshSafeProfileLayers(){
  );
 
  document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
-  const frame=row.getAttribute('data-frame')||'default';
-  const background=row.getAttribute('data-background')||'default';
-  applyProfileTextureToElement(row,frame,background)
- })
+  applyProfileTextureToElement(
+   row,
+   row.getAttribute('data-frame')||'default',
+   row.getAttribute('data-background')||'default'
+  )
+ });
+
+ document.querySelectorAll('[data-profile-frame]').forEach(button=>{
+  const id=button.dataset.profileFrame||'default';
+  const mini=button.querySelector('.profile-style-mini');
+  if(!mini)return;
+  const url=texturePath(PROFILE_FRAME_TEXTURES,id,'default');
+  mini.style.backgroundImage=url?`url("${url}")`:'none'
+ });
+
+ document.querySelectorAll('[data-profile-background]').forEach(button=>{
+  const id=button.dataset.profileBackground||'default';
+  const mini=button.querySelector('.profile-style-mini');
+  if(!mini)return;
+  const url=texturePath(PROFILE_BACKGROUND_TEXTURES,id,'default');
+  mini.style.backgroundImage=url?`url("${url}")`:'none'
+ });
+
+ const clicker=document.querySelector('#clicker,.click-button,.main-click-button');
+ applySkinTextureToElement(clicker,source.activeSkin||'classic')
 }
 
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
@@ -182,13 +134,8 @@ window.texturePath=texturePath;
 window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
-window.ensureSafeProfileLayers=ensureSafeProfileLayers;
-window.refreshSafeProfileLayers=refreshSafeProfileLayers;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.refreshVisibleTextures=refreshVisibleTextures;
 document.addEventListener('DOMContentLoaded',()=>{
- requestAnimationFrame(()=>{
-  applyTextureVariables();
-  refreshSafeProfileLayers()
- })
+ requestAnimationFrame(()=>refreshVisibleTextures())
 });

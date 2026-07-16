@@ -258,9 +258,13 @@ function profileTextureStyle(frame,background){
 
 
 function applyLeaderboardTextures(){
- if(typeof window.refreshSafeProfileLayers==='function'){
-  window.refreshSafeProfileLayers()
- }
+ document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
+  const frame=row.dataset.frame||'default';
+  const background=row.dataset.background||'default';
+  if(typeof window.applyProfileTextureToElement==='function'){
+   window.applyProfileTextureToElement(row,frame,background)
+  }
+ })
 }
 
 function renderBoard(){
@@ -287,7 +291,6 @@ function renderBoard(){
  }).join(''):'<p class="muted">Brak wyników.</p>'
 
  requestAnimationFrame(()=>{
-  applyLeaderboardTextures();
   if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
  });
 }

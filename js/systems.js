@@ -1726,10 +1726,6 @@ function renderProfileStyleSettings(){
  requestAnimationFrame(()=>{
   if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
  });
-
- requestAnimationFrame(()=>{
-  if(typeof refreshSafeProfileLayers==='function')refreshSafeProfileLayers()
- });
 }
 
 function equipProfileFrame(id){
