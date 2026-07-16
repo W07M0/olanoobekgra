@@ -113,6 +113,82 @@ function refreshVisibleTextures(){
  applySkinTextureToElement(clicker,source.activeSkin||'classic')
 }
 
+
+function ensureProfileVisualLayers(element){
+ if(!element)return null;
+
+ let background=element.querySelector(':scope > .profile-visual-bg');
+ let frame=element.querySelector(':scope > .profile-visual-frame');
+ let content=element.querySelector(':scope > .profile-visual-content');
+
+ if(!background){
+  background=document.createElement('div');
+  background.className='profile-visual-bg';
+  element.prepend(background)
+ }
+
+ if(!frame){
+  frame=document.createElement('div');
+  frame.className='profile-visual-frame';
+  element.append(frame)
+ }
+
+ if(!content){
+  content=document.createElement('div');
+  content.className='profile-visual-content';
+
+  [...element.childNodes].forEach(node=>{
+   if(
+    node===background||
+    node===frame||
+    node===content||
+    (node.nodeType===1&&node.classList?.contains('profile-visual-bg'))||
+    (node.nodeType===1&&node.classList?.contains('profile-visual-frame'))
+   )return;
+   content.append(node)
+  });
+
+  element.append(content)
+ }
+
+ return{background,frame,content}
+}
+
+function applyProfileTextureToElement(element,frame='default',background='default'){
+ if(!element)return;
+
+ const layers=ensureProfileVisualLayers(element);
+ if(!layers)return;
+
+ const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frame);
+ const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
+
+ layers.background.style.backgroundImage=backgroundUrl?`url("${backgroundUrl}")`:'none';
+ layers.frame.style.backgroundImage=frameUrl?`url("${frameUrl}")`:'none';
+
+ element.dataset.frame=frame;
+ element.dataset.background=background
+}
+
+function rebuildProfileVisualLayers(){
+ const source=window.state||{};
+
+ const preview=document.querySelector('#profileStylePreview');
+ applyProfileTextureToElement(
+  preview,
+  source.profileFrame||'default',
+  source.profileBackground||'default'
+ );
+
+ document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
+  applyProfileTextureToElement(
+   row,
+   row.dataset.frame||'default',
+   row.dataset.background||'default'
+  )
+ })
+}
+
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
@@ -120,6 +196,9 @@ window.TEXTURE_ROOT_URL=TEXTURE_ROOT_URL;
 window.texturePath=texturePath;
 window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
+window.ensureProfileVisualLayers=ensureProfileVisualLayers;
+window.applyProfileTextureToElement=applyProfileTextureToElement;
+window.rebuildProfileVisualLayers=rebuildProfileVisualLayers;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.refreshVisibleTextures=refreshVisibleTextures;

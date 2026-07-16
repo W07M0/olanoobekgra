@@ -2367,103 +2367,106 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  background-position:center!important;
 }
 
-/* 0.6c — frame/background clipping fix */
+/* 0.6c — rebuilt profile visual layer system */
+
 .profile-style-preview,
 .board-row,
 .leaderboard-row{
  position:relative!important;
  overflow:hidden!important;
- border-radius:12px!important;
- clip-path:inset(0 round 12px)!important;
- contain:paint;
-}
-
-/* Keep both image layers strictly inside the rounded row. */
-.profile-style-preview::before,
-.board-row::before,
-.leaderboard-row::before,
-.profile-style-preview::after,
-.board-row::after,
-.leaderboard-row::after{
- border-radius:inherit!important;
- overflow:hidden!important;
-}
-
-/* Pull the decorative frame slightly inward so it never leaks outside. */
-.profile-style-preview::before,
-.board-row::before,
-.leaderboard-row::before{
- inset:1px!important;
- width:auto!important;
- height:auto!important;
-}
-
-/* The background itself follows the same rounded clipping. */
-.profile-style-preview,
-.board-row,
-.leaderboard-row{
- background-clip:padding-box!important;
-}
-
-/* Avoid shadows from older frame classes escaping outside the row. */
-.board-row,
-.leaderboard-row,
-.profile-style-preview{
+ isolation:isolate!important;
+ border-radius:14px!important;
+ background:none!important;
+ background-image:none!important;
  box-shadow:none!important;
 }
 
-.board-row::before,
-.leaderboard-row::before,
-.profile-style-preview::before{
- filter:none!important;
-}
-
-/* 0.6c — stronger inner clipping for profile frames */
-.profile-style-preview,
-.board-row,
-.leaderboard-row{
- --frame-safe-inset:3px;
- --frame-radius:10px;
- border-radius:12px!important;
- overflow:hidden!important;
- clip-path:inset(0 round 12px)!important;
-}
-
-/*
- The frame texture is now drawn inside a smaller rounded rectangle.
- This prevents bright corners/edges from leaking beyond the outer row.
-*/
+/* Old pseudo-element system is disabled. */
 .profile-style-preview::before,
-.board-row::before,
-.leaderboard-row::before{
- inset:var(--frame-safe-inset)!important;
- padding:3px!important;
- border-radius:var(--frame-radius)!important;
- clip-path:inset(0 round var(--frame-radius))!important;
- overflow:hidden!important;
- box-sizing:border-box!important;
-}
-
-/* Keep the dark readability layer under the inner frame edge. */
 .profile-style-preview::after,
+.board-row::before,
 .board-row::after,
+.leaderboard-row::before,
 .leaderboard-row::after{
- inset:var(--frame-safe-inset)!important;
- border-radius:var(--frame-radius)!important;
- clip-path:inset(0 round var(--frame-radius))!important;
+ content:none!important;
+ display:none!important;
+ background:none!important;
 }
 
-/* Prevent any inherited outline/glow from exceeding the row bounds. */
+/* BACKGROUND: always inside the frame. */
+.profile-visual-bg{
+ position:absolute;
+ inset:6px;
+ z-index:1;
+ border-radius:9px;
+ overflow:hidden;
+ background-size:cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ pointer-events:none;
+}
+
+/* Optional readability layer only inside the background area. */
+.profile-visual-bg::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ border-radius:inherit;
+ background:linear-gradient(
+  90deg,
+  rgba(5,7,18,.32),
+  rgba(5,7,18,.12) 30%,
+  rgba(5,7,18,.12) 70%,
+  rgba(5,7,18,.32)
+ );
+}
+
+/* FRAME: full size, always above the background. */
+.profile-visual-frame{
+ position:absolute;
+ inset:0;
+ z-index:3;
+ border-radius:inherit;
+ background-size:100% 100%;
+ background-position:center;
+ background-repeat:no-repeat;
+ pointer-events:none;
+}
+
+/* TEXT / VALUES */
+.profile-visual-content{
+ position:relative;
+ z-index:4;
+ width:100%;
+ min-height:100%;
+ display:grid;
+ grid-template-columns:auto 1fr auto;
+ align-items:center;
+ gap:10px;
+ padding:8px 12px;
+ box-sizing:border-box;
+}
+
+.profile-style-preview .profile-visual-content{
+ min-height:52px;
+}
+
+.board-row .profile-visual-content,
+.leaderboard-row .profile-visual-content{
+ min-height:40px;
+}
+
+/* Prevent old nested styles from creating extra backgrounds. */
+.profile-visual-content>*{
+ position:relative!important;
+ z-index:1!important;
+ background-image:none!important;
+}
+
+/* The actual row clips everything, including frame corners. */
 .profile-style-preview,
 .board-row,
 .leaderboard-row{
- outline:none!important;
- filter:none!important;
-}
-
-/* Use an inner outline instead of an outer border/glow. */
-.board-row[data-frame]:not([data-frame="default"]),
-.leaderboard-row[data-frame]:not([data-frame="default"]),
-.profile-style-preview[data-frame]:not([data-frame="default"]){
- box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)!important;
+ clip-path:inset(0 round 14px)!important;
+ contain:paint;
 }

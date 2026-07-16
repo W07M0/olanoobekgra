@@ -294,6 +294,11 @@ function renderBoard(){
   applyLeaderboardTextures();
   if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
  });
+
+ requestAnimationFrame(()=>{
+  if(typeof applyLeaderboardTextures==='function')applyLeaderboardTextures();
+  if(typeof rebuildProfileVisualLayers==='function')rebuildProfileVisualLayers()
+ });
 }
 async function saveOnline(){
  if(!state.playerName)return toast('Ustaw nick w Ustawieniach');

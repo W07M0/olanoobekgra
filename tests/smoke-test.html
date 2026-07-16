@@ -1,17 +1,18 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Frame clip test</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
+<!doctype html><meta charset="utf-8">
+<button id="r">Test</button><div id="o"></div>
 <script>
-run.onclick=async()=>{
- const c=await fetch('../css/styles.css?v=06cframeclipfix',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['overflow hidden',c.includes('overflow:hidden!important')],
-  ['rounded clip-path',c.includes('clip-path:inset(0 round 12px)!important')],
-  ['frame inset',c.includes('inset:1px!important')],
-  ['no leaking shadows',c.includes('box-shadow:none!important')]
+r.onclick=async()=>{
+ const t=await fetch('../js/textures.js?v=06cprofilelayers').then(x=>x.text());
+ const c=await fetch('../css/styles.css?v=06cprofilelayers').then(x=>x.text());
+ const p=await fetch('../js/profile-admin.js?v=06cprofilelayers').then(x=>x.text());
+ const a=[
+  ['Osobna warstwa tła',t.includes('profile-visual-bg')],
+  ['Osobna warstwa ramki',t.includes('profile-visual-frame')],
+  ['Osobna warstwa treści',t.includes('profile-visual-content')],
+  ['Tło ma inset 6px',c.includes('.profile-visual-bg')&&c.includes('inset:6px')],
+  ['Ramka pełny rozmiar',c.includes('.profile-visual-frame')&&c.includes('inset:0')],
+  ['Ranking przebudowuje warstwy',p.includes('applyLeaderboardTextures')]
  ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('');
+ o.innerHTML=a.map(([n,ok])=>`<p>${ok?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>
