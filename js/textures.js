@@ -93,6 +93,23 @@ function applyProfileTextureToElement(element,frame='default',background='defaul
 
 
 
+
+function ensureSkinTextureImage(){
+ const clicker=findMainClickerElement();
+ if(!clicker)return null;
+
+ let image=clicker.querySelector('#skinTextureImage,.skin-texture-image');
+ if(!image){
+  image=document.createElement('img');
+  image.id='skinTextureImage';
+  image.className='skin-texture-image';
+  image.alt='';
+  image.setAttribute('aria-hidden','true');
+  clicker.prepend(image)
+ }
+ return image
+}
+
 function findSkinTextureTarget(){
  const clicker=findMainClickerElement();
  if(!clicker)return null;
@@ -111,21 +128,18 @@ function applySkinTextureToElement(element,skin='classic'){
  const clicker=element||findMainClickerElement();
  if(!clicker)return;
 
- const target=findSkinTextureTarget()||clicker;
+ const image=ensureSkinTextureImage();
  const safeSkin=resolveTextureId(SKIN_TEXTURES,skin,'classic');
  const skinUrl=texturePath(SKIN_TEXTURES,safeSkin,'classic');
- const texture=skinUrl?`url("${skinUrl}")`:'none';
 
- clicker.style.setProperty('--skin-texture',texture);
- target.style.setProperty('--skin-texture',texture);
-
- target.style.setProperty('background-image',texture,'important');
- target.style.setProperty('background-size','cover','important');
- target.style.setProperty('background-position','center','important');
- target.style.setProperty('background-repeat','no-repeat','important');
-
+ clicker.style.setProperty('--skin-texture',skinUrl?`url("${skinUrl}")`:'none');
  clicker.dataset.skinTexture=safeSkin;
- target.dataset.skinTexture=safeSkin
+
+ if(image){
+  image.dataset.skinTexture=safeSkin;
+  image.src=skinUrl||'';
+  image.hidden=!skinUrl
+ }
 }
 
 function refreshVisibleTextures(){
@@ -209,12 +223,30 @@ function forceReloadTextures(){
 }
 
 function forceApplySkinTexture(){
+ bindSkinTextureDiagnostics();
  const skin=window.state?.activeSkin||'classic';
  const apply=()=>applySkinTextureToElement(findMainClickerElement(),skin);
  requestAnimationFrame(()=>{
   apply();
   setTimeout(apply,0);
   setTimeout(apply,100)
+ })
+}
+
+
+function bindSkinTextureDiagnostics(){
+ const image=ensureSkinTextureImage();
+ if(!image||image.dataset.diagnosticsBound)return;
+ image.dataset.diagnosticsBound='1';
+
+ image.addEventListener('load',()=>{
+  image.dataset.textureLoaded='true';
+  image.hidden=false
+ });
+
+ image.addEventListener('error',()=>{
+  image.dataset.textureLoaded='false';
+  console.error('Nie udało się wczytać tekstury skina:',image.src)
  })
 }
 
@@ -229,8 +261,10 @@ window.applyProfileTextureToElement=applyProfileTextureToElement;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.findMainClickerElement=findMainClickerElement;
 window.findSkinTextureTarget=findSkinTextureTarget;
+window.ensureSkinTextureImage=ensureSkinTextureImage;
 window.refreshActiveSkinTexture=refreshActiveSkinTexture;
 window.forceApplySkinTexture=forceApplySkinTexture;
+window.bindSkinTextureDiagnostics=bindSkinTextureDiagnostics;
 window.refreshVisibleTextures=refreshVisibleTextures;
 window.forceReloadTextures=forceReloadTextures;
 window.applyProfileStyleOptionTextures=applyProfileStyleOptionTextures;

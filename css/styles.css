@@ -2738,3 +2738,67 @@ body [id="clicker"]{
  position:relative!important;
  z-index:2!important;
 }
+
+/* 0.6c — real image element for equipped skin texture */
+#clicker{
+ position:relative!important;
+ overflow:hidden!important;
+ isolation:isolate!important;
+}
+
+/* Actual PNG — cannot be overwritten by CSS background shorthands. */
+#clicker .skin-texture-image{
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ display:block!important;
+ z-index:0!important;
+ object-fit:cover!important;
+ object-position:center!important;
+ border-radius:inherit!important;
+ pointer-events:none!important;
+ opacity:1!important;
+ visibility:visible!important;
+ filter:none!important;
+ transform:none!important;
+}
+
+/* Existing FX remain above the image. */
+#clicker .skin-fx{
+ position:absolute!important;
+ inset:0!important;
+ z-index:2!important;
+ pointer-events:none!important;
+}
+
+/* NOOB word remains above image and effects. */
+#clicker .clicker-word{
+ position:relative!important;
+ z-index:3!important;
+}
+
+/* Do not use the old clicker background as the visible skin surface. */
+#clicker{
+ background-image:none!important;
+ background-color:#24133d!important;
+}
+
+/* Soft lighting only; never opaque enough to hide the PNG. */
+#clicker::before{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ z-index:1!important;
+ pointer-events:none!important;
+ border-radius:inherit!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(0,0,0,.08))!important;
+ mix-blend-mode:soft-light!important;
+}
+
+/* Existing ::after tint must stay translucent. */
+#clicker::after{
+ z-index:2!important;
+ opacity:.18!important;
+ pointer-events:none!important;
+}
