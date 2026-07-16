@@ -25,16 +25,37 @@ const SKIN_TEXTURES={
   "void":"assets/textures/skins/void.png"
 };
 
-function texturePath(map,id,fallback='default'){return map[id]||map[fallback]||''}
+const TEXTURE_CACHE_VERSION='06ctextureloadfix';
+function normalizeTextureUrl(path){
+ if(!path)return '';
+ const clean=String(path).replace(/^\.?\//,'');
+ return new URL(clean,document.baseURI).href+`?v=${TEXTURE_CACHE_VERSION}`
+}
+function texturePath(map,id,fallback='default'){
+ return normalizeTextureUrl(map[id]||map[fallback]||'')
+}
 function applyTextureVariables(){
- const frame=state?.profileFrame||'default';
- const background=state?.profileBackground||'default';
- const skin=state?.activeSkin||'classic';
- document.documentElement.style.setProperty('--profile-frame-texture',`url("${texturePath(PROFILE_FRAME_TEXTURES,frame)}")`);
- document.documentElement.style.setProperty('--profile-background-texture',`url("${texturePath(PROFILE_BACKGROUND_TEXTURES,background)}")`);
- document.documentElement.style.setProperty('--skin-texture',`url("${texturePath(SKIN_TEXTURES,skin,'classic')}")`);
+ const source=window.state||{};
+ const frame=source.profileFrame||'default';
+ const background=source.profileBackground||'default';
+ const skin=source.activeSkin||'classic';
+ const root=document.documentElement;
+ const f=texturePath(PROFILE_FRAME_TEXTURES,frame);
+ const b=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
+ const s=texturePath(SKIN_TEXTURES,skin,'classic');
+ root.style.setProperty('--profile-frame-texture',f?`url("${f}")`:'none');
+ root.style.setProperty('--profile-background-texture',b?`url("${b}")`:'none');
+ root.style.setProperty('--skin-texture',s?`url("${s}")`:'none');
+}
+function textureStyleForProfile(frame='default',background='default'){
+ const f=texturePath(PROFILE_FRAME_TEXTURES,frame);
+ const b=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
+ return `--row-frame-texture:${f?`url("${f}")`:'none'};--row-background-texture:${b?`url("${b}")`:'none'}`
 }
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
+window.texturePath=texturePath;
+window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
+document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>applyTextureVariables()));

@@ -248,9 +248,9 @@ async function loadBoard(){
 }
 
 function profileTextureStyle(frame,background){
- const framePath=window.PROFILE_FRAME_TEXTURES?.[frame]||window.PROFILE_FRAME_TEXTURES?.default||'';
- const backgroundPath=window.PROFILE_BACKGROUND_TEXTURES?.[background]||window.PROFILE_BACKGROUND_TEXTURES?.default||'';
- return `--row-frame-texture:url("${framePath}");--row-background-texture:url("${backgroundPath}")`
+ return typeof window.textureStyleForProfile==='function'
+  ?window.textureStyleForProfile(frame,background)
+  :''
 }
 
 function renderBoard(){
@@ -271,7 +271,7 @@ function renderBoard(){
   const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
   const frame=save.profileFrame||row.profile_frame||'default';
   const background=save.profileBackground||row.profile_background||'default';
-  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" style="${profileTextureStyle(frame,background)}">
+  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" style="${profileTextureStyle(frame,background)}" data-frame="${frame}" data-background="${background}">
    <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
   </div>`
  }).join(''):'<p class="muted">Brak wyników.</p>'

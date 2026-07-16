@@ -608,6 +608,8 @@ function render(){
  safeGameRender('renderCollection',()=>typeof renderCollection==='function'&&renderCollection());
 
  safeGameRender('renderProfileStyleSettings',()=>typeof renderProfileStyleSettings==='function'&&renderProfileStyleSettings());
+
+ if(typeof applyTextureVariables==='function')applyTextureVariables();
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
