@@ -2282,3 +2282,87 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 .profile-style-option{
  background-image:none!important;
 }
+
+/* 0.6c — frame texture is a border, not a second background */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ --frame-thickness:4px;
+}
+
+/* Background fills the whole row. */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ background-image:var(--row-background-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/*
+ Frame PNG may be a full image.
+ CSS automatically cuts out the middle and leaves only the edge ring.
+*/
+.profile-style-preview::before,
+.board-row::before,
+.leaderboard-row::before{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ box-sizing:border-box!important;
+ padding:var(--frame-thickness)!important;
+ z-index:3!important;
+ pointer-events:none!important;
+
+ background-image:var(--row-frame-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+
+ -webkit-mask:
+  linear-gradient(#000 0 0) content-box,
+  linear-gradient(#000 0 0)!important;
+ -webkit-mask-composite:xor!important;
+
+ mask:
+  linear-gradient(#000 0 0) content-box,
+  linear-gradient(#000 0 0)!important;
+ mask-composite:exclude!important;
+
+ border-radius:inherit!important;
+}
+
+/* Readability overlay stays inside the frame. */
+.profile-style-preview::after,
+.board-row::after,
+.leaderboard-row::after{
+ z-index:2!important;
+ inset:var(--frame-thickness)!important;
+ border-radius:calc(inherit - var(--frame-thickness));
+}
+
+/* Text is above background, overlay and frame. */
+.profile-style-preview>*,
+.board-row>*,
+.leaderboard-row>*{
+ position:relative!important;
+ z-index:5!important;
+}
+
+/* Slightly thicker border in the larger settings preview. */
+.profile-style-preview{
+ --frame-thickness:5px;
+}
+
+/* Frame thumbnails display the whole artwork only as a preview. */
+[data-profile-frame] .profile-style-mini{
+ background-size:cover!important;
+ background-position:center!important;
+}
+
+/* Background thumbnails remain full-area previews. */
+[data-profile-background] .profile-style-mini{
+ background-size:cover!important;
+ background-position:center!important;
+}

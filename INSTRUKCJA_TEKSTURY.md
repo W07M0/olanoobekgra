@@ -73,3 +73,13 @@ Nie musisz już zachowywać dokładnej rozdzielczości placeholdera.
 
 Dla ramek i teł nadal najlepiej sprawdzają się szerokie obrazy.
 Dla skinów najlepiej wyglądają obrazy kwadratowe, ale inne formaty również zadziałają.
+
+
+## Różnica między ramką a tłem
+
+- Tło wypełnia cały wpis rankingu.
+- Ramka jest automatycznie wycinana do krawędzi wpisu.
+- PNG ramki nadal może być pełnym obrazem bez przezroczystego środka.
+- Gra maskuje jego środek i zostawia tylko pas przy brzegach.
+
+Najważniejsze elementy grafiki ramki umieszczaj blisko krawędzi obrazu.
