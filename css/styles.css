@@ -2697,3 +2697,7 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 .main-click-button[style]{
  background-image:var(--skin-texture,none)!important;
 }
+
+.texture-refresh-tools{margin:8px 0}
+.texture-cache-version{display:block;margin:0 0 6px;opacity:.75}
+#forceReloadTextures{width:100%}

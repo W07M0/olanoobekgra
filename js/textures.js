@@ -25,7 +25,12 @@ const SKIN_TEXTURES={
   "void":"assets/textures/skins/void.png"
 };
 
-const TEXTURE_CACHE_VERSION='06ctexturebasefix';
+const TEXTURE_PAGE_PARAMS=new URLSearchParams(window.location.search);
+const TEXTURE_CACHE_VERSION=
+ TEXTURE_PAGE_PARAMS.get('textures')||
+ TEXTURE_PAGE_PARAMS.get('texturev')||
+ TEXTURE_PAGE_PARAMS.get('v')||
+ '06cdynamictexturecache';
 const TEXTURE_SCRIPT_URL=document.currentScript?.src||new URL('js/textures.js',document.baseURI).href;
 const TEXTURE_ROOT_URL=new URL('../',TEXTURE_SCRIPT_URL);
 function normalizeTextureUrl(path){
@@ -179,6 +184,12 @@ function refreshActiveSkinTexture(){
  applySkinTextureToElement(clicker,source.activeSkin||'classic')
 }
 
+
+function forceReloadTextures(){
+ const url=new URL(window.location.href);
+ url.searchParams.set('textures','tex_'+Date.now());
+ window.location.replace(url.href)
+}
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
@@ -191,7 +202,19 @@ window.applySkinTextureToElement=applySkinTextureToElement;
 window.findMainClickerElement=findMainClickerElement;
 window.refreshActiveSkinTexture=refreshActiveSkinTexture;
 window.refreshVisibleTextures=refreshVisibleTextures;
+window.forceReloadTextures=forceReloadTextures;
 window.applyProfileStyleOptionTextures=applyProfileStyleOptionTextures;
 document.addEventListener('DOMContentLoaded',()=>{
  requestAnimationFrame(()=>refreshVisibleTextures())
+});
+
+document.addEventListener('click',event=>{
+ const button=event.target.closest('#forceReloadTextures');
+ if(!button)return;
+ event.preventDefault();
+ forceReloadTextures()
+});
+document.addEventListener('DOMContentLoaded',()=>{
+ const label=document.querySelector('#textureCacheVersion');
+ if(label)label.textContent='Wersja tekstur: '+TEXTURE_CACHE_VERSION
 });
