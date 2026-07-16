@@ -1,17 +1,3 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Test elastycznych tekstur 0.6c</title>
-<button id="run">Uruchom test</button>
-<div id="out"></div>
-<script>
-run.onclick=async()=>{
- const c=await fetch('../css/styles.css?v=06cflextextures',{cache:'no-store'}).then(r=>r.text());
- const checks=[
-  ['Ramki używają cover',c.includes('.board-row::before')&&c.includes('background-size:cover!important')],
-  ['Skiny są kadrowane centralnie',c.includes('background-position:center center!important')],
-  ['Miniatury obsługują różne rozmiary',c.includes('.profile-style-mini')],
-  ['Dostępny tryb contain',c.includes('.texture-contain')]
- ];
- out.innerHTML=checks.map(([name,ok])=>`<p>${ok?'✅':'❌'} ${name}</p>`).join('')
-}
-</script>
+<!doctype html><meta charset="utf-8">
+<button id=r>Test</button><div id=o></div><script>
+r.onclick=async()=>{let t=await fetch('../js/textures.js?v=06ctextureapplyfix').then(x=>x.text()),p=await fetch('../js/profile-admin.js?v=06ctextureapplyfix').then(x=>x.text()),c=await fetch('../css/styles.css?v=06ctextureapplyfix').then(x=>x.text());let a=[['Nakładanie na element',t.includes('applyProfileTextureToElement')],['Odświeżanie widocznych tekstur',t.includes('refreshVisibleTextures')],['Miniatury ramek',t.includes("data-profile-frame")],['Wiersze rankingu',p.includes('applyLeaderboardTextures')],['Dane ramki w wierszu',p.includes('data-frame="${frame}"')],['CSS ramki',c.includes('--row-frame-texture,none')]];o.innerHTML=a.map(x=>`<p>${x[1]?'✅':'❌'} ${x[0]}</p>`).join('')}</script>

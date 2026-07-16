@@ -610,6 +610,7 @@ function render(){
  safeGameRender('renderProfileStyleSettings',()=>typeof renderProfileStyleSettings==='function'&&renderProfileStyleSettings());
 
  if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -1563,6 +1564,7 @@ function skinCriticalLabel(){
 }
 
 function applySkin(){if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  try{
   const storedSkin=localStorage.getItem('unc_active_skin');
   const storedRevision=Number(localStorage.getItem('unc_active_skin_revision')||0);
@@ -1590,6 +1592,7 @@ function equipSkin(id){
 
  state.activeSkin=id;
  if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.activeSkinRevision=Date.now();
  localStorage.setItem('unc_active_skin',id);
  localStorage.setItem('unc_active_skin_revision',String(state.activeSkinRevision));
@@ -1688,6 +1691,7 @@ function normalizeProfileStyles(){
 function renderProfileStyleSettings(){
  syncProfileStyleRewardsFromAchievements();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  normalizeProfileStyles();
 
  const frameOptions=$('#profileFrameOptions');
@@ -1718,6 +1722,10 @@ function renderProfileStyleSettings(){
    </button>
   `).join('')
  }
+
+ requestAnimationFrame(()=>{
+  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
+ });
 }
 
 function equipProfileFrame(id){
@@ -1725,8 +1733,10 @@ function equipProfileFrame(id){
  if(!state.ownedProfileFrames.includes(id))return;
  state.profileFrame=id;
  if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.profileStyleDirty=true;
  renderProfileStyleSettings();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  save();
  const status=$('#profileStyleSaveStatus');
  if(status)status.textContent='Niezapisane zmiany wyglądu.'
@@ -1737,8 +1747,10 @@ function equipProfileBackground(id){
  if(!state.ownedProfileBackgrounds.includes(id))return;
  state.profileBackground=id;
  if(typeof applyTextureVariables==='function')applyTextureVariables();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.profileStyleDirty=true;
  renderProfileStyleSettings();
+ if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  save();
  const status=$('#profileStyleSaveStatus');
  if(status)status.textContent='Niezapisane zmiany wyglądu.'

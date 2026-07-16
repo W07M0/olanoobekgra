@@ -54,6 +54,65 @@ function textureStyleForProfile(frame='default',background='default'){
  const b=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
  return `--row-frame-texture:${f?`url("${f}")`:'none'};--row-background-texture:${b?`url("${b}")`:'none'}`
 }
+
+function applyProfileTextureToElement(element,frame='default',background='default'){
+ if(!element)return;
+ const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frame);
+ const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
+
+ element.style.setProperty(
+  '--row-frame-texture',
+  frameUrl?`url("${frameUrl}")`:'none'
+ );
+ element.style.setProperty(
+  '--row-background-texture',
+  backgroundUrl?`url("${backgroundUrl}")`:'none'
+ );
+ element.dataset.frame=frame;
+ element.dataset.background=background
+}
+
+function applySkinTextureToElement(element,skin='classic'){
+ if(!element)return;
+ const skinUrl=texturePath(SKIN_TEXTURES,skin,'classic');
+ element.style.setProperty(
+  '--skin-texture',
+  skinUrl?`url("${skinUrl}")`:'none'
+ );
+ element.dataset.skinTexture=skin
+}
+
+function refreshVisibleTextures(){
+ const source=window.state||{};
+ applyTextureVariables();
+
+ const preview=document.querySelector('#profileStylePreview');
+ applyProfileTextureToElement(
+  preview,
+  source.profileFrame||'default',
+  source.profileBackground||'default'
+ );
+
+ document.querySelectorAll('[data-profile-frame]').forEach(button=>{
+  const id=button.dataset.profileFrame||'default';
+  const mini=button.querySelector('.profile-style-mini');
+  if(!mini)return;
+  const url=texturePath(PROFILE_FRAME_TEXTURES,id);
+  mini.style.backgroundImage=url?`url("${url}")`:'none'
+ });
+
+ document.querySelectorAll('[data-profile-background]').forEach(button=>{
+  const id=button.dataset.profileBackground||'default';
+  const mini=button.querySelector('.profile-style-mini');
+  if(!mini)return;
+  const url=texturePath(PROFILE_BACKGROUND_TEXTURES,id);
+  mini.style.backgroundImage=url?`url("${url}")`:'none'
+ });
+
+ const clicker=document.querySelector('#clicker,.click-button,.main-click-button');
+ applySkinTextureToElement(clicker,source.activeSkin||'classic')
+}
+
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
@@ -61,4 +120,9 @@ window.TEXTURE_ROOT_URL=TEXTURE_ROOT_URL;
 window.texturePath=texturePath;
 window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
-document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>applyTextureVariables()));
+window.applyProfileTextureToElement=applyProfileTextureToElement;
+window.applySkinTextureToElement=applySkinTextureToElement;
+window.refreshVisibleTextures=refreshVisibleTextures;
+document.addEventListener('DOMContentLoaded',()=>{
+ requestAnimationFrame(()=>refreshVisibleTextures())
+});

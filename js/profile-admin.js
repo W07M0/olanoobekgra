@@ -245,12 +245,26 @@ async function loadBoard(){
   onlineBoard=[];
   renderBoard()
  }
+
+ if(typeof renderBoard==='function')renderBoard();
+ requestAnimationFrame(()=>applyLeaderboardTextures());
 }
 
 function profileTextureStyle(frame,background){
  return typeof window.textureStyleForProfile==='function'
   ?window.textureStyleForProfile(frame,background)
   :''
+}
+
+
+function applyLeaderboardTextures(){
+ document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
+  const frame=row.dataset.frame||'default';
+  const background=row.dataset.background||'default';
+  if(typeof window.applyProfileTextureToElement==='function'){
+   window.applyProfileTextureToElement(row,frame,background)
+  }
+ })
 }
 
 function renderBoard(){
@@ -271,10 +285,15 @@ function renderBoard(){
   const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
   const frame=save.profileFrame||row.profile_frame||'default';
   const background=save.profileBackground||row.profile_background||'default';
-  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" style="${profileTextureStyle(frame,background)}" data-frame="${frame}" data-background="${background}">
+  return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" data-frame="${frame}" data-background="${background}">
    <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
   </div>`
  }).join(''):'<p class="muted">Brak wyników.</p>'
+
+ requestAnimationFrame(()=>{
+  applyLeaderboardTextures();
+  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
+ });
 }
 async function saveOnline(){
  if(!state.playerName)return toast('Ustaw nick w Ustawieniach');

@@ -2197,3 +2197,88 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  position:relative!important;
  z-index:5!important;
 }
+
+/* 0.6c — explicit UI texture application */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ position:relative!important;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ background-image:var(--row-background-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+.profile-style-preview::before,
+.board-row::before,
+.leaderboard-row::before{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ display:block!important;
+ z-index:1!important;
+ opacity:1!important;
+ visibility:visible!important;
+ pointer-events:none!important;
+ background-image:var(--row-frame-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ border-radius:inherit!important;
+}
+
+.profile-style-preview::after,
+.board-row::after,
+.leaderboard-row::after{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ z-index:2!important;
+ pointer-events:none!important;
+ background:linear-gradient(
+  90deg,
+  rgba(5,7,18,.38),
+  rgba(5,7,18,.16) 25%,
+  rgba(5,7,18,.20) 75%,
+  rgba(5,7,18,.38)
+ )!important;
+ border-radius:inherit!important;
+}
+
+.profile-style-preview>*,
+.board-row>*,
+.leaderboard-row>*{
+ position:relative!important;
+ z-index:5!important;
+}
+
+.profile-style-mini{
+ position:relative!important;
+ overflow:hidden!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ color:#fff!important;
+ text-shadow:0 2px 5px #000!important;
+}
+
+.profile-style-mini::after{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ z-index:1!important;
+ background:rgba(5,7,18,.22)!important;
+}
+
+.profile-style-option b,
+.profile-style-mini{
+ position:relative!important;
+ z-index:2!important;
+}
+
+/* Remove old generated texture from the text button itself. */
+.profile-style-option{
+ background-image:none!important;
+}
