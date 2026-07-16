@@ -10,6 +10,28 @@ const safe$=selector=>{
  }
 };
 
+function setTextSafe(selector,value){
+ const element=safe$(selector);
+ if(element)element.textContent=value
+}
+function setDisabledSafe(selector,value){
+ const element=safe$(selector);
+ if(element)element.disabled=!!value
+}
+function setStyleSafe(selector,property,value){
+ const element=safe$(selector);
+ if(element)element.style[property]=value
+}
+function setCssPropertySafe(selector,property,value){
+ const element=safe$(selector);
+ if(element)element.style.setProperty(property,value)
+}
+function toggleClassSafe(selector,className,value){
+ const element=safe$(selector);
+ if(element)element.classList.toggle(className,!!value)
+}
+
+
 
 /* v0.6 stable runtime fallbacks */
 
@@ -573,22 +595,22 @@ function renderHud(){
  refreshBossUnlockUi();try{
  const activeBoss=typeof boss!=='undefined'?boss:null;
 
- {const el=safe$('#points');if(el)el.textContent=fmt(state.points);}
+ setTextSafe('#points',fmt(state.points));const playerTitle=safe$('#playerTitle');if(playerTitle)playerTitle.remove();
  if(safe$('#gems'))safe$('#gems').textContent=fmt(state.gems);
  if(safe$('#coins'))safe$('#coins').textContent=fmt(state.coins);
  $$('[data-bind="points"]').forEach(e=>e.textContent=fmt(state.points));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
- {const el=safe$('#perClick');if(el)el.textContent=fmt(clickValue());}
+ setTextSafe('#perClick',fmt(clickValue()));setTextSafe('#pps',fmt(pps()));setTextSafe('#level',state.level);setTextSafe('#multiplier','x'+totalMultiplier().toFixed(2));
  {const el=safe$('#pps');if(el)el.textContent=fmt(pps());}
  {const el=safe$('#level');if(el)el.textContent=state.level;}
  {const el=safe$('#multiplier');if(el)el.textContent='x'+totalMultiplier().toFixed(2);}
- safe$('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';
+ setStyleSafe('#xpBar','width',Math.min(100,state.xp/needXp()*100)+'%');setTextSafe('#expMult','x'+expMultiplier().toFixed(2));setTextSafe('#xpNeed',fmt(Math.max(0,needXp()-state.xp)));refreshComboDisplay();toggleClassSafe('#combo','hot',combo>=8);setCssPropertySafe('#aura','--combo',Math.min(100,combo/20*100)+'%');
  {const el=safe$('#expMult');if(el)el.textContent='x'+expMultiplier().toFixed(2);}
  {const el=safe$('#xpNeed');if(el)el.textContent=fmt(Math.max(0,needXp()-state.xp));}
  refreshComboDisplay();
  safe$('#combo').classList.toggle('hot',combo>=8);
  safe$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
- {const el=safe$('#quickClickCost');if(el)el.textContent='Koszt: '+fmt(state.clickCost);}
+ setTextSafe('#quickClickCost','Koszt: '+fmt(state.clickCost));setTextSafe('#quickAutoCost','Koszt: '+fmt(state.autoCost));setDisabledSafe('#quickClick',state.points<state.clickCost);setDisabledSafe('#quickAuto',state.points<state.autoCost);
  {const el=safe$('#quickAutoCost');if(el)el.textContent='Koszt: '+fmt(state.autoCost);}
  safe$('#quickClick').disabled=state.points<state.clickCost;
  safe$('#quickAuto').disabled=state.points<state.autoCost;
@@ -615,16 +637,16 @@ function render(){ensureCosmeticUnlockAudit();syncClaimedAchievementRewards();
  if(typeof renderHud==='function'){try{renderHud()}catch(error){console.error('renderHud:',error)}}
  safe$('[data-bind="points"]')?.replaceChildren(document.createTextNode(fmt(state.points)));
  $$('[data-bind="gems"]').forEach(e=>e.textContent=fmt(state.gems));$$('[data-bind="coins"]').forEach(e=>e.textContent=fmt(state.coins));
- {const el=safe$('#points');if(el)el.textContent=fmt(state.points);if(safe$('#playerTitle'))safe$('#playerTitle').remove();}
+ setTextSafe('#points',fmt(state.points));const playerTitle=safe$('#playerTitle');if(playerTitle)playerTitle.remove();
  if(safe$('#gems'))safe$('#gems').textContent=fmt(state.gems);if(safe$('#coins'))safe$('#coins').textContent=fmt(state.coins);
- {const el=safe$('#perClick');if(el)el.textContent=fmt(clickValue());safe$('#pps').textContent=fmt(pps());safe$('#level').textContent=state.level;safe$('#multiplier').textContent='x'+totalMultiplier().toFixed(2);}
- safe$('#xpBar').style.width=Math.min(100,state.xp/needXp()*100)+'%';safe$('#expMult').textContent='x'+expMultiplier().toFixed(2);safe$('#xpNeed').textContent=fmt(Math.max(0,needXp()-state.xp));refreshComboDisplay();safe$('#combo').classList.toggle('hot',combo>=8);safe$('#aura').style.setProperty('--combo',Math.min(100,combo/20*100)+'%');
- {const el=safe$('#quickClickCost');if(el)el.textContent='Koszt: '+fmt(state.clickCost);safe$('#quickAutoCost').textContent='Koszt: '+fmt(state.autoCost);safe$('#quickClick').disabled=state.points<state.clickCost;safe$('#quickAuto').disabled=state.points<state.autoCost;}
- {const el=safe$('#rebirthGain');if(el)el.textContent=rebirthGain()+' 🟡';safe$('#rebirthBtn').disabled=rebirthGain()<1;}
- {const el=safe$('#soundBtn');if(el)el.textContent=state.sound?'🔊':'🔇';safe$('#musicBtn').textContent=state.music?'🎶':'🎵';}
+ setTextSafe('#perClick',fmt(clickValue()));setTextSafe('#pps',fmt(pps()));setTextSafe('#level',state.level);setTextSafe('#multiplier','x'+totalMultiplier().toFixed(2));
+ setStyleSafe('#xpBar','width',Math.min(100,state.xp/needXp()*100)+'%');setTextSafe('#expMult','x'+expMultiplier().toFixed(2));setTextSafe('#xpNeed',fmt(Math.max(0,needXp()-state.xp)));refreshComboDisplay();toggleClassSafe('#combo','hot',combo>=8);setCssPropertySafe('#aura','--combo',Math.min(100,combo/20*100)+'%');
+ setTextSafe('#quickClickCost','Koszt: '+fmt(state.clickCost));setTextSafe('#quickAutoCost','Koszt: '+fmt(state.autoCost));setDisabledSafe('#quickClick',state.points<state.clickCost);setDisabledSafe('#quickAuto',state.points<state.autoCost);
+ setTextSafe('#rebirthGain',rebirthGain()+' 🟡');setDisabledSafe('#rebirthBtn',rebirthGain()<1);
+ setTextSafe('#soundBtn',state.sound?'🔊':'🔇');setTextSafe('#musicBtn',state.music?'🎶':'🎵');
  document.body.dataset.world=state.world;
  let cw=world();document.documentElement.style.setProperty('--worldAccent',cw.accent||'#ff3e9d');
- {const el=safe$('#worldEmoji');if(el)el.textContent=cw.emoji;safe$('#worldName').textContent=cw.name;safe$('#worldFlavor').textContent=cw.desc;}
+ setTextSafe('#worldEmoji',cw.emoji);setTextSafe('#worldName',cw.name);setTextSafe('#worldFlavor',cw.desc);
  if(typeof renderFeatureLocks==='function'){try{renderFeatureLocks()}catch(error){console.error('renderFeatureLocks:',error)}}applyFeatureViewLocks();if(typeof renderPatchNotes==='function'){try{renderPatchNotes()}catch(error){console.error('renderPatchNotes:',error)}}if(typeof renderCollection==='function'){try{renderCollection()}catch(error){console.error('renderCollection:',error)}}if(typeof renderDiagnostics==='function'){try{renderDiagnostics()}catch(error){console.error('renderDiagnostics:',error)}}if(typeof renderPets==='function'){try{renderPets()}catch(error){console.error('renderPets:',error)}}if(typeof renderShop==='function'){try{renderShop()}catch(error){console.error('renderShop:',error)}}if(typeof renderWorlds==='function'){try{renderWorlds()}catch(error){console.error('renderWorlds:',error)}}if(typeof renderSkins==='function'){try{renderSkins()}catch(error){console.error('renderSkins:',error)}}if(typeof renderCasino==='function'){try{renderCasino()}catch(error){console.error('renderCasino:',error)}}if(typeof renderMiniCooldowns==='function')if(typeof renderMiniCooldowns==='function'){try{renderMiniCooldowns()}catch(error){console.error('renderMiniCooldowns:',error)}}if(typeof renderMiniStats==='function'){try{renderMiniStats()}catch(error){console.error('renderMiniStats:',error)}}if(typeof renderAchievements==='function'){try{renderAchievements()}catch(error){console.error('renderAchievements:',error)}}safeGameRender('renderQuests',()=>typeof renderQuests==='function'&&renderQuests());renderStats();safeGameRender('renderSettingsStatistics',()=>typeof renderSettingsStatistics==='function'&&renderSettingsStatistics());safeGameRender('renderDaily',()=>typeof renderDaily==='function'&&renderDaily());safeGameRender('renderBoard',()=>typeof renderBoard==='function'&&renderBoard());applySkin();save()
  if(typeof refreshBossUnlockUi==='function')refreshBossUnlockUi();
 
