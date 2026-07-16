@@ -86,14 +86,24 @@ function applyProfileTextureToElement(element,frame='default',background='defaul
  element.dataset.background=safeBackground
 }
 
+
+function findMainClickerElement(){
+ return document.querySelector(
+  '#noobButton,#clicker,#mainClicker,#clickButton,.noob-button,.click-button,.main-click-button,[data-main-clicker]'
+ )
+}
+
 function applySkinTextureToElement(element,skin='classic'){
  if(!element)return;
- const skinUrl=texturePath(SKIN_TEXTURES,skin,'classic');
- element.style.setProperty(
-  '--skin-texture',
-  skinUrl?`url("${skinUrl}")`:'none'
- );
- element.dataset.skinTexture=skin
+ const safeSkin=resolveTextureId(SKIN_TEXTURES,skin,'classic');
+ const skinUrl=texturePath(SKIN_TEXTURES,safeSkin,'classic');
+
+ element.style.setProperty('--skin-texture',skinUrl?`url("${skinUrl}")`:'none');
+ element.style.backgroundImage=skinUrl?`url("${skinUrl}")`:'';
+ element.style.backgroundSize='cover';
+ element.style.backgroundPosition='center';
+ element.style.backgroundRepeat='no-repeat';
+ element.dataset.skinTexture=safeSkin
 }
 
 function refreshVisibleTextures(){
@@ -131,7 +141,7 @@ function refreshVisibleTextures(){
   mini.style.backgroundImage=url?`url("${url}")`:'none'
  });
 
- const clicker=document.querySelector('#clicker,.click-button,.main-click-button');
+ const clicker=findMainClickerElement();
  applySkinTextureToElement(clicker,source.activeSkin||'classic')
 
  applyProfileStyleOptionTextures();
@@ -162,6 +172,13 @@ function applyProfileStyleOptionTextures(){
  })
 }
 
+
+function refreshActiveSkinTexture(){
+ const source=window.state||{};
+ const clicker=findMainClickerElement();
+ applySkinTextureToElement(clicker,source.activeSkin||'classic')
+}
+
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
@@ -171,6 +188,8 @@ window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
 window.applySkinTextureToElement=applySkinTextureToElement;
+window.findMainClickerElement=findMainClickerElement;
+window.refreshActiveSkinTexture=refreshActiveSkinTexture;
 window.refreshVisibleTextures=refreshVisibleTextures;
 window.applyProfileStyleOptionTextures=applyProfileStyleOptionTextures;
 document.addEventListener('DOMContentLoaded',()=>{

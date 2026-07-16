@@ -2657,3 +2657,43 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  color:#fff!important;
  text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 2px 4px rgba(0,0,0,.85)!important;
 }
+
+/* 0.6c — make equipped skin texture visible on the real clicker */
+#noobButton,
+#clicker,
+#mainClicker,
+#clickButton,
+.noob-button,
+.click-button,
+.main-click-button,
+[data-main-clicker]{
+ background-image:var(--skin-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/* Keep decorative gradients as overlays instead of replacing the PNG. */
+#noobButton::before,
+#clicker::before,
+#mainClicker::before,
+#clickButton::before,
+.noob-button::before,
+.click-button::before,
+.main-click-button::before,
+[data-main-clicker]::before{
+ background-image:var(--skin-overlay,linear-gradient(135deg,rgba(255,255,255,.15),rgba(0,0,0,.15)))!important;
+ mix-blend-mode:soft-light;
+ pointer-events:none;
+}
+
+/* Any old inline gradient/background class must not override the equipped texture. */
+#noobButton[style],
+#clicker[style],
+#mainClicker[style],
+#clickButton[style],
+.noob-button[style],
+.click-button[style],
+.main-click-button[style]{
+ background-image:var(--skin-texture,none)!important;
+}
