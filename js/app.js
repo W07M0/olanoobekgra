@@ -541,15 +541,94 @@ async function submitMinigameScore(game,score){
  if(error)console.warn('Minigame ranking:',error.message)
 }
 async function loadMinigameLeaderboards(){
- const box=$('#minigameLeaderboards');if(!box)return;
- const names={aim:'🎯 Aim Accuracy',parkour:'🛒 Noob Rider',reflex:'⚡ Reflex',dodge:'🧠 Dodge'};
+ const box=$('#minigameLeaderboards');
+ if(!box)return;
+
+ const names={
+  aim:'🎯 Aim Accuracy',
+  parkour:'🛒 Noob Rider',
+  reflex:'⚡ Reflex',
+  dodge:'🧠 Dodge'
+ };
+
+ const cosmeticByPlayer=new Map();
+
  if(db){
   for(const game of Object.keys(names)){
-   const {data,error}=await db.from('minigame_scores').select('player_name,score').eq('game',game).order('score',{ascending:false}).limit(3);
+   const {data,error}=await db
+    .from('minigame_scores')
+    .select('player_id,player_name,score')
+    .eq('game',game)
+    .order('score',{ascending:false})
+    .limit(3);
+
    if(!error)minigameBoards[game]=data||[]
   }
+
+  const playerIds=[...new Set(
+   Object.values(minigameBoards)
+    .flat()
+    .map(row=>row.player_id)
+    .filter(Boolean)
+  )];
+
+  if(playerIds.length){
+   const {data:profiles,error:profilesError}=await db
+    .from('players')
+    .select('player_id,save_data')
+    .in('player_id',playerIds);
+
+   if(!profilesError){
+    (profiles||[]).forEach(row=>{
+     let save={};
+     try{
+      save=typeof row.save_data==='string'
+       ?JSON.parse(row.save_data||'{}')
+       :(row.save_data||{})
+     }catch{}
+
+     cosmeticByPlayer.set(row.player_id,{
+      frame:save.profileFrame||'default',
+      background:save.profileBackground||'default'
+     })
+    })
+   }
+  }
  }
- box.innerHTML=Object.entries(names).map(([game,name])=>`<div class="mini-board"><h3>${name}</h3>${(minigameBoards[game]||[]).map((r,i)=>`<div><b>${i+1}.</b><span>${safeText(r.player_name)}</span><strong>${game==='aim'?(r.score/100).toFixed(1)+'%':fmt(r.score)}</strong></div>`).join('')||'<p class="muted">Brak wyników</p>'}<small>Twój rekord: ${game==='aim'?((state.minigameRecords.aim||0)/100).toFixed(1)+'%':fmt(state.minigameRecords[game]||0)}</small></div>`).join('')
+
+ box.innerHTML=Object.entries(names).map(([game,name])=>{
+  const rows=(minigameBoards[game]||[]).map((row,index)=>{
+   const cosmetic=cosmeticByPlayer.get(row.player_id)||{
+    frame:'default',
+    background:'default'
+   };
+   const value=game==='aim'
+    ?(row.score/100).toFixed(1)+'%'
+    :fmt(row.score);
+
+   return `<div class="mini-profile-row"
+    data-frame="${safeText(cosmetic.frame)}"
+    data-background="${safeText(cosmetic.background)}">
+    <b>${index+1}.</b>
+    <span>${safeText(row.player_name)}</span>
+    <strong>${value}</strong>
+   </div>`
+  }).join('')||'<p class="muted">Brak wyników</p>';
+
+  const ownRecord=game==='aim'
+   ?((state.minigameRecords.aim||0)/100).toFixed(1)+'%'
+   :fmt(state.minigameRecords[game]||0);
+
+  return `<div class="mini-board">
+   <h3>${name}</h3>
+   ${rows}
+   <small>Twój rekord: ${ownRecord}</small>
+  </div>`
+ }).join('');
+
+ requestAnimationFrame(()=>{
+  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
+ })
 }
 if($('#miniResultClose'))if($('#miniResultClose'))$('#miniResultClose').onclick=()=>{$('#miniResultOverlay')?.classList.remove('show');hideGames();scrollToArcadeTop()};
 renderMiniCooldowns();

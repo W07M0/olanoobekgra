@@ -1708,7 +1708,9 @@ function renderProfileStyleSettings(){
  if(frameOptions){
   frameOptions.innerHTML=state.ownedProfileFrames.map(id=>`
    <button class="profile-style-option ${state.profileFrame===id?'active':''}" data-profile-frame="${id}">
-    <span class="profile-style-mini profile-frame-${id}">ABC</span>
+    <span class="profile-style-mini profile-frame-${id}">
+     <span>1.</span><strong>Gracz</strong><em>123M ⭐</em>
+    </span>
     <b>${PROFILE_FRAME_NAMES[id]||id}</b>
    </button>
   `).join('')
@@ -1717,7 +1719,9 @@ function renderProfileStyleSettings(){
  if(backgroundOptions){
   backgroundOptions.innerHTML=state.ownedProfileBackgrounds.map(id=>`
    <button class="profile-style-option ${state.profileBackground===id?'active':''}" data-profile-background="${id}">
-    <span class="profile-style-mini profile-bg-${id}">ABC</span>
+    <span class="profile-style-mini profile-bg-${id}">
+     <span>1.</span><strong>Gracz</strong><em>123M ⭐</em>
+    </span>
     <b>${PROFILE_BACKGROUND_NAMES[id]||id}</b>
    </button>
   `).join('')

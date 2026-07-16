@@ -98,7 +98,7 @@ function refreshVisibleTextures(){
   source.profileBackground||'default'
  );
 
- document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
+ document.querySelectorAll('.board-row,.leaderboard-row,.mini-profile-row').forEach(row=>{
   applyProfileTextureToElement(
    row,
    row.getAttribute('data-frame')||'default',

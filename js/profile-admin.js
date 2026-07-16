@@ -763,6 +763,84 @@ function renderAdminAllPets(save){
  })
 }
 
+
+async function adminGrantAllTestCosmetics(){
+ if(typeof isAdminSession==='function'&&!isAdminSession()){
+  return toast('Brak uprawnień administratora')
+ }
+ if(!adminEditedProfile){
+  return toast('Najpierw pobierz profil gracza')
+ }
+
+ const button=$('#adminGrantTestCosmetics');
+ const status=$('#adminEditStatus');
+ const oldText=button?.textContent;
+
+ try{
+  if(button){
+   button.disabled=true;
+   button.textContent='Nadawanie kosmetyków...'
+  }
+
+  const save=adminCurrentRemoteSave();
+  const allSkins=[...adminKnownSkinIds()];
+
+  const allFrames=['default','arcade','collector','developer'];
+  const allBackgrounds=['default','wealth','casino','reflex'];
+
+  save.ownedSkins=[...new Set(allSkins)];
+  save.ownedProfileFrames=[...new Set(allFrames)];
+  save.ownedProfileBackgrounds=[...new Set(allBackgrounds)];
+
+  if(!save.ownedSkins.includes(save.activeSkin)){
+   save.activeSkin='classic'
+  }
+  if(!save.ownedProfileFrames.includes(save.profileFrame)){
+   save.profileFrame='default'
+  }
+  if(!save.ownedProfileBackgrounds.includes(save.profileBackground)){
+   save.profileBackground='default'
+  }
+
+  // Do not touch pets or equipped pet slots.
+  const id=$('#adminEditPlayerId')?.value.trim();
+  const result=await adminWithTimeout(
+   db.rpc('admin_update_player_full_profile',{
+    p_player_id:id,
+    p_player_name:save.playerName||adminEditedProfile.player_name||'Gracz',
+    p_save_data:normalizeAdminSaveIntegers(save)
+   }),
+   12000
+  );
+
+  if(result.error)throw result.error;
+
+  adminEditedProfile={
+   ...adminEditedProfile,
+   player_name:save.playerName||adminEditedProfile.player_name,
+   save_data:save,
+   updated_at:new Date().toISOString()
+  };
+
+  safeAdminRender('test cosmetics',()=>populateAdminForm(save,adminEditedProfile));
+
+  if(status){
+   status.textContent=`Nadano ${save.ownedSkins.length} skinów, ${save.ownedProfileFrames.length} ramek i ${save.ownedProfileBackgrounds.length} teł.`
+  }
+  toast('Kosmetyki testowe nadane')
+ }catch(error){
+  console.error('Admin test cosmetics:',error);
+  if(status)status.textContent='Błąd nadawania kosmetyków: '+(error.message||error);
+  toast('Nie udało się nadać kosmetyków')
+ }finally{
+  if(button){
+   button.disabled=false;
+   button.textContent=oldText
+  }
+ }
+}
+window.adminGrantAllTestCosmetics=adminGrantAllTestCosmetics;
+
 async function adminLoadPlayerProfile(){
  if(typeof isAdminSession==='function'&&!isAdminSession())return toast('Brak uprawnień administratora');
 
@@ -1303,3 +1381,8 @@ if(typeof renderAdminEquippedPets==='function'){
 if(typeof renderAdminAllPets==='function'){
  window.renderAdminAllPets=renderAdminAllPets
 }
+
+setTimeout(()=>{
+ const button=$('#adminGrantTestCosmetics');
+ if(button)button.onclick=adminGrantAllTestCosmetics
+},0);
