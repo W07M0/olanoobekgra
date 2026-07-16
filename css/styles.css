@@ -3117,3 +3117,33 @@ body[class*="skin-"] #clickerWord,
  scale:1!important;
  animation-name:none!important;
 }
+
+/* 0.6c — actual NOOB text box height reset */
+
+/*
+ The original `.clicker-word` had width:100% and height:100%.
+ The anchor centered that full-height box, while its text stayed at the top.
+*/
+#clicker .clicker-word-anchor > #clickerWord,
+#clicker .clicker-word-anchor > .clicker-word{
+ display:block!important;
+ width:auto!important;
+ height:auto!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-height:none!important;
+
+ align-items:initial!important;
+ justify-items:initial!important;
+ place-items:initial!important;
+
+ line-height:.9!important;
+ vertical-align:middle!important;
+}
+
+/* Remove remaining full-size rules from the original clicker word style. */
+#clickerWord{
+ width:auto!important;
+ height:auto!important;
+ display:block!important;
+}
