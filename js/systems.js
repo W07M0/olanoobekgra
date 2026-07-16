@@ -1728,7 +1728,7 @@ function renderProfileStyleSettings(){
  });
 
  requestAnimationFrame(()=>{
-  if(typeof rebuildProfileVisualLayers==='function')rebuildProfileVisualLayers()
+  if(typeof refreshSafeProfileLayers==='function')refreshSafeProfileLayers()
  });
 }
 

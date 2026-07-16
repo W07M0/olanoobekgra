@@ -258,13 +258,9 @@ function profileTextureStyle(frame,background){
 
 
 function applyLeaderboardTextures(){
- document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
-  const frame=row.dataset.frame||'default';
-  const background=row.dataset.background||'default';
-  if(typeof window.applyProfileTextureToElement==='function'){
-   window.applyProfileTextureToElement(row,frame,background)
-  }
- })
+ if(typeof window.refreshSafeProfileLayers==='function'){
+  window.refreshSafeProfileLayers()
+ }
 }
 
 function renderBoard(){
@@ -293,11 +289,6 @@ function renderBoard(){
  requestAnimationFrame(()=>{
   applyLeaderboardTextures();
   if(typeof refreshVisibleTextures==='function')refreshVisibleTextures()
- });
-
- requestAnimationFrame(()=>{
-  if(typeof applyLeaderboardTextures==='function')applyLeaderboardTextures();
-  if(typeof rebuildProfileVisualLayers==='function')rebuildProfileVisualLayers()
  });
 }
 async function saveOnline(){

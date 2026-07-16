@@ -2,17 +2,16 @@
 <button id="r">Test</button><div id="o"></div>
 <script>
 r.onclick=async()=>{
- const t=await fetch('../js/textures.js?v=06cprofilelayers').then(x=>x.text());
- const c=await fetch('../css/styles.css?v=06cprofilelayers').then(x=>x.text());
- const p=await fetch('../js/profile-admin.js?v=06cprofilelayers').then(x=>x.text());
- const a=[
-  ['Osobna warstwa tła',t.includes('profile-visual-bg')],
-  ['Osobna warstwa ramki',t.includes('profile-visual-frame')],
-  ['Osobna warstwa treści',t.includes('profile-visual-content')],
-  ['Tło ma inset 6px',c.includes('.profile-visual-bg')&&c.includes('inset:6px')],
-  ['Ramka pełny rozmiar',c.includes('.profile-visual-frame')&&c.includes('inset:0')],
-  ['Ranking przebudowuje warstwy',p.includes('applyLeaderboardTextures')]
+ const t=await fetch('../js/textures.js?v=06csafelayers').then(x=>x.text());
+ const c=await fetch('../css/styles.css?v=06csafelayers').then(x=>x.text());
+ const checks=[
+  ['Bez opakowywania treści',!t.includes('profile-visual-content')],
+  ['Osobna warstwa tła',t.includes('profile-layer-background')],
+  ['Osobna warstwa ramki',t.includes('profile-layer-frame')],
+  ['Tło 6 px wewnątrz',c.includes('inset:6px!important')],
+  ['Ramka pełny rozmiar',c.includes('.profile-layer-frame')&&c.includes('inset:0!important')],
+  ['Warstwy bez wpływu na layout',c.includes('flex:none!important')]
  ];
- o.innerHTML=a.map(([n,ok])=>`<p>${ok?'✅':'❌'} ${n}</p>`).join('')
+ o.innerHTML=checks.map(([n,ok])=>`<p>${ok?'✅':'❌'} ${n}</p>`).join('')
 }
 </script>

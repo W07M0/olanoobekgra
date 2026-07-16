@@ -2283,91 +2283,7 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  background-image:none!important;
 }
 
-/* 0.6c — frame texture is a border, not a second background */
-.profile-style-preview,
-.board-row,
-.leaderboard-row{
- --frame-thickness:4px;
-}
-
-/* Background fills the whole row. */
-.profile-style-preview,
-.board-row,
-.leaderboard-row{
- background-image:var(--row-background-texture,none)!important;
- background-size:cover!important;
- background-position:center!important;
- background-repeat:no-repeat!important;
-}
-
-/*
- Frame PNG may be a full image.
- CSS automatically cuts out the middle and leaves only the edge ring.
-*/
-.profile-style-preview::before,
-.board-row::before,
-.leaderboard-row::before{
- content:""!important;
- position:absolute!important;
- inset:0!important;
- box-sizing:border-box!important;
- padding:var(--frame-thickness)!important;
- z-index:3!important;
- pointer-events:none!important;
-
- background-image:var(--row-frame-texture,none)!important;
- background-size:cover!important;
- background-position:center!important;
- background-repeat:no-repeat!important;
-
- -webkit-mask:
-  linear-gradient(#000 0 0) content-box,
-  linear-gradient(#000 0 0)!important;
- -webkit-mask-composite:xor!important;
-
- mask:
-  linear-gradient(#000 0 0) content-box,
-  linear-gradient(#000 0 0)!important;
- mask-composite:exclude!important;
-
- border-radius:inherit!important;
-}
-
-/* Readability overlay stays inside the frame. */
-.profile-style-preview::after,
-.board-row::after,
-.leaderboard-row::after{
- z-index:2!important;
- inset:var(--frame-thickness)!important;
- border-radius:calc(inherit - var(--frame-thickness));
-}
-
-/* Text is above background, overlay and frame. */
-.profile-style-preview>*,
-.board-row>*,
-.leaderboard-row>*{
- position:relative!important;
- z-index:5!important;
-}
-
-/* Slightly thicker border in the larger settings preview. */
-.profile-style-preview{
- --frame-thickness:5px;
-}
-
-/* Frame thumbnails display the whole artwork only as a preview. */
-[data-profile-frame] .profile-style-mini{
- background-size:cover!important;
- background-position:center!important;
-}
-
-/* Background thumbnails remain full-area previews. */
-[data-profile-background] .profile-style-mini{
- background-size:cover!important;
- background-position:center!important;
-}
-
-/* 0.6c — rebuilt profile visual layer system */
+/* 0.6c — safe profile layers; existing leaderboard layout is untouched */
 
 .profile-style-preview,
 .board-row,
@@ -2376,12 +2292,12 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  overflow:hidden!important;
  isolation:isolate!important;
  border-radius:14px!important;
- background:none!important;
  background-image:none!important;
- box-shadow:none!important;
+ background:none!important;
+ clip-path:inset(0 round 14px)!important;
 }
 
-/* Old pseudo-element system is disabled. */
+/* Disable legacy generated image layers. */
 .profile-style-preview::before,
 .profile-style-preview::after,
 .board-row::before,
@@ -2390,83 +2306,65 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 .leaderboard-row::after{
  content:none!important;
  display:none!important;
- background:none!important;
 }
 
-/* BACKGROUND: always inside the frame. */
-.profile-visual-bg{
- position:absolute;
- inset:6px;
- z-index:1;
- border-radius:9px;
- overflow:hidden;
- background-size:cover;
- background-position:center;
- background-repeat:no-repeat;
- pointer-events:none;
+/* Background is deliberately smaller than the golden frame. */
+.profile-layer-background{
+ position:absolute!important;
+ inset:6px!important;
+ display:block!important;
+ z-index:0!important;
+ border-radius:9px!important;
+ overflow:hidden!important;
+ pointer-events:none!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
 }
 
-/* Optional readability layer only inside the background area. */
-.profile-visual-bg::after{
+/* Readability overlay stays inside the background. */
+.profile-layer-background::after{
  content:"";
  position:absolute;
  inset:0;
  border-radius:inherit;
  background:linear-gradient(
   90deg,
-  rgba(5,7,18,.32),
-  rgba(5,7,18,.12) 30%,
-  rgba(5,7,18,.12) 70%,
-  rgba(5,7,18,.32)
+  rgba(5,7,18,.30),
+  rgba(5,7,18,.10) 30%,
+  rgba(5,7,18,.10) 70%,
+  rgba(5,7,18,.30)
  );
 }
 
-/* FRAME: full size, always above the background. */
-.profile-visual-frame{
- position:absolute;
- inset:0;
- z-index:3;
- border-radius:inherit;
- background-size:100% 100%;
- background-position:center;
- background-repeat:no-repeat;
- pointer-events:none;
+/* Frame keeps its full dimensions and is placed above the background. */
+.profile-layer-frame{
+ position:absolute!important;
+ inset:0!important;
+ display:block!important;
+ z-index:2!important;
+ border-radius:inherit!important;
+ pointer-events:none!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
 }
 
-/* TEXT / VALUES */
-.profile-visual-content{
- position:relative;
- z-index:4;
- width:100%;
- min-height:100%;
- display:grid;
- grid-template-columns:auto 1fr auto;
- align-items:center;
- gap:10px;
- padding:8px 12px;
- box-sizing:border-box;
-}
-
-.profile-style-preview .profile-visual-content{
- min-height:52px;
-}
-
-.board-row .profile-visual-content,
-.leaderboard-row .profile-visual-content{
- min-height:40px;
-}
-
-/* Prevent old nested styles from creating extra backgrounds. */
-.profile-visual-content>*{
+/* Existing row children remain in their original flex/grid layout. */
+.profile-style-preview > :not(.profile-layer-background):not(.profile-layer-frame),
+.board-row > :not(.profile-layer-background):not(.profile-layer-frame),
+.leaderboard-row > :not(.profile-layer-background):not(.profile-layer-frame){
  position:relative!important;
- z-index:1!important;
- background-image:none!important;
+ z-index:3!important;
 }
 
-/* The actual row clips everything, including frame corners. */
-.profile-style-preview,
-.board-row,
-.leaderboard-row{
- clip-path:inset(0 round 14px)!important;
- contain:paint;
+/* Layer spans must never consume layout space. */
+.profile-layer-background,
+.profile-layer-frame{
+ width:auto!important;
+ height:auto!important;
+ margin:0!important;
+ padding:0!important;
+ flex:none!important;
+ grid-area:auto!important;
 }

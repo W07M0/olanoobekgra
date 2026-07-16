@@ -114,52 +114,33 @@ function refreshVisibleTextures(){
 }
 
 
-function ensureProfileVisualLayers(element){
+function ensureSafeProfileLayers(element){
  if(!element)return null;
 
- let background=element.querySelector(':scope > .profile-visual-bg');
- let frame=element.querySelector(':scope > .profile-visual-frame');
- let content=element.querySelector(':scope > .profile-visual-content');
+ let background=element.querySelector(':scope > .profile-layer-background');
+ let frame=element.querySelector(':scope > .profile-layer-frame');
 
  if(!background){
-  background=document.createElement('div');
-  background.className='profile-visual-bg';
+  background=document.createElement('span');
+  background.className='profile-layer-background';
+  background.setAttribute('aria-hidden','true');
   element.prepend(background)
  }
 
  if(!frame){
-  frame=document.createElement('div');
-  frame.className='profile-visual-frame';
+  frame=document.createElement('span');
+  frame.className='profile-layer-frame';
+  frame.setAttribute('aria-hidden','true');
   element.append(frame)
  }
 
- if(!content){
-  content=document.createElement('div');
-  content.className='profile-visual-content';
-
-  [...element.childNodes].forEach(node=>{
-   if(
-    node===background||
-    node===frame||
-    node===content||
-    (node.nodeType===1&&node.classList?.contains('profile-visual-bg'))||
-    (node.nodeType===1&&node.classList?.contains('profile-visual-frame'))
-   )return;
-   content.append(node)
-  });
-
-  element.append(content)
- }
-
- return{background,frame,content}
+ return{background,frame}
 }
 
 function applyProfileTextureToElement(element,frame='default',background='default'){
  if(!element)return;
 
- const layers=ensureProfileVisualLayers(element);
- if(!layers)return;
-
+ const layers=ensureSafeProfileLayers(element);
  const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frame);
  const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
 
@@ -170,12 +151,11 @@ function applyProfileTextureToElement(element,frame='default',background='defaul
  element.dataset.background=background
 }
 
-function rebuildProfileVisualLayers(){
+function refreshSafeProfileLayers(){
  const source=window.state||{};
 
- const preview=document.querySelector('#profileStylePreview');
  applyProfileTextureToElement(
-  preview,
+  document.querySelector('#profileStylePreview'),
   source.profileFrame||'default',
   source.profileBackground||'default'
  );
@@ -196,12 +176,14 @@ window.TEXTURE_ROOT_URL=TEXTURE_ROOT_URL;
 window.texturePath=texturePath;
 window.textureStyleForProfile=textureStyleForProfile;
 window.applyTextureVariables=applyTextureVariables;
-window.ensureProfileVisualLayers=ensureProfileVisualLayers;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
-window.rebuildProfileVisualLayers=rebuildProfileVisualLayers;
-window.applyProfileTextureToElement=applyProfileTextureToElement;
+window.ensureSafeProfileLayers=ensureSafeProfileLayers;
+window.refreshSafeProfileLayers=refreshSafeProfileLayers;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.refreshVisibleTextures=refreshVisibleTextures;
 document.addEventListener('DOMContentLoaded',()=>{
- requestAnimationFrame(()=>refreshVisibleTextures())
+ requestAnimationFrame(()=>{
+  applyTextureVariables();
+  refreshSafeProfileLayers()
+ })
 });
