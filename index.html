@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6c</title>
-<link href="css/styles.css?v=06cmusicplayer" rel="stylesheet"/>
+<link href="css/styles.css?v=06csidebarmusic" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -22,7 +22,30 @@
 <button class="nav-btn" data-view="settings">⚙️ <span class="label">Ustawienia</span></button>
 <button class="nav-btn hidden" data-view="admin" id="adminNavBtn">🛡️ <span class="label">Admin</span></button>
 <button class="nav-btn" data-view="patchnotes">📝 <span class="label">Patch notes</span><span class="dot">0.6c</span></button>
-<div class="nav-footer"><button class="icon-btn" id="soundBtn">🔊</button><button class="icon-btn" id="musicBtn">🎵</button></div>
+<div class="nav-footer">
+<div class="sidebar-music-player" id="musicPlayer">
+ <div class="sidebar-music-track">
+  <span class="sidebar-music-icon">🎵</span>
+  <div>
+   <strong id="musicTrackTitle">Brak utworów</strong>
+   <small id="musicTrackStatus">Dodaj muzykę do playlisty</small>
+  </div>
+  <span id="musicTrackCounter">0/0</span>
+ </div>
+
+ <div class="sidebar-music-controls">
+  <button id="musicPrevious" type="button" title="Poprzedni utwór">⏮</button>
+  <button id="musicPlayPause" type="button" class="music-main-button" title="Odtwórz lub zatrzymaj">▶</button>
+  <button id="musicNext" type="button" title="Następny utwór">⏭</button>
+  <button id="musicMute" type="button" title="Wycisz muzykę">🔊</button>
+ </div>
+
+ <label class="sidebar-music-volume">
+  <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.35"/>
+  <span id="musicVolumeValue">35%</span>
+ </label>
+</div>
+</div>
 </nav>
 <main class="panel main" id="mainPanel">
 <section class="view active" id="view-game">
@@ -374,51 +397,18 @@
 </div>
 </div>
 
-<div class="settings-card music-player-card" id="musicPlayer">
- <div class="music-player-header">
-  <div>
-   <h3>🎵 Odtwarzacz muzyki</h3>
-   <p class="muted">Muzyka z Twojej playlisty.</p>
-  </div>
-  <span id="musicTrackCounter">0/0</span>
- </div>
 
- <div class="music-track-display">
-  <strong id="musicTrackTitle">Brak utworów</strong>
-  <small id="musicTrackStatus">Dodaj utwory do playlisty</small>
- </div>
+</div>
 
- <div class="music-controls">
-  <button id="musicPrevious" type="button" title="Poprzedni utwór">⏮</button>
-  <button id="musicPlayPause" type="button" class="music-main-button" title="Odtwórz lub zatrzymaj">▶</button>
-  <button id="musicNext" type="button" title="Następny utwór">⏭</button>
-  <button id="musicMute" type="button" title="Wycisz">🔊</button>
- </div>
-
- <label class="music-volume-row">
-  <span>Głośność</span>
-  <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.35"/>
-  <strong id="musicVolumeValue">35%</strong>
+<div class="settings-card sound-settings-card">
+ <h3>🔊 Dźwięki gry</h3>
+ <label class="setting-toggle-row">
+  <span>
+   <strong>Efekty dźwiękowe</strong>
+   <small>Kliknięcia, bossowie, skrzynki i minigry.</small>
+  </span>
+  <input id="settingsSoundToggle" type="checkbox"/>
  </label>
-</div>
-<div class="card settings-card full-width-settings">
-<h2>📊 Statystyki</h2>
-<div class="settings-stats-grid">
-<div><span>Kliknięcia</span><b id="settingsStatClicks">0</b></div>
-<div><span>Najlepsze combo</span><b id="settingsStatCombo">x0</b></div>
-<div><span>Rebirthy</span><b id="settingsStatRebirths">0</b></div>
-<div><span>Czas gry</span><b id="settingsStatPlaytime">0 min</b></div>
-<div><span>Skrzynki</span><b id="settingsStatCrates">0</b></div>
-<div><span>Minigry</span><b id="settingsStatMinigames">0</b></div>
-<div><span>Skiny</span><b id="settingsStatSkins">0</b></div>
-<div><span>Światy</span><b id="settingsStatWorlds">0</b></div>
-<div><span>Bonus petów</span><b id="settingsStatPetBonus">x1.00</b></div>
-<div><span>Mnożnik EXP</span><b id="settingsStatExp">x1.00</b></div>
-<div><span>Mnożnik rebirth</span><b id="settingsStatRebirthMult">x1.00</b></div>
-<div><span>Bossy światów</span><b id="settingsStatWorldBosses">0</b></div>
-<div><span>Bossy razem</span><b id="settingsStatBosses">0</b></div>
-<div><span>Kasyno</span><b id="settingsStatCasino">0 / 0 wygranych</b></div>
-</div>
 </div>
 </section><section class="view" id="view-admin">
 <div class="section-title">
@@ -572,16 +562,16 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06cmusicplayer"></script>
-<script defer="" src="js/core.js?v=06cmusicplayer"></script>
-<script src="js/textures.js?v=06cmusicplayer"></script>
-<script defer="" src="js/systems.js?v=06cmusicplayer"></script>
-<script defer="" src="js/integrations.js?v=06cmusicplayer"></script>
-<script defer="" src="js/profile-admin.js?v=06cmusicplayer"></script>
+<script defer="" src="js/data.js?v=06csidebarmusic"></script>
+<script defer="" src="js/core.js?v=06csidebarmusic"></script>
+<script src="js/textures.js?v=06csidebarmusic"></script>
+<script defer="" src="js/systems.js?v=06csidebarmusic"></script>
+<script defer="" src="js/integrations.js?v=06csidebarmusic"></script>
+<script defer="" src="js/profile-admin.js?v=06csidebarmusic"></script>
 
-<script src="js/music-playlist.js?v=06cmusicplayer"></script>
-<script src="js/music-player.js?v=06cmusicplayer"></script>
-<script defer="" src="js/app.js?v=06cmusicplayer"></script>
+<script src="js/music-playlist.js?v=06csidebarmusic"></script>
+<script src="js/music-player.js?v=06csidebarmusic"></script>
+<script defer="" src="js/app.js?v=06csidebarmusic"></script>
 
 <div class="modal-overlay hidden" id="bossResult">
  <div class="modal boss-result-modal">

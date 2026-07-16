@@ -1987,3 +1987,45 @@ let bossCooldownUiTimer=setInterval(()=>{
   }
  }
 },1000);
+
+
+(function bindSettingsSoundToggle(){
+ const STORAGE_KEY='noob_sound_enabled';
+
+ function getSoundEnabled(){
+  if(typeof state!=='undefined'&&typeof state.soundOn==='boolean')return state.soundOn;
+  if(typeof state!=='undefined'&&typeof state.soundEnabled==='boolean')return state.soundEnabled;
+  const saved=localStorage.getItem(STORAGE_KEY);
+  return saved===null?true:saved==='true'
+ }
+
+ function setSoundEnabled(enabled){
+  localStorage.setItem(STORAGE_KEY,String(enabled));
+
+  if(typeof state!=='undefined'){
+   if('soundOn' in state)state.soundOn=enabled;
+   if('soundEnabled' in state)state.soundEnabled=enabled;
+   if('sfxOn' in state)state.sfxOn=enabled
+  }
+
+  document.documentElement.dataset.soundEnabled=String(enabled);
+
+  if(typeof save==='function'){
+   try{save()}catch{}
+  }
+ }
+
+ function syncToggle(){
+  const toggle=document.querySelector('#settingsSoundToggle');
+  if(toggle)toggle.checked=getSoundEnabled()
+ }
+
+ document.addEventListener('change',event=>{
+  if(event.target?.id!=='settingsSoundToggle')return;
+  setSoundEnabled(event.target.checked)
+ });
+
+ document.addEventListener('DOMContentLoaded',syncToggle);
+ window.addEventListener('focus',syncToggle);
+ window.syncSettingsSoundToggle=syncToggle
+})();
