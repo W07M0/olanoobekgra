@@ -623,7 +623,7 @@ function render(){ensureCosmeticUnlockAudit();syncClaimedAchievementRewards();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
 
- if(typeof refreshActiveSkinTexture==='function')refreshActiveSkinTexture();
+ if(typeof forceApplySkinTexture==='function')forceApplySkinTexture();
 }
 function nextFeatureUnlock(){
  let entries=Object.entries(featureUnlocks).filter(([_,lvl])=>lvl>state.level).sort((a,b)=>a[1]-b[1]);
@@ -1678,7 +1678,7 @@ function equipSkin(id){
  if(!state.ownedSkins.includes(id))return toast('Nie posiadasz tego skina');
 
  state.activeSkin=id;
- if(typeof applySkinTextureToElement==='function')applySkinTextureToElement(findMainClickerElement?.(),id);
+ if(typeof forceApplySkinTexture==='function')forceApplySkinTexture();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
  if(typeof refreshVisibleTextures==='function')refreshVisibleTextures();
  state.activeSkinRevision=Date.now();

@@ -92,6 +92,15 @@ function applyProfileTextureToElement(element,frame='default',background='defaul
 }
 
 
+
+function findSkinTextureTarget(){
+ const clicker=findMainClickerElement();
+ if(!clicker)return null;
+ return clicker.querySelector(
+  '.clicker-face,.clicker-inner,.clicker-core,.skin-surface,[data-skin-surface]'
+ )||clicker
+}
+
 function findMainClickerElement(){
  return document.querySelector(
   '#noobButton,#clicker,#mainClicker,#clickButton,.noob-button,.click-button,.main-click-button,[data-main-clicker]'
@@ -99,16 +108,24 @@ function findMainClickerElement(){
 }
 
 function applySkinTextureToElement(element,skin='classic'){
- if(!element)return;
+ const clicker=element||findMainClickerElement();
+ if(!clicker)return;
+
+ const target=findSkinTextureTarget()||clicker;
  const safeSkin=resolveTextureId(SKIN_TEXTURES,skin,'classic');
  const skinUrl=texturePath(SKIN_TEXTURES,safeSkin,'classic');
+ const texture=skinUrl?`url("${skinUrl}")`:'none';
 
- element.style.setProperty('--skin-texture',skinUrl?`url("${skinUrl}")`:'none');
- element.style.backgroundImage=skinUrl?`url("${skinUrl}")`:'';
- element.style.backgroundSize='cover';
- element.style.backgroundPosition='center';
- element.style.backgroundRepeat='no-repeat';
- element.dataset.skinTexture=safeSkin
+ clicker.style.setProperty('--skin-texture',texture);
+ target.style.setProperty('--skin-texture',texture);
+
+ target.style.setProperty('background-image',texture,'important');
+ target.style.setProperty('background-size','cover','important');
+ target.style.setProperty('background-position','center','important');
+ target.style.setProperty('background-repeat','no-repeat','important');
+
+ clicker.dataset.skinTexture=safeSkin;
+ target.dataset.skinTexture=safeSkin
 }
 
 function refreshVisibleTextures(){
@@ -190,6 +207,17 @@ function forceReloadTextures(){
  url.searchParams.set('textures','tex_'+Date.now());
  window.location.replace(url.href)
 }
+
+function forceApplySkinTexture(){
+ const skin=window.state?.activeSkin||'classic';
+ const apply=()=>applySkinTextureToElement(findMainClickerElement(),skin);
+ requestAnimationFrame(()=>{
+  apply();
+  setTimeout(apply,0);
+  setTimeout(apply,100)
+ })
+}
+
 window.PROFILE_FRAME_TEXTURES=PROFILE_FRAME_TEXTURES;
 window.PROFILE_BACKGROUND_TEXTURES=PROFILE_BACKGROUND_TEXTURES;
 window.SKIN_TEXTURES=SKIN_TEXTURES;
@@ -200,7 +228,9 @@ window.applyTextureVariables=applyTextureVariables;
 window.applyProfileTextureToElement=applyProfileTextureToElement;
 window.applySkinTextureToElement=applySkinTextureToElement;
 window.findMainClickerElement=findMainClickerElement;
+window.findSkinTextureTarget=findSkinTextureTarget;
 window.refreshActiveSkinTexture=refreshActiveSkinTexture;
+window.forceApplySkinTexture=forceApplySkinTexture;
 window.refreshVisibleTextures=refreshVisibleTextures;
 window.forceReloadTextures=forceReloadTextures;
 window.applyProfileStyleOptionTextures=applyProfileStyleOptionTextures;

@@ -2701,3 +2701,40 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
 .texture-refresh-tools{margin:8px 0}
 .texture-cache-version{display:block;margin:0 0 6px;opacity:.75}
 #forceReloadTextures{width:100%}
+
+/* 0.6c — equipped skin PNG on the real clicker */
+#clicker{
+ background-color:transparent!important;
+ background-image:var(--skin-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/* Existing colour classes may set shorthand background; override them all. */
+#clicker[class],
+#clicker[style],
+body [id="clicker"]{
+ background-image:var(--skin-texture,none)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/* Keep only a subtle lighting overlay. */
+#clicker::before{
+ content:""!important;
+ position:absolute!important;
+ inset:0!important;
+ z-index:1!important;
+ border-radius:inherit!important;
+ pointer-events:none!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(0,0,0,.10))!important;
+ mix-blend-mode:soft-light!important;
+}
+
+/* NOOB text and other clicker content above the PNG. */
+#clicker > *{
+ position:relative!important;
+ z-index:2!important;
+}
