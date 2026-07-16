@@ -57,19 +57,26 @@ function textureStyleForProfile(frame='default',background='default'){
 
 function applyProfileTextureToElement(element,frame='default',background='default'){
  if(!element)return;
- const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,frame);
- const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,background);
 
- element.style.setProperty(
-  '--row-frame-texture',
-  frameUrl?`url("${frameUrl}")`:'none'
- );
- element.style.setProperty(
-  '--row-background-texture',
-  backgroundUrl?`url("${backgroundUrl}")`:'none'
- );
- element.dataset.frame=frame;
- element.dataset.background=background
+ const layers=ensureSafeProfileLayers(element);
+ if(!layers)return;
+
+ const safeFrame=frame||'default';
+ const safeBackground=background||'default';
+
+ const frameUrl=texturePath(PROFILE_FRAME_TEXTURES,safeFrame,'default');
+ const backgroundUrl=texturePath(PROFILE_BACKGROUND_TEXTURES,safeBackground,'default');
+
+ layers.frame.style.backgroundImage=frameUrl?`url("${frameUrl}")`:'none';
+ layers.background.style.backgroundImage=backgroundUrl?`url("${backgroundUrl}")`:'none';
+
+ layers.frame.dataset.textureType='frame';
+ layers.frame.dataset.textureId=safeFrame;
+ layers.background.dataset.textureType='background';
+ layers.background.dataset.textureId=safeBackground;
+
+ element.dataset.frame=safeFrame;
+ element.dataset.background=safeBackground
 }
 
 function applySkinTextureToElement(element,skin='classic'){
@@ -161,11 +168,9 @@ function refreshSafeProfileLayers(){
  );
 
  document.querySelectorAll('.board-row,.leaderboard-row').forEach(row=>{
-  applyProfileTextureToElement(
-   row,
-   row.dataset.frame||'default',
-   row.dataset.background||'default'
-  )
+  const frame=row.getAttribute('data-frame')||'default';
+  const background=row.getAttribute('data-background')||'default';
+  applyProfileTextureToElement(row,frame,background)
  })
 }
 

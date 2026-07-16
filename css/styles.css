@@ -2368,3 +2368,59 @@ body.arena-effect-gold .skin-side span{color:#ffd34e}
  flex:none!important;
  grid-area:auto!important;
 }
+
+/* 0.6c — strict frame/background texture mapping */
+
+.profile-layer-background{
+ position:absolute!important;
+ inset:6px!important;
+ z-index:1!important;
+ border-radius:9px!important;
+ overflow:hidden!important;
+ pointer-events:none!important;
+
+ background-color:rgba(20,14,38,.9)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+.profile-layer-frame{
+ position:absolute!important;
+ inset:0!important;
+ z-index:3!important;
+ border-radius:14px!important;
+ pointer-events:none!important;
+
+ background-color:transparent!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+
+/* Never let the frame layer behave like the row background. */
+.profile-style-preview,
+.board-row,
+.leaderboard-row{
+ background-image:none!important;
+}
+
+/* The frame must stay visually above the inner background. */
+.profile-layer-background{
+ opacity:1!important;
+ visibility:visible!important;
+ display:block!important;
+}
+.profile-layer-frame{
+ opacity:1!important;
+ visibility:visible!important;
+ display:block!important;
+}
+
+/* Debug-safe: each layer is clipped independently. */
+.profile-layer-background{
+ clip-path:inset(0 round 9px)!important;
+}
+.profile-layer-frame{
+ clip-path:inset(0 round 14px)!important;
+}

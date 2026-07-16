@@ -279,8 +279,8 @@ function renderBoard(){
  const suffix=metric==='level'?' Lv.':metric==='rebirths'?' ♻️':' ⭐';
  target.innerHTML=list.length?list.map((row,index)=>{
   const save=typeof parseAdminSaveData==='function'?parseAdminSaveData(row.save_data):{};
-  const frame=save.profileFrame||row.profile_frame||'default';
-  const background=save.profileBackground||row.profile_background||'default';
+  const frame=(save&&save.profileFrame)||row.profile_frame||'default';
+  const background=(save&&save.profileBackground)||row.profile_background||'default';
   return `<div class="board-row profile-frame-${safeText(frame)} profile-bg-${safeText(background)}" data-frame="${frame}" data-background="${background}">
    <b>${index+1}.</b><span>${safeText(row.player_name??row.name)}</span><b>${fmt(valueOf(row))}${suffix}</b>
   </div>`
