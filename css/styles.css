@@ -2889,131 +2889,78 @@ body [id="clicker"]{
  }
 }
 
-/* 0.6c — compact sidebar music player */
+/* 0.6c — safe compact player in the existing sidebar footer */
 .sidebar-music-player{
  display:grid;
- gap:8px;
- margin-top:14px;
- padding-top:14px;
+ gap:7px;
+ width:100%;
+ margin-top:10px;
+ padding-top:10px;
  border-top:1px solid rgba(255,255,255,.10);
+ box-sizing:border-box;
 }
-
 .sidebar-music-track{
- min-width:0;
  display:grid;
  grid-template-columns:auto minmax(0,1fr) auto;
  align-items:center;
- gap:8px;
- padding:9px;
- border-radius:11px;
+ gap:7px;
+ min-width:0;
+ padding:8px;
+ border-radius:10px;
  background:rgba(255,255,255,.055);
 }
-
-.sidebar-music-track > div{
+.sidebar-music-text{
  min-width:0;
  display:grid;
- gap:2px;
+ gap:1px;
 }
-
 .sidebar-music-track strong,
 .sidebar-music-track small{
  overflow:hidden;
  text-overflow:ellipsis;
  white-space:nowrap;
 }
-
-.sidebar-music-track strong{
- font-size:12px;
-}
-
-.sidebar-music-track small{
- font-size:9px;
- color:#9feaff;
-}
-
-.sidebar-music-icon{
- font-size:16px;
-}
-
-#musicTrackCounter{
- font-size:9px;
- opacity:.75;
-}
-
+.sidebar-music-track strong{font-size:11px}
+.sidebar-music-track small{font-size:8px;color:#9feaff}
+.sidebar-music-icon{font-size:15px}
+#musicTrackCounter{font-size:8px;opacity:.75}
 .sidebar-music-controls{
  display:grid;
  grid-template-columns:repeat(4,minmax(0,1fr));
  gap:5px;
 }
-
 .sidebar-music-controls button{
  min-width:0;
- min-height:36px;
- padding:5px;
- border-radius:9px;
- font-size:14px;
+ min-height:34px;
+ padding:4px;
+ border-radius:8px;
+ font-size:13px;
 }
-
-.sidebar-music-controls .music-main-button{
- font-size:17px!important;
-}
-
+.sidebar-music-controls .music-main-button{font-size:16px!important}
 .sidebar-music-volume{
  display:grid;
- grid-template-columns:minmax(0,1fr) 34px;
+ grid-template-columns:minmax(0,1fr) 32px;
  align-items:center;
- gap:7px;
- padding:7px 8px;
- border-radius:10px;
+ gap:6px;
+ padding:6px 7px;
+ border-radius:9px;
  background:rgba(255,255,255,.045);
 }
-
-.sidebar-music-volume input{
- width:100%;
- min-width:0;
-}
-
-.sidebar-music-volume span{
- font-size:9px;
- text-align:right;
-}
-
-/* Hide the former large settings player if stale markup remains. */
-.settings-card.music-player-card{
- display:none!important;
-}
-
-/* Settings sound toggle */
-.sound-settings-card{
- margin-top:12px;
-}
+.sidebar-music-volume input{width:100%;min-width:0}
+.sidebar-music-volume span{font-size:8px;text-align:right}
 
 .setting-toggle-row{
  display:flex;
  align-items:center;
  justify-content:space-between;
- gap:16px;
- padding:12px;
- border-radius:12px;
+ gap:14px;
+ margin-top:10px;
+ padding:10px 12px;
+ border-radius:11px;
  background:rgba(255,255,255,.055);
 }
+.setting-toggle-row > span{display:grid;gap:3px}
+.setting-toggle-row small{opacity:.75}
+.setting-toggle-row input{width:20px;height:20px}
 
-.setting-toggle-row > span{
- display:grid;
- gap:3px;
-}
-
-.setting-toggle-row small{
- opacity:.75;
-}
-
-.setting-toggle-row input{
- width:20px;
- height:20px;
-}
-
-@media(max-width:900px){
- .sidebar-music-track small{
-  display:none;
- }
-}
+/* The old large settings player was physically removed, not hidden. */
