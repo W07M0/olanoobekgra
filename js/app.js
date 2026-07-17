@@ -1170,22 +1170,3 @@ document.addEventListener('click',event=>{
 });
 
 bindClick('#saveProfileStyle',()=>window.saveProfileStyleNow?.());
-
-
-
-/* 0.6c - blokada przypadkowego zaznaczania */
-document.addEventListener("selectstart",(e)=>{
-    if(
-        e.target.closest("input")||
-        e.target.closest("textarea")||
-        e.target.closest("select")||
-        e.target.closest("[contenteditable]")
-    ){
-        return;
-    }
-    e.preventDefault();
-});
-
-document.addEventListener("dragstart",(e)=>{
-    e.preventDefault();
-});

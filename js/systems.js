@@ -1159,6 +1159,7 @@ function addPetRewardToCollection(petId){
 
  if(!alreadyOwned){
   state.pets.push({
+   type:petId,
    uid:crypto.randomUUID?.()||
     ('achievement_pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)),
    type:petId,
@@ -1393,7 +1394,124 @@ function repairUltimateNoobAchievementPet(){
  return true
 }
 
-function renderAchievements(){syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();
+
+function achievementCollectionContainsId(collection,id){
+ if(!collection||!id)return false;
+
+ if(Array.isArray(collection)){
+  return collection.some(item=>
+   item===id||
+   item?.id===id||
+   item?.achievementId===id||
+   item?.key===id
+  )
+ }
+
+ if(typeof collection==='object'){
+  if(collection[id]===true)return true;
+  if(collection[id]?.claimed===true)return true;
+  if(collection[id]?.unlocked===true)return true;
+
+  return Object.values(collection).some(item=>
+   item?.id===id&&(
+    item?.claimed===true||
+    item?.unlocked===true
+   )
+  )
+ }
+
+ return false
+}
+
+function removeAchievementClaimId(collection,id){
+ if(!collection||!id)return collection;
+
+ if(Array.isArray(collection)){
+  return collection.filter(item=>
+   item!==id&&
+   item?.id!==id&&
+   item?.achievementId!==id&&
+   item?.key!==id
+  )
+ }
+
+ if(typeof collection==='object'){
+  const copy={...collection};
+  delete copy[id];
+
+  for(const [key,value] of Object.entries(copy)){
+   if(
+    value?.id===id||
+    value?.achievementId===id||
+    value?.key===id
+   ){
+    delete copy[key]
+   }
+  }
+  return copy
+ }
+
+ return collection
+}
+
+function reopenMissingUltimateNoobAchievement(){
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+
+ const ownsUltimate=state.pets.some(pet=>
+  pet?.type==='overlord'||
+  pet?.petId==='overlord'||
+  pet?.id==='overlord'
+ );
+ if(ownsUltimate)return false;
+
+ const claimedSomewhere=[
+  state.claimedAchievements,
+  state.achievementsClaimed,
+  state.achievements
+ ].some(collection=>
+  achievementCollectionContainsId(collection,'level60')
+ );
+
+ const oldRewardFlag=
+  state.specialPetClaimed===true||
+  state.ultimateNoobClaimed===true||
+  state.ultimateNoobPetMigrationDone===true||
+  state.level60AchievementClaimed===true;
+
+ if(!claimedSomewhere&&!oldRewardFlag)return false;
+
+ /*
+  Usuwamy wyłącznie status odebranej nagrody.
+  Ukończenie osiągnięcia nadal wynika z poziomu gracza,
+  więc przy poziomie 60+ karta pojawi się jako gotowa do odebrania.
+ */
+ state.claimedAchievements=removeAchievementClaimId(
+  state.claimedAchievements,
+  'level60'
+ );
+ state.achievementsClaimed=removeAchievementClaimId(
+  state.achievementsClaimed,
+  'level60'
+ );
+ state.achievements=removeAchievementClaimId(
+  state.achievements,
+  'level60'
+ );
+
+ state.specialPetClaimed=false;
+ state.ultimateNoobClaimed=false;
+ state.ultimateNoobPetMigrationDone=false;
+ state.level60AchievementClaimed=false;
+ state.level60RewardReopened=true;
+
+ try{save()}catch(error){
+  console.warn('Level 60 reward reopen:',error)
+ }
+
+ return true
+}
+
+function renderAchievements(){reopenMissingUltimateNoobAchievement();syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();
  const grid=safe$('#achievementGrid');if(!grid)return;
  const category=state.achievementCategory||'all';
  const search=(state.achievementSearch||'').toLowerCase();
@@ -2415,4 +2533,20 @@ document.addEventListener('DOMContentLoaded',()=>{
    console.warn('Pet achievement migration:',error)
   }
  },900)
+});
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(()=>{
+  try{
+   if(reopenMissingUltimateNoobAchievement()){
+    if(typeof renderAchievements==='function')renderAchievements();
+    if(typeof toast==='function'){
+     toast('👑 Nagroda Ultimate Noob jest ponownie gotowa do odebrania!')
+    }
+   }
+  }catch(error){
+   console.warn('Level 60 achievement reopen:',error)
+  }
+ },1200)
 });
