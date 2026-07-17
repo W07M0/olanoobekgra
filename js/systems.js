@@ -817,6 +817,14 @@ function normalizePetInventoryInstances(){
  state.pets=state.pets
   .filter(Boolean)
   .map(pet=>{
+   const referencesUltimate=
+    pet?.type==='overlord'||
+    pet?.petId==='overlord'||
+    pet?.id==='overlord';
+
+   if(referencesUltimate){
+    pet={...pet,type:'overlord'}
+   }
    const normalized={...pet};
    normalized.type=normalized.type||normalized.petId||normalized.id;
    normalized.level=Math.max(1,Number(normalized.level)||1);
@@ -1166,7 +1174,7 @@ function addPetRewardToCollection(petId){
    petId,
    id:petId,
    level:1,
-   exp:0,
+   xp:0,
    evolution:0,
    source:'achievement'
   })
@@ -1454,15 +1462,48 @@ function removeAchievementClaimId(collection,id){
  return collection
 }
 
+function isValidUltimateNoobInstance(pet){
+ if(!pet||typeof pet!=='object')return false;
+
+ const type=pet.type;
+ const uid=pet.uid;
+
+ return type==='overlord'&&
+  typeof uid==='string'&&
+  uid.length>=8
+}
+
+function removePhantomUltimateNoobEntries(){
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+
+ const before=state.pets.length;
+ state.pets=state.pets.filter(pet=>{
+  const referencesUltimate=
+   pet?.type==='overlord'||
+   pet?.petId==='overlord'||
+   pet?.id==='overlord';
+
+  if(!referencesUltimate)return true;
+
+  // Keep only a complete instance that the pet inventory can actually render.
+  return isValidUltimateNoobInstance(pet)
+ });
+
+ return state.pets.length!==before
+}
+
 function reopenMissingUltimateNoobAchievement(){
  state.pets=Array.isArray(state.pets)?state.pets:[];
 
- const ownsUltimate=state.pets.some(pet=>
-  pet?.type==='overlord'||
-  pet?.petId==='overlord'||
-  pet?.id==='overlord'
- );
- if(ownsUltimate)return false;
+ const removedPhantom=removePhantomUltimateNoobEntries();
+ const ownsVisibleUltimate=state.pets.some(isValidUltimateNoobInstance);
+
+ if(ownsVisibleUltimate){
+  if(removedPhantom){
+   try{save()}catch{}
+  }
+  return false
+ }
 
  const claimedSomewhere=[
   state.claimedAchievements,
@@ -1478,13 +1519,14 @@ function reopenMissingUltimateNoobAchievement(){
   state.ultimateNoobPetMigrationDone===true||
   state.level60AchievementClaimed===true;
 
- if(!claimedSomewhere&&!oldRewardFlag)return false;
-
  /*
-  Usuwamy wyłącznie status odebranej nagrody.
-  Ukończenie osiągnięcia nadal wynika z poziomu gracza,
-  więc przy poziomie 60+ karta pojawi się jako gotowa do odebrania.
+  Poziom 60 oznacza, że warunek osiągnięcia nadal jest spełniony.
+  Jeżeli nie ma pełnego, widocznego egzemplarza peta, ponownie
+  otwieramy nagrodę niezależnie od starych, uszkodzonych flag.
  */
+ if(Number(state.level)<60)return false;
+ if(!claimedSomewhere&&!oldRewardFlag&&!removedPhantom)return false;
+
  state.claimedAchievements=removeAchievementClaimId(
   state.claimedAchievements,
   'level60'
