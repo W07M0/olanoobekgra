@@ -3280,3 +3280,21 @@ option,
 }
 
 /* END GAME UX */
+
+/* 0.6c — precise Noob Reflex timing */
+.reflex-feedback.great{
+ color:#73fff0;
+ text-shadow:0 0 10px rgba(70,255,230,.75);
+}
+
+.reflex-feedback.ok{
+ color:#d5b6ff;
+ text-shadow:0 0 8px rgba(179,104,255,.65);
+}
+
+.reflex-feedback.perfect{
+ color:#fff36f;
+ text-shadow:
+  0 0 8px rgba(255,231,71,.9),
+  0 0 18px rgba(255,192,42,.7);
+}

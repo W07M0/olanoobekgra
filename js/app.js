@@ -363,7 +363,15 @@ function parkourLoop(){
   const type=rand(['💩','📦','🧱','🌵']);
   d.obs.push({x:d.reversed?-60:c.width+30,y:255,w:42,h:46,type});
   if(Math.random()<.35)d.pickups.push({x:d.reversed?-70:c.width+100,y:180-Math.random()*80,r:20,type:'star'});
- if(Math.random()<.035&&d.lives<3)d.obs.push({x:d.reversed?-65:c.width+50,y:244,w:48,h:56,type:'hospital',healing:true});
+ if(Math.random()<.035&&d.lives<3){
+  d.pickups.push({
+   x:d.reversed?-65:c.width+50,
+   y:230,
+   r:24,
+   type:'hospital',
+   healing:true
+  })
+ }
   d.spawn=Math.max(38,78-d.score/18)+Math.random()*26
  }
  d.p.vy+=.78*dt;d.p.y+=d.p.vy*dt;if(d.p.y>245){d.p.y=245;d.p.vy=0}
@@ -379,12 +387,7 @@ function parkourLoop(){
   w:p.w-20,
   h:p.h-10
  };
- const healingObstacle=d.obs.find(o=>{
-  if(!o.healing)return false;
-  const hb={x:o.x+4,y:o.y+4,w:Math.max(12,o.w-8),h:Math.max(14,o.h-6)};
-  return playerHitbox.x<hb.x+hb.w&&playerHitbox.x+playerHitbox.w>hb.x&&
-   playerHitbox.y<hb.y+hb.h&&playerHitbox.y+playerHitbox.h>hb.y
- });
+ const healingObstacle=null;
  const hit=d.obs.some(o=>{
   if(o.healing)return false;
   const obstacleHitbox={x:o.x+7,y:o.y+8,w:Math.max(12,o.w-14),h:Math.max(14,o.h-10)};
@@ -396,6 +399,9 @@ function parkourLoop(){
  d.pickups=d.pickups.filter(o=>{const got=p.x<o.x+o.r&&p.x+p.w>o.x-o.r&&p.y<o.y+o.r&&p.y+p.h>o.y-o.r;if(got){
   if(o.type==='hospital'){
    d.lives=Math.min(3,d.lives+1);
+   d.invuln=Math.max(d.invuln,70);
+   ensureAchievementStats();
+   state.achievementStats.hospitals++;
    sfx('good');
    toast('🏥 +1 życie')
   }else{
@@ -407,7 +413,12 @@ function parkourLoop(){
  const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,'#30145d');g.addColorStop(1,'#ff73c4');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
  x.fillStyle='#4a194f';x.fillRect(0,300,c.width,30);
  x.font='36px Arial';x.fillText('🛒',p.x,p.y+38);x.font='26px Arial';x.fillText('😎',p.x+15,p.y+12);
- d.obs.forEach(o=>{x.save();if(o.healing){x.shadowBlur=22;x.shadowColor='#4dffad';x.font='44px Arial';x.fillText('🏥',o.x,o.y+42)}else{x.font='38px Arial';x.fillText(o.type,o.x,o.y+40)}x.restore()});
+ d.obs.forEach(o=>{
+  x.save();
+  x.font='38px Arial';
+  x.fillText(o.type,o.x,o.y+40);
+  x.restore()
+ });
  d.pickups.forEach(o=>{
   x.save();x.shadowBlur=18;x.shadowColor=o.type==='hospital'?'#4dffad':'#ffd34e';
   x.font=o.type==='hospital'?'38px Arial':'30px Arial';
@@ -453,20 +464,7 @@ function parkourLoop(){
    d.portal=null;d.invuln=110;ensureAchievementStats();state.achievementStats.portals++;sfx('good')
   }else if(d.portal.x<-120||d.portal.x>c.width+120){d.portal=null}
  }
-
- if(healingObstacle){
-  d.lives=Math.min(3,d.lives+1);
-  d.obs=d.obs.filter(o=>o!==healingObstacle);
-  d.invuln=90;
-  ensureAchievementStats();
-  state.achievementStats.hospitals++;
-  sfx('good');
-  if($('#parkourLives')){
-   $('#parkourLives').textContent='❤️'.repeat(d.lives)+'🖤'.repeat(3-d.lives);
-   $('#parkourLives').classList.add('life-heal');
-   setTimeout(()=>$('#parkourLives')?.classList.remove('life-heal'),450)
-  }
- }else if(hit&&d.invuln<=0){
+else if(hit&&d.invuln<=0){
   d.lives--;d.invuln=70;sfx('bad');
   d.obs=d.obs.filter(o=>!(playerHitbox.x<o.x+o.w&&playerHitbox.x+playerHitbox.w>o.x));
   if($('#parkourLives'))$('#parkourLives').classList.add('life-hit');setTimeout(()=>$('#parkourLives')?.classList.remove('life-hit'),350);
@@ -569,32 +567,116 @@ function showReflexFeedback(text,type){
  void feedback.offsetWidth;
  feedback.classList.add('show')
 }
+function getReflexLineDistance(note){
+ const lane=note.el.closest('.reflex-lane');
+ if(!lane)return Infinity;
+
+ const noteRect=note.el.getBoundingClientRect();
+ const laneRect=lane.getBoundingClientRect();
+
+ /*
+  Kolorowa linia jest dolną krawędzią highway.
+  Liczymy rzeczywistą odległość środka nuty od tej linii,
+  więc timing nie zależy od prędkości animacji ani rozdzielczości.
+ */
+ const timingLineY=laneRect.bottom-4;
+ const noteCenterY=noteRect.top+noteRect.height/2;
+ return Math.abs(timingLineY-noteCenterY)
+}
+
+function reflexTimingGrade(distance){
+ if(distance<=6)return{
+  name:'PERFECT',
+  score:42,
+  time:.55,
+  type:'perfect'
+ };
+ if(distance<=13)return{
+  name:'GREAT',
+  score:31,
+  time:.28,
+  type:'great'
+ };
+ if(distance<=23)return{
+  name:'GOOD',
+  score:21,
+  time:.10,
+  type:'good'
+ };
+ if(distance<=36)return{
+  name:'OK',
+  score:12,
+  time:0,
+  type:'ok'
+ };
+ return null
+}
+
 function reflexInput(code){
  if(!reflexRunning||!reflexData||!reflexKeys.includes(code))return false;
- const candidates=reflexNotes.filter(note=>note.key===code&&!note.hit);
+
+ const candidates=reflexNotes
+  .filter(note=>note.key===code&&!note.hit)
+  .sort((a,b)=>getReflexLineDistance(a)-getReflexLineDistance(b));
+
  if(!candidates.length){
-  reflexData.misses++;reflexData.combo=0;reflexData.perfectRun=false;reflexData.score=Math.max(0,reflexData.score-12);showReflexFeedback('-12 MISS','miss');sfx('bad');return true
+  reflexData.misses++;
+  reflexData.combo=0;
+  reflexData.perfectRun=false;
+  reflexData.score=Math.max(0,reflexData.score-12);
+  showReflexFeedback('-12 MISS','miss');
+  sfx('bad');
+  return true
  }
- const note=candidates.sort((a,b)=>Math.abs(.91-a.progress)-Math.abs(.91-b.progress))[0];
- const distance=Math.abs(.91-note.progress);
- if(distance>.105){
-  reflexData.misses++;reflexData.combo=0;reflexData.perfectRun=false;reflexData.score=Math.max(0,reflexData.score-12);showReflexFeedback('-12 MISS','miss');sfx('bad');return true
+
+ const note=candidates[0];
+ const distance=getReflexLineDistance(note);
+ const timing=reflexTimingGrade(distance);
+
+ if(!timing){
+  reflexData.misses++;
+  reflexData.combo=0;
+  reflexData.perfectRun=false;
+  reflexData.score=Math.max(0,reflexData.score-12);
+  showReflexFeedback('-12 MISS','miss');
+  sfx('bad');
+  return true
  }
- note.hit=true;note.el.remove();
- if(!note.bomb)reflexData.hits=(reflexData.hits||0)+1;
+
+ note.hit=true;
+ note.el.remove();
+
  if(note.bomb){
   reflexData.score=Math.max(0,reflexData.score-35);
-  reflexData.combo=0;reflexData.bombs++;reflexData.perfectRun=false;showReflexFeedback('BOOM!','bomb');sfx('bad')
- }else{
-  const perfect=distance<.035;
-  reflexData.combo++;
-  reflexData.score+=perfect?32:20;showReflexFeedback(perfect?'PERFECT!':'GOOD',perfect?'perfect':'good');
-  if(reflexData.combo%15===0){
-   reflexData.time+=1.5;
-   toast('⚡ Combo x15: +1.5 s!')
-  }
-  sfx(perfect?'good':'click')
+  reflexData.combo=0;
+  reflexData.bombs++;
+  reflexData.perfectRun=false;
+  reflexData.time=Math.max(0,reflexData.time-1.25);
+  showReflexFeedback('BOOM! -1.25s','bomb');
+  sfx('bad');
+  return true
  }
+
+ reflexData.hits=(reflexData.hits||0)+1;
+ reflexData.combo++;
+
+ const comboScoreMult=1+Math.min(.75,reflexData.combo*.018);
+ reflexData.score+=Math.round(timing.score*comboScoreMult);
+
+ let gainedTime=timing.time;
+
+ // Regular time milestones reward consistent play.
+ if(reflexData.combo%8===0)gainedTime+=.45;
+ if(reflexData.combo%20===0)gainedTime+=1.00;
+ if(reflexData.combo%40===0)gainedTime+=1.75;
+
+ // The timer cannot grow forever.
+ reflexData.time=Math.min(45,reflexData.time+gainedTime);
+
+ const timeText=gainedTime>0?` +${gainedTime.toFixed(2)}s`:'';
+ showReflexFeedback(timing.name+timeText,timing.type);
+ sfx(timing.name==='PERFECT'?'good':'click');
+
  return true
 }
 function stopReflex(reward=true){
