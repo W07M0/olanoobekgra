@@ -3391,3 +3391,38 @@ option,
 .reflex-hit-line{
  z-index:3!important;
 }
+
+/* 0.6c — pet bulk actions */
+.pet-bulk-actions{
+ display:flex;
+ justify-content:flex-end;
+ margin:10px 0 12px;
+}
+
+.pet-unequip-all{
+ min-height:42px;
+ padding:10px 15px;
+ border-radius:11px;
+ border:1px solid rgba(97,225,255,.28);
+ background:
+  linear-gradient(135deg,rgba(68,210,255,.18),rgba(117,82,255,.20));
+ color:#e8fbff;
+ font-weight:1000;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.pet-unequip-all:hover{
+ transform:translateY(-1px);
+ border-color:rgba(97,225,255,.55);
+ background:
+  linear-gradient(135deg,rgba(68,210,255,.28),rgba(117,82,255,.30));
+}
+
+@media(max-width:620px){
+ .pet-bulk-actions{
+  justify-content:stretch;
+ }
+ .pet-unequip-all{
+  width:100%;
+ }
+}

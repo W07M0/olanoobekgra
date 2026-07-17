@@ -189,17 +189,32 @@ function miniRewards(id,normalized,rawScore,grade){
  const gradeMult={D:.60,C:.80,B:1,A:1.18,S:1.38,SS:1.58,SSS:1.82}[grade]||1;
  const globalMult=arcadeRewardMultiplier();
  const baseBuff=1.35;
+ const parkourTimeValue=id==='parkour'
+  ?1.35+Math.min(1.65,riderDistance/18000)
+  :1;
 
  /*
   Rider is endless and requires substantially more time.
   Its currency scaling grows with actual distance.
  */
  const riderDistance=Math.max(0,Number(rawScore)||0);
+
+ /*
+  Noob Parkour jest najdłuższą minigrą, więc nagroda rośnie mocno
+  dopiero wraz z realnym dystansem. Krótkie przejazdy nadal nie są
+  przesadnie opłacalne.
+ */
  const riderCurrencyScale=id==='parkour'
-  ?1+Math.min(4.5,riderDistance/6000)
+  ?1+
+   Math.min(2.2,riderDistance/3500)+
+   Math.min(4.5,Math.max(0,riderDistance-8000)/5000)+
+   Math.min(5.0,Math.max(0,riderDistance-20000)/9000)
   :1;
+
  const riderProgressScale=id==='parkour'
-  ?1+Math.min(1.4,riderDistance/18000)
+  ?1+
+   Math.min(1.5,riderDistance/7000)+
+   Math.min(2.2,Math.max(0,riderDistance-12000)/11000)
   :1;
 
  const xp=Math.floor(
@@ -208,7 +223,8 @@ function miniRewards(id,normalized,rawScore,grade){
   gradeMult*
   globalMult*
   baseBuff*
-  riderProgressScale
+  riderProgressScale*
+  parkourTimeValue
  );
  const points=Math.floor(
   (150+quality*900)*
@@ -217,14 +233,16 @@ function miniRewards(id,normalized,rawScore,grade){
   gradeMult*
   globalMult*
   baseBuff*
-  riderProgressScale
+  riderProgressScale*
+  parkourTimeValue
  );
  const gems=Math.max(1,Math.floor(
   (1+quality*8*gemRewardMultiplier())*
   gradeMult*
   globalMult*
   baseBuff*
-  riderCurrencyScale
+  riderCurrencyScale*
+  parkourTimeValue
  ));
  const coins=Math.max(1,Math.floor(
   (2+quality*10)*
@@ -232,7 +250,8 @@ function miniRewards(id,normalized,rawScore,grade){
   gradeMult*
   globalMult*
   baseBuff*
-  riderCurrencyScale
+  riderCurrencyScale*
+  parkourTimeValue
  ));
 
  return{
@@ -259,7 +278,7 @@ function finishMini(id,title,displayScore,normalized,rawScore,activity={}){
  grantPetXp(8+normalized*28);
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
- $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.riderCurrencyScale>1?`<span>🛒 Dystans Ridera: x${rewards.riderCurrencyScale.toFixed(2)} walut</span>`:''}${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
+ $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.riderCurrencyScale>1?`<span>🏁 Bonus długiego przejazdu: x${rewards.riderCurrencyScale.toFixed(2)} walut</span>`:''}${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
  const resultOverlay=$('#miniResultOverlay');if(resultOverlay){resultOverlay.classList.remove('hidden');resultOverlay.classList.add('show');resultOverlay.scrollIntoView({behavior:'smooth',block:'center'})}
  saveBestMinigameGrade(id,grade);registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
  render();loadMinigameLeaderboards();return true

@@ -844,6 +844,30 @@ function normalizePetInventoryInstances(){
   :[]
 }
 
+
+function unequipAllPets(){
+ state.equipped=Array.isArray(state.equipped)?state.equipped:[];
+ if(state.equipped.length===0){
+  toast('Nie masz założonych petów');
+  return false
+ }
+
+ state.equipped=[];
+ try{save()}catch(error){
+  console.warn('Unequip all pets save:',error)
+ }
+
+ if(typeof savePlayerProfile==='function'){
+  Promise.resolve(savePlayerProfile(false))
+   .catch(error=>console.warn('Unequip all pets online:',error))
+ }
+
+ renderPets();
+ render();
+ toast('📤 Wszystkie pety zostały zdjęte');
+ return true
+}
+
 function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInstances();
  try{
   sanitizeEquippedPets();
@@ -2448,4 +2472,10 @@ document.addEventListener('DOMContentLoaded',()=>{
    console.warn('Ultimate reward cleanup:',error)
   }
  },700)
+});
+
+document.addEventListener('click',event=>{
+ const unequipAllPetsBtn=event.target.closest?.('#unequipAllPets');
+ if(!unequipAllPetsBtn)return;
+ unequipAllPets()
 });
