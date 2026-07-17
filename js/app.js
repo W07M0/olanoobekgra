@@ -189,21 +189,14 @@ function miniRewards(id,normalized,rawScore,grade){
  const gradeMult={D:.60,C:.80,B:1,A:1.18,S:1.38,SS:1.58,SSS:1.82}[grade]||1;
  const globalMult=arcadeRewardMultiplier();
  const baseBuff=1.35;
+
+ // Dystans musi być policzony przed użyciem w mnożnikach.
+ const riderDistance=Math.max(0,Number(rawScore)||0);
  const parkourTimeValue=id==='parkour'
   ?1.35+Math.min(1.65,riderDistance/18000)
   :1;
+ const parkourRewardBoost=id==='parkour'?2:1;
 
- /*
-  Rider is endless and requires substantially more time.
-  Its currency scaling grows with actual distance.
- */
- const riderDistance=Math.max(0,Number(rawScore)||0);
-
- /*
-  Noob Parkour jest najdłuższą minigrą, więc nagroda rośnie mocno
-  dopiero wraz z realnym dystansem. Krótkie przejazdy nadal nie są
-  przesadnie opłacalne.
- */
  const riderCurrencyScale=id==='parkour'
   ?1+
    Math.min(2.2,riderDistance/3500)+
@@ -224,7 +217,8 @@ function miniRewards(id,normalized,rawScore,grade){
   globalMult*
   baseBuff*
   riderProgressScale*
-  parkourTimeValue
+  parkourTimeValue*
+  parkourRewardBoost
  );
  const points=Math.floor(
   (150+quality*900)*
@@ -234,7 +228,8 @@ function miniRewards(id,normalized,rawScore,grade){
   globalMult*
   baseBuff*
   riderProgressScale*
-  parkourTimeValue
+  parkourTimeValue*
+  parkourRewardBoost
  );
  const gems=Math.max(1,Math.floor(
   (1+quality*8*gemRewardMultiplier())*
@@ -242,7 +237,8 @@ function miniRewards(id,normalized,rawScore,grade){
   globalMult*
   baseBuff*
   riderCurrencyScale*
-  parkourTimeValue
+  parkourTimeValue*
+  parkourRewardBoost
  ));
  const coins=Math.max(1,Math.floor(
   (2+quality*10)*
@@ -251,11 +247,12 @@ function miniRewards(id,normalized,rawScore,grade){
   globalMult*
   baseBuff*
   riderCurrencyScale*
-  parkourTimeValue
+  parkourTimeValue*
+  parkourRewardBoost
  ));
 
  return{
-  xp,points,gems,coins,gradeMult,globalMult,riderCurrencyScale
+  xp,points,gems,coins,gradeMult,globalMult,riderCurrencyScale,parkourRewardBoost
  }
 }
 const miniGradeRank={D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7};
@@ -278,7 +275,7 @@ function finishMini(id,title,displayScore,normalized,rawScore,activity={}){
  grantPetXp(8+normalized*28);
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
- $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.riderCurrencyScale>1?`<span>🏁 Bonus długiego przejazdu: x${rewards.riderCurrencyScale.toFixed(2)} walut</span>`:''}${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
+ $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${id==='parkour'?'<span>🛒 Bonus Noob Rider: x2 wszystkich nagród</span>':''}${rewards.riderCurrencyScale>1?`<span>🏁 Bonus długiego przejazdu: x${rewards.riderCurrencyScale.toFixed(2)} walut</span>`:''}${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
  const resultOverlay=$('#miniResultOverlay');if(resultOverlay){resultOverlay.classList.remove('hidden');resultOverlay.classList.add('show');resultOverlay.scrollIntoView({behavior:'smooth',block:'center'})}
  saveBestMinigameGrade(id,grade);registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
  render();loadMinigameLeaderboards();return true
@@ -492,17 +489,36 @@ else if(hit&&d.invuln<=0){
  parkourFrame=requestAnimationFrame(parkourLoop)
 }
 function stopParkour(reward=true){
- if(!parkourRunning)return;parkourRunning=false;cancelAnimationFrame(parkourFrame);$('#parkourStage').classList.remove('running');
- if(!reward){parkourData=null;return hideGames()}
- const score=Math.floor((parkourData?.score||0)+(parkourData?.bonus||0));
- const lives=Math.max(0,parkourData?.lives||0);
+ if(!parkourRunning)return;
+ parkourRunning=false;
+ cancelAnimationFrame(parkourFrame);
+ const stage=$('#parkourStage');
+ stage?.classList.remove('running');
+
+ const finished=parkourData;
+ if(!reward){
+  parkourData=null;
+  hideGames();
+  return
+ }
+
+ const score=Math.floor((finished?.score||0)+(finished?.bonus||0));
+ const lives=Math.max(0,finished?.lives||0);
  const activity={
-  seconds:(performance.now()-(parkourData?.startedAt||performance.now()))/1000,
+  seconds:(performance.now()-(finished?.startedAt||performance.now()))/1000,
   score
  };
  parkourData=null;
  state.parkourBest=Math.max(state.parkourBest,score);
- finishMini('parkour','Noob Rider',score+' m',Math.min(1,(score/24000)*.82+(lives/3)*.18),score,activity)
+
+ try{
+  finishMini('parkour','Noob Rider',score+' m',Math.min(1,(score/24000)*.82+(lives/3)*.18),score,activity)
+ }catch(error){
+  console.error('Noob Rider finish:',error);
+  saveDiagnostic?.('Noob Rider finish',error.message,error.stack||'');
+  stage?.classList.add('hidden');
+  toast('Błąd zakończenia Ridera zapisano w diagnostyce')
+ }
 }
 $('#parkourCanvas')?.addEventListener('pointerdown',e=>{e.preventDefault();parkourJump()});
 

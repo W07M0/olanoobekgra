@@ -797,8 +797,8 @@ function renderPetInstance(instance){
    <small>${instance.level>=50?'MAX LEVEL':`${Math.floor(instance.xp||0)}/${needed} EXP`}</small>
   </div>
   <div class="pet-instance-actions">
-   <button class="small-btn" onclick="togglePetInstance('${instance.uid}')">${equipped?'Zdejmij':'Wyposaż'}</button>
-   <button class="small-btn pet-delete" onclick="deletePetInstance('${instance.uid}')">Usuń</button>
+   <button type="button" class="small-btn pet-equip-btn" data-pet-equip="${instance.uid}">${equipped?'Zdejmij':'Wyposaż'}</button>
+   <button type="button" class="small-btn pet-delete" data-pet-delete="${instance.uid}">Usuń</button>
   </div>
  </div>`
 }
@@ -929,11 +929,34 @@ function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInsta
  }
 }
 function togglePetInstance(uid){
- const instance=getPetInstance(uid);if(!instance)return;
- if(state.equipped.includes(uid))state.equipped=state.equipped.filter(x=>x!==uid);
- else if(state.equipped.length<maxPetSlots())state.equipped.push(uid);
- else return toast('Brak wolnego slotu na peta');
- render()
+ normalizePetInventoryInstances();
+ const instance=getPetInstance(uid);
+ if(!instance)return false;
+
+ if(state.equipped.includes(uid)){
+  state.equipped=state.equipped.filter(x=>x!==uid);
+  toast(`📤 Zdjęto: ${petDisplayName(instance)}`)
+ }else{
+  const slots=maxPetSlots();
+  if(state.equipped.length>=slots){
+   const weakestUid=[...state.equipped].sort((a,b)=>{
+    return petInstanceMultiplier(getPetInstance(a))-petInstanceMultiplier(getPetInstance(b))
+   })[0];
+   const weakest=getPetInstance(weakestUid);
+   state.equipped=state.equipped.filter(x=>x!==weakestUid);
+   state.equipped.push(uid);
+   toast(`🔄 ${petDisplayName(instance)} zastąpił ${weakest?petDisplayName(weakest):'peta'}`)
+  }else{
+   state.equipped.push(uid);
+   toast(`✅ Wyposażono: ${petDisplayName(instance)}`)
+  }
+ }
+
+ sanitizeEquippedPets();
+ persistPetInventory();
+ renderPets();
+ if(typeof renderHud==='function')renderHud();
+ return true
 }
 function deletePetInstance(uid){
  const instance=getPetInstance(uid);if(!instance)return;
@@ -941,7 +964,10 @@ function deletePetInstance(uid){
  if(!confirm(`Na pewno usunąć peta „${name}” (Lv.${instance.level})? Tej operacji nie można cofnąć.`))return;
  state.equipped=state.equipped.filter(x=>x!==uid);
  state.pets=state.pets.filter(p=>p.uid!==uid);
- toast('Pet został usunięty');render()
+ persistPetInventory();
+ toast('Pet został usunięty');
+ renderPets();
+ if(typeof renderHud==='function')renderHud()
 }
 function fusePets(type,tier){
  if(tier>=3)return;
@@ -2487,3 +2513,29 @@ document.addEventListener('click',event=>{
  if(!unequipAllPetsBtn)return;
  unequipAllPets()
 });
+
+
+/* 0.6c — niezawodne sterowanie petami po każdym renderze */
+if(!window.__petInventoryDelegationBound){
+ window.__petInventoryDelegationBound=true;
+ document.addEventListener('pointerdown',event=>{
+  const control=event.target.closest?.('[data-pet-equip],[data-pet-delete]');
+  if(control)event.stopPropagation()
+ },true);
+ document.addEventListener('click',event=>{
+  const equip=event.target.closest?.('[data-pet-equip]');
+  if(equip){
+   event.preventDefault();
+   event.stopPropagation();
+   togglePetInstance(equip.dataset.petEquip);
+   return
+  }
+  const remove=event.target.closest?.('[data-pet-delete]');
+  if(remove){
+   event.preventDefault();
+   event.stopPropagation();
+   deletePetInstance(remove.dataset.petDelete)
+  }
+ },true)
+}
+Object.assign(window,{togglePetInstance,deletePetInstance,unequipAllPets});
