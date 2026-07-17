@@ -844,7 +844,7 @@ function normalizePetInventoryInstances(){
   :[]
 }
 
-function renderPets(){syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();normalizePetInventoryInstances();
+function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInstances();
  try{
   sanitizeEquippedPets();
   const setText=(s,v)=>{const el=safe$(s);if(el)el.textContent=v};
@@ -855,11 +855,16 @@ function renderPets(){syncClaimedAchievementRewards();repairUltimateNoobAchievem
 
   const summary=safe$('#petRewardBonusSummary');
   if(summary){
-   summary.textContent=
-    `Punkty x${petMultiplier().toFixed(2)} • `+
-    `EXP x${petExpMultiplier().toFixed(2)} • `+
-    `Diamenty x${petGemMultiplier().toFixed(2)} • `+
-    `Noob Coiny x${petCoinMultiplier().toFixed(2)}`
+   const oldPower=typeof legacyPetPointMultiplier==='function'
+    ?legacyPetPointMultiplier()
+    :1;
+   summary.innerHTML=
+    `<strong>Łączna moc petów</strong><br>`+
+    `⚡ Punkty x${petMultiplier().toFixed(2)} `+
+    `<small>(stara moc bazowa x${oldPower.toFixed(2)})</small><br>`+
+    `⭐ EXP x${petExpMultiplier().toFixed(2)} • `+
+    `💎 Diamenty x${petGemMultiplier().toFixed(2)} • `+
+    `🟡 Noob Coiny x${petCoinMultiplier().toFixed(2)}`
   }
 
   const orbit=safe$('#petOrbit');
@@ -1333,74 +1338,7 @@ function isAchievementUnlocked(achievement){
 }
 
 
-function repairUltimateNoobAchievementPet(){
- state.pets=Array.isArray(state.pets)?state.pets:[];
- state.claimedAchievements=Array.isArray(state.claimedAchievements)
-  ?state.claimedAchievements
-  :state.claimedAchievements||[];
-
- const achievement=
-  typeof achievements!=='undefined'
-   ?achievements.find(item=>item.id==='level60')
-   :null;
-
- const oldClaimEvidence=
-  achievementIsClaimed(achievement)||
-  state.specialPetClaimed===true||
-  state.ultimateNoobClaimed===true||
-  state.level60AchievementClaimed===true;
-
- /*
-  Some old profiles lost the claimed marker after save migrations.
-  Level 60 plus a completed achievement state is enough to repair the
-  one-time special reward, but the pet is never duplicated.
- */
- const completedEvidence=
-  Number(state.level)>=60&&(
-   oldClaimEvidence||
-   achievementCollectionHasId(state.completedAchievements,'level60')||
-   achievementCollectionHasId(state.unlockedAchievements,'level60')
-  );
-
- if(!oldClaimEvidence&&!completedEvidence)return false;
-
- const ownsUltimate=state.pets.some(pet=>
-  pet?.type==='overlord'||
-  pet?.petId==='overlord'||
-  pet?.id==='overlord'
- );
- if(ownsUltimate){
-  state.specialPetClaimed=true;
-  state.ultimateNoobPetMigrationDone=true;
-  return false
- }
-
- const added=addPetRewardToCollection('overlord');
- if(!added)return false;
-
- state.specialPetClaimed=true;
- state.ultimateNoobClaimed=true;
- state.ultimateNoobPetMigrationDone=true;
-
- if(Array.isArray(state.claimedAchievements)&&
-    !state.claimedAchievements.includes('level60')){
-  state.claimedAchievements.push('level60')
- }
-
- try{save()}catch(error){
-  console.warn('Ultimate Noob local save:',error)
- }
-
- if(typeof savePlayerProfile==='function'){
-  setTimeout(()=>{
-   Promise.resolve(savePlayerProfile(false))
-    .catch(error=>console.warn('Ultimate Noob remote save:',error))
-  },250)
- }
-
- toast?.('👑 Naprawiono nagrodę: Ultimate Noob trafił do petów!');
- return true
-}
+function repairUltimateNoobAchievementPet(){return false}
 
 
 function achievementCollectionContainsId(collection,id){
@@ -1473,87 +1411,11 @@ function isValidUltimateNoobInstance(pet){
   uid.length>=8
 }
 
-function removePhantomUltimateNoobEntries(){
- state.pets=Array.isArray(state.pets)?state.pets:[];
+function removePhantomUltimateNoobEntries(){return false}
 
- const before=state.pets.length;
- state.pets=state.pets.filter(pet=>{
-  const referencesUltimate=
-   pet?.type==='overlord'||
-   pet?.petId==='overlord'||
-   pet?.id==='overlord';
+function reopenMissingUltimateNoobAchievement(){return false}
 
-  if(!referencesUltimate)return true;
-
-  // Keep only a complete instance that the pet inventory can actually render.
-  return isValidUltimateNoobInstance(pet)
- });
-
- return state.pets.length!==before
-}
-
-function reopenMissingUltimateNoobAchievement(){
- state.pets=Array.isArray(state.pets)?state.pets:[];
-
- const removedPhantom=removePhantomUltimateNoobEntries();
- const ownsVisibleUltimate=state.pets.some(isValidUltimateNoobInstance);
-
- if(ownsVisibleUltimate){
-  if(removedPhantom){
-   try{save()}catch{}
-  }
-  return false
- }
-
- const claimedSomewhere=[
-  state.claimedAchievements,
-  state.achievementsClaimed,
-  state.achievements
- ].some(collection=>
-  achievementCollectionContainsId(collection,'level60')
- );
-
- const oldRewardFlag=
-  state.specialPetClaimed===true||
-  state.ultimateNoobClaimed===true||
-  state.ultimateNoobPetMigrationDone===true||
-  state.level60AchievementClaimed===true;
-
- /*
-  Poziom 60 oznacza, że warunek osiągnięcia nadal jest spełniony.
-  Jeżeli nie ma pełnego, widocznego egzemplarza peta, ponownie
-  otwieramy nagrodę niezależnie od starych, uszkodzonych flag.
- */
- if(Number(state.level)<60)return false;
- if(!claimedSomewhere&&!oldRewardFlag&&!removedPhantom)return false;
-
- state.claimedAchievements=removeAchievementClaimId(
-  state.claimedAchievements,
-  'level60'
- );
- state.achievementsClaimed=removeAchievementClaimId(
-  state.achievementsClaimed,
-  'level60'
- );
- state.achievements=removeAchievementClaimId(
-  state.achievements,
-  'level60'
- );
-
- state.specialPetClaimed=false;
- state.ultimateNoobClaimed=false;
- state.ultimateNoobPetMigrationDone=false;
- state.level60AchievementClaimed=false;
- state.level60RewardReopened=true;
-
- try{save()}catch(error){
-  console.warn('Level 60 reward reopen:',error)
- }
-
- return true
-}
-
-function renderAchievements(){reopenMissingUltimateNoobAchievement();syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();
+function renderAchievements(){syncClaimedAchievementRewards();
  const grid=safe$('#achievementGrid');if(!grid)return;
  const category=state.achievementCategory||'all';
  const search=(state.achievementSearch||'').toLowerCase();
@@ -2564,31 +2426,26 @@ let bossCooldownUiTimer=setInterval(()=>{
 })();
 
 
+
+
+
+
+
+
+function cleanupRemovedUltimateNoobReward(){
+ state.level60RewardReopened=false;
+ state.ultimateNoobPetMigrationDone=false;
+ state.ultimateNoobClaimed=false;
+ state.level60AchievementClaimed=false;
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
  setTimeout(()=>{
   try{
-   syncClaimedAchievementRewards();
-   repairUltimateNoobAchievementPet();
-   normalizePetInventoryInstances();
-   renderPets()
+   cleanupRemovedUltimateNoobReward();
+   if(typeof save==='function')save()
   }catch(error){
-   console.warn('Pet achievement migration:',error)
+   console.warn('Ultimate reward cleanup:',error)
   }
- },900)
-});
-
-
-document.addEventListener('DOMContentLoaded',()=>{
- setTimeout(()=>{
-  try{
-   if(reopenMissingUltimateNoobAchievement()){
-    if(typeof renderAchievements==='function')renderAchievements();
-    if(typeof toast==='function'){
-     toast('👑 Nagroda Ultimate Noob jest ponownie gotowa do odebrania!')
-    }
-   }
-  }catch(error){
-   console.warn('Level 60 achievement reopen:',error)
-  }
- },1200)
+ },700)
 });

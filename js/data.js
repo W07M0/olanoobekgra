@@ -610,7 +610,7 @@ const achievementMeta={
  pet3:{category:'pets'},pets10:{category:'pets'},crate10:{category:'pets'},
  skins8:{category:'skins',special:{type:'frame',id:'collector',name:'Kolekcjonerska ramka'}},goldskin:{category:'skins'},
  worlds:{category:'secret'},goldrealm:{category:'secret'},developer:{category:'secret',special:{type:'frame',id:'developer',name:'Developer frame'}},
- level60:{category:'secret',special:{type:'pet',id:'overlord',name:'Ultimate Noob Pet'}},
+ level60:{category:'secret',special:{type:'pet',id:'overlord',name:'60 💎'}},
  rebirth:{category:'secret'}
 };
 achievements.forEach(a=>{

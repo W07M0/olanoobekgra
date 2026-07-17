@@ -98,10 +98,38 @@ function petResourceMultiplier(resource){
  },1)
 }
 
+function legacyPetPointMultiplier(){
+ sanitizeEquippedPets();
+ return state.equipped.reduce((multiplier,uid)=>{
+  const instance=getPetInstance(uid);
+  return instance
+   ?multiplier*Math.max(1,petInstanceMultiplier(instance))
+   :multiplier
+ },1)
+}
+
 function petMultiplier(){
+ sanitizeEquippedPets();
+
+ /*
+  Hybrid model:
+  - old pet instance multipliers restore the main point power,
+  - rarity/resource bonuses remain an additional layer,
+  - a soft exponent prevents extreme late-game inflation.
+ */
+ const oldBase=state.equipped.reduce((multiplier,uid)=>{
+  const instance=getPetInstance(uid);
+  if(!instance)return multiplier;
+  return multiplier*Math.max(1,petInstanceMultiplier(instance))
+ },1);
+
+ const rarityBonus=petResourceMultiplier('points');
  const upgrade=1+(state.petPower||0)*.06;
- const raw=petResourceMultiplier('points');
- return 1+(raw-1)*upgrade
+
+ const restoredBase=Math.pow(oldBase,.82);
+ const rarityLayer=1+(rarityBonus-1)*.55;
+
+ return Math.max(1,restoredBase*rarityLayer*upgrade)
 }
 
 function petExpMultiplier(){

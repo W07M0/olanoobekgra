@@ -3192,3 +3192,20 @@ body[class*="skin-"] #clickerWord,
 .pet-instance-resource-bonuses span:nth-child(4){
  color:#ffe36f;
 }
+
+/* 0.6c — hybrid pet power explanation */
+.pet-hybrid-info{
+ margin-top:8px;
+ padding:9px 11px;
+ border-radius:10px;
+ background:rgba(117,92,255,.09);
+ border:1px solid rgba(117,92,255,.22);
+ color:#d8d0ff;
+ font-size:11px;
+ line-height:1.35;
+}
+
+#petRewardBonusSummary small{
+ opacity:.72;
+ font-weight:700;
+}
