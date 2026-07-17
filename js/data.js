@@ -163,7 +163,9 @@ function renderDiagnostics(){
  let status=$('#diagnosticsStatus'),log=$('#diagnosticsLog');if(!status||!log)return;
  let list=getDiagnostics();status.classList.toggle('has-errors',list.length>0);
  status.textContent=list.length?`Wykryto ${list.length} zapisanych problemów.`:'Brak wykrytych błędów.';
- log.textContent=list.map(x=>`[${new Date(x.time).toLocaleString('pl-PL')}] ${x.kind} — ${x.message}\nWidok: ${x.view}\n${x.stack||''}`).join('\n\n')
+ const text=list.map(x=>`[${new Date(x.time).toLocaleString('pl-PL')}] ${x.kind} — ${x.message}\nWidok: ${x.view}\n${x.stack||''}`).join('\n\n');
+ if('value' in log)log.value=text;
+ else log.textContent=text
 }
 function clearDiagnostics(){localStorage.removeItem(DIAGNOSTICS_KEY);renderDiagnostics();toast('Diagnostyka wyczyszczona')}
 window.addEventListener('error',e=>saveDiagnostic('JavaScript',e.message,e.error?.stack||`${e.filename}:${e.lineno}`));

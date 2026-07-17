@@ -1066,6 +1066,34 @@ $$('[data-exchange-percent]').forEach(button=>{
 });
 
 /* Feedback i diagnostyka */
+async function copyDiagnosticsToClipboard(){
+ const log=$('#diagnosticsLog');
+ const text=String(log?.value??log?.textContent??'').trim();
+
+ if(!text){
+  toast('Brak błędów do skopiowania');
+  return
+ }
+
+ try{
+  await navigator.clipboard.writeText(text);
+  toast('📋 Błędy skopiowane')
+ }catch(error){
+  if(log?.select){
+   log.focus();
+   log.select();
+   log.setSelectionRange?.(0,log.value.length);
+   try{
+    document.execCommand('copy');
+    toast('📋 Błędy skopiowane');
+    return
+   }catch{}
+  }
+  toast('Zaznacz tekst i użyj Ctrl+C')
+ }
+}
+
+bindClick('#copyDiagnostics',copyDiagnosticsToClipboard);
 bindClick('#clearDiagnostics',clearDiagnostics);
 bindClick('#sendFeedback',sendFeedback);
 bindClick('#refreshFeedback',loadFeedback);
@@ -1304,6 +1332,8 @@ bindClick('#saveProfileStyle',()=>window.saveProfileStyleNow?.());
    '.admin-table',
    'pre',
    'code',
+   '#diagnosticsLog',
+   '.diagnostics-log',
    '.log-entry'
   ].join(','))
  }

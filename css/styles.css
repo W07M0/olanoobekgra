@@ -3483,3 +3483,53 @@ pre,
  user-select:text!important;
  cursor:text;
 }
+
+/* 0.6c — finalna poprawka kopiowania diagnostyki */
+.diagnostics-actions{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+ justify-content:flex-end;
+}
+
+textarea.diagnostics-log,
+#diagnosticsLog{
+ display:block;
+ width:100%;
+ min-height:240px;
+ max-height:420px;
+ resize:vertical;
+ overflow:auto;
+ box-sizing:border-box;
+ white-space:pre;
+ word-break:normal;
+ padding:12px;
+ border:1px solid rgba(255,255,255,.12);
+ border-radius:12px;
+ background:#09040f;
+ color:#ddd;
+ font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+ font-size:11px;
+ line-height:1.5;
+ cursor:text!important;
+ pointer-events:auto!important;
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+}
+
+textarea.diagnostics-log:focus,
+#diagnosticsLog:focus{
+ outline:2px solid rgba(54,231,255,.42);
+ outline-offset:2px;
+}
+
+@media(max-width:620px){
+ .diagnostics-actions{
+  width:100%;
+  justify-content:stretch;
+ }
+ .diagnostics-actions button{
+  flex:1;
+ }
+}

@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6c</title>
-<link href="css/styles.css?v=06cfeedbackadmincopyfix" rel="stylesheet"/>
+<link href="css/styles.css?v=06cdiagnosticscopyfinal" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -348,10 +348,13 @@
 <div class="diagnostics card">
 <div class="feedback-toolbar">
 <div><h2>🧪 Diagnostyka</h2><p class="muted">Ostatnie błędy zapisane w tej przeglądarce.</p></div>
+<div class="diagnostics-actions">
+<button class="small-btn action-secondary" id="copyDiagnostics">Kopiuj błędy</button>
 <button class="small-btn action-secondary" id="clearDiagnostics">Wyczyść</button>
 </div>
+</div>
 <div class="diagnostics-status" id="diagnosticsStatus">Brak wykrytych błędów.</div>
-<pre class="diagnostics-log" id="diagnosticsLog"></pre>
+<textarea class="diagnostics-log" id="diagnosticsLog" readonly spellcheck="false" aria-label="Zapisane błędy diagnostyczne"></textarea>
 </div>
 </section><section class="view" id="view-settings">
 <div class="section-title">
@@ -597,16 +600,16 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06cfeedbackadmincopyfix"></script>
-<script defer="" src="js/core.js?v=06cfeedbackadmincopyfix"></script>
-<script src="js/textures.js?v=06cfeedbackadmincopyfix"></script>
-<script defer="" src="js/systems.js?v=06cfeedbackadmincopyfix"></script>
-<script defer="" src="js/integrations.js?v=06cfeedbackadmincopyfix"></script>
-<script defer="" src="js/profile-admin.js?v=06cfeedbackadmincopyfix"></script>
+<script defer="" src="js/data.js?v=06cdiagnosticscopyfinal"></script>
+<script defer="" src="js/core.js?v=06cdiagnosticscopyfinal"></script>
+<script src="js/textures.js?v=06cdiagnosticscopyfinal"></script>
+<script defer="" src="js/systems.js?v=06cdiagnosticscopyfinal"></script>
+<script defer="" src="js/integrations.js?v=06cdiagnosticscopyfinal"></script>
+<script defer="" src="js/profile-admin.js?v=06cdiagnosticscopyfinal"></script>
 
-<script src="js/music-playlist.js?v=06cfeedbackadmincopyfix"></script>
-<script src="js/music-player.js?v=06cfeedbackadmincopyfix"></script>
-<script defer="" src="js/app.js?v=06cfeedbackadmincopyfix"></script>
+<script src="js/music-playlist.js?v=06cdiagnosticscopyfinal"></script>
+<script src="js/music-player.js?v=06cdiagnosticscopyfinal"></script>
+<script defer="" src="js/app.js?v=06cdiagnosticscopyfinal"></script>
 
 <div class="modal-overlay hidden" id="bossResult">
  <div class="modal boss-result-modal">
