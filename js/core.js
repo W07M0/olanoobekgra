@@ -228,3 +228,15 @@ if(!state.quests)state.quests=newQuests();
 function questProgress(q){if(q.id==='clicks')return state.totalClicks-q.start;if(q.id==='earn')return state.points-q.start;if(q.id==='combo')return state.bestCombo;return 0}
 function claimQuest(i){let q=state.quests[i],p=questProgress(q);if(q.claimed||p<q.goal)return;state[q.reward[0]]+=q.reward[1];q.claimed=true;sfx('good');toast('Quest ukończony!');render()}
 function renderQuests(){$('#questList').innerHTML=state.quests.map((q,i)=>{let p=Math.min(q.goal,questProgress(q));return`<div class="quest"><div class="quest-top"><span>${q.name}</span><span>${fmt(p)}/${fmt(q.goal)}</span></div><div class="mini-progress"><i style="width:${p/q.goal*100}%"></i></div><button class="small-btn" onclick="claimQuest(${i})" ${p<q.goal||q.claimed?'disabled':''}>${q.claimed?'Odebrane':'Odbierz '+q.reward[1]+' '+(q.reward[0]==='gems'?'💎':'🟡')}</button></div>`}).join('')}
+
+
+/* 0.6c — wspólny helper bezpiecznego tekstu dostępny dla wszystkich plików */
+window.safeText=window.safeText||function safeText(value){
+ return String(value??'').replace(/[&<>"']/g,character=>({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
+ }[character]))
+};

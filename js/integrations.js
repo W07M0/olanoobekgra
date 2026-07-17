@@ -221,3 +221,11 @@ async function saveOnline(){
  if(!db){state.leaderboard.push({name,score});toast('Zapisano lokalnie');render();return}
  let {error}=await db.rpc('submit_score',{p_player_id:playerId,p_player_name:name,p_score:score});if(error){console.error(error);toast('Błąd zapisu — sprawdź SQL Supabase');return}toast('Wynik zapisany online!');loadBoard()
 }
+
+/* 0.6c — publiczne API wymiany kasyna */
+Object.assign(window,{
+ updateExchangePreview,
+ setExchangeMaximum,
+ setExchangePercent,
+ confirmExchange
+});

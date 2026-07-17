@@ -1049,7 +1049,7 @@ $$('[data-exchange]').forEach(button=>{
  button.onclick=()=>{
   exchangeCurrency=button.dataset.exchange;
   $$('[data-exchange]').forEach(x=>x.classList.toggle('active',x===button));
-  updateExchangePreview()
+  window.updateExchangePreview?.()
  }
 });
 
@@ -1057,12 +1057,12 @@ $$('[data-exchange]').forEach(button=>{
 
 const exchangeInput=$('#exchangeAmountInput');
 if(exchangeInput){
- exchangeInput.addEventListener('input',updateExchangePreview);
- exchangeInput.addEventListener('change',updateExchangePreview)
+ exchangeInput.addEventListener('input',()=>window.updateExchangePreview?.());
+ exchangeInput.addEventListener('change',()=>window.updateExchangePreview?.())
 }
-bindClick('#exchangeMax',setExchangeMaximum);
+bindClick('#exchangeMax',()=>window.setExchangeMaximum?.());
 $$('[data-exchange-percent]').forEach(button=>{
- button.onclick=()=>setExchangePercent(Number(button.dataset.exchangePercent))
+ button.onclick=()=>window.setExchangePercent?.(Number(button.dataset.exchangePercent))
 });
 
 /* Feedback i diagnostyka */

@@ -2214,6 +2214,14 @@ function renderLiveProfilePreview(){
  }
 }
 
+const safeTextLocal=value=>{
+ const helper=window.safeText;
+ if(typeof helper==='function')return helper(value);
+ return String(value??'').replace(/[&<>"']/g,character=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[character]))
+};
+
 function renderProfileStyleSettings(){renderLiveProfilePreview();
  syncProfileStyleRewardsFromAchievements();
  if(typeof applyTextureVariables==='function')applyTextureVariables();
@@ -2225,7 +2233,7 @@ function renderProfileStyleSettings(){renderLiveProfilePreview();
  const preview=safe$('#profileStylePreview');
  const previewName=safe$('#profileStylePreviewName');
 
- if(previewName)previewName.textContent=safeText(state.playerName||'Gracz');
+ if(previewName)previewName.textContent=safeTextLocal(state.playerName||'Gracz');
 
  if(preview){
   preview.className=`profile-style-preview profile-frame-${state.profileFrame||'default'} profile-bg-${state.profileBackground||'default'}`
