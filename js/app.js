@@ -1282,7 +1282,30 @@ bindClick('#saveProfileStyle',()=>window.saveProfileStyleNow?.());
  ].join(',');
 
  function isEditable(target){
-  return target instanceof Element&&!!target.closest(editableSelector)
+  if(!(target instanceof Element))return false;
+
+  return !!target.closest([
+   'input',
+   'textarea',
+   'select',
+   'option',
+   '[contenteditable="true"]',
+   '#view-feedback',
+   '#view-admin',
+   '.feedback-panel',
+   '.feedback-list',
+   '.feedback-card',
+   '.diagnostics-panel',
+   '.diagnostics-list',
+   '.error-log',
+   '.admin-panel',
+   '.admin-card',
+   '.admin-log',
+   '.admin-table',
+   'pre',
+   'code',
+   '.log-entry'
+  ].join(','))
  }
 
  document.addEventListener('selectstart',event=>{

@@ -3426,3 +3426,60 @@ option,
   width:100%;
  }
 }
+
+/* 0.6c — kopiowanie tekstu w panelu Feedback i Admina */
+#view-feedback,
+#view-feedback *,
+#view-admin,
+#view-admin *,
+.feedback-panel,
+.feedback-panel *,
+.feedback-list,
+.feedback-list *,
+.feedback-card,
+.feedback-card *,
+.diagnostics-panel,
+.diagnostics-panel *,
+.diagnostics-list,
+.diagnostics-list *,
+.error-log,
+.error-log *,
+.admin-panel,
+.admin-panel *,
+.admin-card,
+.admin-card *,
+.admin-log,
+.admin-log *,
+.admin-table,
+.admin-table *,
+code,
+pre,
+.log-entry,
+.log-entry *{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+}
+
+/* Elementy interaktywne nadal zachowują się normalnie */
+#view-feedback button,
+#view-admin button,
+#view-feedback select,
+#view-admin select{
+ -webkit-user-select:none!important;
+ user-select:none!important;
+}
+
+/* Pola tekstowe, identyfikatory i logi można zaznaczać */
+#view-feedback input,
+#view-feedback textarea,
+#view-admin input,
+#view-admin textarea,
+#view-feedback code,
+#view-feedback pre,
+#view-admin code,
+#view-admin pre{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ cursor:text;
+}
