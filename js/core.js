@@ -45,23 +45,53 @@ function sanitizeEquippedPets(){
  return clean
 }
 
-function petMultiplier(){
+const PET_RARITY_BONUSES={
+ common:{xp:.035,points:0,gems:0,coins:0},
+ uncommon:{xp:.050,points:0,gems:0,coins:0},
+ rare:{xp:.065,points:.035,gems:0,coins:0},
+ epic:{xp:.085,points:.055,gems:.025,coins:0},
+ legendary:{xp:.110,points:.080,gems:.040,coins:.030},
+ mythic:{xp:.145,points:.110,gems:.060,coins:.050},
+ secret:{xp:.180,points:.150,gems:.085,coins:.075}
+};
+
+function petResourceMultiplier(resource){
  sanitizeEquippedPets();
- let base=state.equipped.reduce((m,uid)=>{
+
+ return state.equipped.reduce((multiplier,uid)=>{
   const instance=getPetInstance(uid);
-  return instance?m*petInstanceMultiplier(instance):m
- },1);
- let upgrade=1+(state.petPower||0)*.06;
- return 1+(base-1)*upgrade
+  if(!instance)return multiplier;
+
+  const base=getPetBase(instance);
+  const rarity=String(base.rarity||'common').toLowerCase();
+  const config=PET_RARITY_BONUSES[rarity]||PET_RARITY_BONUSES.common;
+  const baseBonus=Number(config[resource])||0;
+  if(baseBonus<=0)return multiplier;
+
+  const levelScale=1+(Math.max(1,instance.level)-1)*.006;
+  const evolutionScale=1+(Math.max(0,instance.evolution||0))*.18;
+  const individualScale=Math.max(1,Math.log2(Math.max(1.01,base.mult||1))*.42+1);
+
+  return multiplier*(1+baseBonus*levelScale*evolutionScale*individualScale)
+ },1)
 }
+
+function petMultiplier(){
+ const upgrade=1+(state.petPower||0)*.06;
+ const raw=petResourceMultiplier('points');
+ return 1+(raw-1)*upgrade
+}
+
 function petExpMultiplier(){
- sanitizeEquippedPets();
- return state.equipped.reduce((m,uid)=>{
-  const instance=getPetInstance(uid),base=getPetBase(instance);
-  if(!instance)return m;
-  const levelBonus=1+(instance.level-1)*.003;
-  return m*(base.exp||1)*levelBonus
- },1)*(1+(state.petExpBonus||0)*.035)
+ return petResourceMultiplier('xp')*(1+(state.petExpBonus||0)*.035)
+}
+
+function petGemMultiplier(){
+ return petResourceMultiplier('gems')
+}
+
+function petCoinMultiplier(){
+ return petResourceMultiplier('coins')
 }
 function grantPetXp(amount,allPets=false){
  sanitizeEquippedPets();
@@ -86,8 +116,8 @@ function rebirthMultiplier(){
 function totalMultiplier(){return rebirthMultiplier()*world().mult*petMultiplier()*world().petMult*eventMultiplier}
 function clickValue(){let comboBonus=Math.min(2.5,(combo-1)*state.comboPower*.035);let burst=1+(state.clickBurst||0)*.12;let permanent=1+(state.permClickPower||0)*.10;return state.perClick*totalMultiplier()*(1+comboBonus)*burst*permanent}
 function pps(){let permanent=1+(state.permAutoPower||0)*.12;return state.auto*totalMultiplier()*(1+(state.autoBoost||0)*.2)*permanent}
-function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)*(1+(state.permGemIncome||0)*.08)}
-function coinRewardMultiplier(){return world().coinMult}
+function gemRewardMultiplier(){return world().gemMult*(1+(state.petGemBonus||0)*.035)*(1+(state.permGemIncome||0)*.08)*petGemMultiplier()}
+function coinRewardMultiplier(){return world().coinMult*petCoinMultiplier()}
 function expMultiplier(){return (1+(state.expBoost||0)*.08)*petExpMultiplier()}
 function cost(u){return Math.ceil(u.base*Math.pow(u.growth,u.get()))}
 function currencyIcon(c){return c==='points'?'⭐':c==='gems'?'💎':'🟡'}

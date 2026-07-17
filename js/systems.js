@@ -830,7 +830,7 @@ function normalizePetInventoryInstances(){
   :[]
 }
 
-function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInstances();
+function renderPets(){syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();normalizePetInventoryInstances();
  try{
   sanitizeEquippedPets();
   const setText=(s,v)=>{const el=safe$(s);if(el)el.textContent=v};
@@ -838,6 +838,15 @@ function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInsta
   setText('#equippedCount',state.equipped.length+'/'+maxPetSlots());
   setText('#petBonus','x'+petMultiplier().toFixed(2));
   setText('#petExpBonus','x'+petExpMultiplier().toFixed(2));
+
+  const summary=safe$('#petRewardBonusSummary');
+  if(summary){
+   summary.textContent=
+    `Punkty x${petMultiplier().toFixed(2)} • `+
+    `EXP x${petExpMultiplier().toFixed(2)} • `+
+    `Diamenty x${petGemMultiplier().toFixed(2)} • `+
+    `Noob Coiny x${petCoinMultiplier().toFixed(2)}`
+  }
 
   const orbit=safe$('#petOrbit');
   if(orbit){
@@ -1146,6 +1155,7 @@ function addPetRewardToCollection(petId){
   state.pets.push({
    uid:crypto.randomUUID?.()||
     ('achievement_pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)),
+   type:petId,
    petId,
    id:petId,
    level:1,
@@ -1265,6 +1275,10 @@ function isAchievementUnlocked(achievement){
  if(!achievement)return false;
  if(achievementIsClaimed(achievement))return true;
 
+ try{
+  if(typeof achievement.test==='function'&&achievement.test())return true
+ }catch{}
+
  const id=achievement.id;
  return [
   state.unlockedAchievements,
@@ -1275,7 +1289,32 @@ function isAchievementUnlocked(achievement){
  )
 }
 
-function renderAchievements(){syncClaimedAchievementRewards();syncClaimedAchievementRewards();
+
+function repairUltimateNoobAchievementPet(){
+ const achievement=
+  typeof achievements!=='undefined'
+   ?achievements.find(item=>item.id==='level60')
+   :null;
+ if(!achievement||!achievementIsClaimed(achievement))return false;
+
+ const ownsUltimate=(state.pets||[]).some(pet=>
+  pet?.type==='overlord'||
+  pet?.petId==='overlord'||
+  pet?.id==='overlord'
+ );
+ if(ownsUltimate)return false;
+
+ addPetRewardToCollection('overlord');
+ state.ultimateNoobPetMigrationDone=true;
+
+ try{save()}catch{}
+ if(typeof savePlayerProfile==='function'){
+  setTimeout(()=>savePlayerProfile(false),200)
+ }
+ return true
+}
+
+function renderAchievements(){syncClaimedAchievementRewards();repairUltimateNoobAchievementPet();
  const grid=safe$('#achievementGrid');if(!grid)return;
  const category=state.achievementCategory||'all';
  const search=(state.achievementSearch||'').toLowerCase();

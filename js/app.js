@@ -29,7 +29,7 @@ function scrollToArcadeTop(){
 const MINI_COOLDOWN=30000;
 let activeMini=null,aimRunning=false,parkourRunning=false,reflexRunning=false,dodgeRunning=false;
 let aimLoop=null,parkourFrame=null,dodgeFrame=null,reflexTimer=null;
-let aimScore=0,aimHits=0,aimMisses=0,aimCombo=0,aimTimer=0,parkourData=null,reflexData=null,dodgeData=null;
+let aimScore=0,aimHits=0,aimMisses=0,aimCombo=0,aimTimer=0,aimStartedAt=0,parkourData=null,reflexData=null,dodgeData=null;
 let minigameBoards={aim:[],parkour:[],reflex:[],dodge:[]};
 
 function miniReady(id){
@@ -110,24 +110,148 @@ function miniGrade(normalized){
  if(normalized>=.42)return'C';
  return'D'
 }
-function miniRewards(normalized,rawScore,grade){
+
+const MINI_ACTIVITY_RULES={
+ aim:{
+  minSeconds:5,
+  validate:a=>(a.actions||0)>=4
+ },
+ parkour:{
+  minSeconds:6,
+  validate:a=>(a.score||0)>=100
+ },
+ reflex:{
+  minSeconds:7,
+  validate:a=>(a.actions||0)>=3
+ },
+ dodge:{
+  minSeconds:7,
+  validate:a=>(a.score||0)>=8
+ }
+};
+
+function validateMiniActivity(id,activity={}){
+ const rule=MINI_ACTIVITY_RULES[id];
+ if(!rule)return{valid:true};
+
+ const seconds=Math.max(0,Number(activity.seconds)||0);
+ if(seconds<rule.minSeconds){
+  return{
+   valid:false,
+   reason:`Zagraj co najmniej ${rule.minSeconds} sekund.`
+  }
+ }
+
+ if(!rule.validate(activity)){
+  const messages={
+   aim:'Traf lub spróbuj trafić co najmniej 4 cele.',
+   parkour:'Przejedź co najmniej 100 metrów.',
+   reflex:'Zareaguj na co najmniej 3 nuty.',
+   dodge:'Przetrwaj trochę dłużej i zdobądź minimum 8 punktów.'
+  };
+  return{valid:false,reason:messages[id]||'Wykonaj więcej akcji w minigrze.'}
+ }
+
+ return{valid:true}
+}
+
+function showMiniNoReward(id,title,displayScore,reason){
+ const grade=$('#miniGrade');
+ if(grade){
+  grade.textContent='—';
+  grade.className='mini-grade grade-d'
+ }
+ const titleBox=$('#miniResultTitle');
+ const scoreBox=$('#miniResultScore');
+ const rewardsBox=$('#miniResultRewards');
+
+ if(titleBox)titleBox.textContent=title;
+ if(scoreBox)scoreBox.textContent=displayScore;
+ if(rewardsBox){
+  rewardsBox.innerHTML=
+   `<span>🚫 Brak nagrody</span>`+
+   `<span>${safeText(reason||'Zagraj aktywnie, zanim zakończysz grę.')}</span>`
+ }
+
+ const overlay=$('#miniResultOverlay');
+ if(overlay){
+  overlay.classList.remove('hidden');
+  overlay.classList.add('show');
+  overlay.scrollIntoView({behavior:'smooth',block:'center'})
+ }
+
+ // No cooldown, completion, leaderboard score or arcade-cycle credit.
+ save()
+}
+
+function miniRewards(id,normalized,rawScore,grade){
  const quality=Math.max(.06,Math.min(1.2,normalized));
  const gradeMult={D:.60,C:.80,B:1,A:1.18,S:1.38,SS:1.58,SSS:1.82}[grade]||1;
  const globalMult=arcadeRewardMultiplier();
  const baseBuff=1.35;
- const xp=Math.floor((35+quality*115)*expMultiplier()*gradeMult*globalMult*baseBuff);
- const points=Math.floor((150+quality*900)*Math.max(1,state.level*.35)*totalMultiplier()**.22*gradeMult*globalMult*baseBuff);
- const gems=Math.max(1,Math.floor((1+quality*8*gemRewardMultiplier())*gradeMult*globalMult*baseBuff));
- const coins=Math.max(1,Math.floor((2+quality*10)*coinRewardMultiplier()*gradeMult*globalMult*baseBuff));
- return{xp,points,gems,coins,gradeMult,globalMult}
+
+ /*
+  Rider is endless and requires substantially more time.
+  Its currency scaling grows with actual distance.
+ */
+ const riderDistance=Math.max(0,Number(rawScore)||0);
+ const riderCurrencyScale=id==='parkour'
+  ?1+Math.min(4.5,riderDistance/6000)
+  :1;
+ const riderProgressScale=id==='parkour'
+  ?1+Math.min(1.4,riderDistance/18000)
+  :1;
+
+ const xp=Math.floor(
+  (35+quality*115)*
+  expMultiplier()*
+  gradeMult*
+  globalMult*
+  baseBuff*
+  riderProgressScale
+ );
+ const points=Math.floor(
+  (150+quality*900)*
+  Math.max(1,state.level*.35)*
+  totalMultiplier()**.22*
+  gradeMult*
+  globalMult*
+  baseBuff*
+  riderProgressScale
+ );
+ const gems=Math.max(1,Math.floor(
+  (1+quality*8*gemRewardMultiplier())*
+  gradeMult*
+  globalMult*
+  baseBuff*
+  riderCurrencyScale
+ ));
+ const coins=Math.max(1,Math.floor(
+  (2+quality*10)*
+  coinRewardMultiplier()*
+  gradeMult*
+  globalMult*
+  baseBuff*
+  riderCurrencyScale
+ ));
+
+ return{
+  xp,points,gems,coins,gradeMult,globalMult,riderCurrencyScale
+ }
 }
 const miniGradeRank={D:1,C:2,B:3,A:4,S:5,SS:6,SSS:7};
 function saveBestMinigameGrade(game,grade){state.minigameBestGrades={aim:'-',parkour:'-',reflex:'-',dodge:'-',...(state.minigameBestGrades||{})};const old=state.minigameBestGrades[game]||'-';if((miniGradeRank[grade]||0)>(miniGradeRank[old]||0))state.minigameBestGrades[game]=grade}
-function finishMini(id,title,displayScore,normalized,rawScore){
+function finishMini(id,title,displayScore,normalized,rawScore,activity={}){
+ const activityResult=validateMiniActivity(id,activity);
+ if(!activityResult.valid){
+  showMiniNoReward(id,title,displayScore,activityResult.reason);
+  return false
+ }
+
  startMiniCooldown(id);
  state.eventStats.minigames++;ensureAchievementStats();state.achievementStats.arcadePlayed++;
  state.minigameRecords[id]=Math.max(state.minigameRecords[id]||0,rawScore);
- const grade=miniGrade(normalized);const rewards=miniRewards(normalized,rawScore,grade);
+ const grade=miniGrade(normalized);const rewards=miniRewards(id,normalized,rawScore,grade);
  addPoints(rewards.points);
  state.gems+=rewards.gems;
  state.coins+=rewards.coins;
@@ -135,10 +259,10 @@ function finishMini(id,title,displayScore,normalized,rawScore){
  grantPetXp(8+normalized*28);
  $('#miniGrade').textContent=grade;$('#miniGrade').className='mini-grade grade-'+grade.toLowerCase();
  $('#miniResultTitle').textContent=title;$('#miniResultScore').textContent=displayScore;
- $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
+ $('#miniResultRewards').innerHTML=`<span>⭐ +${fmt(rewards.xp)} EXP</span><span>⚡ +${fmt(rewards.points)} punktów</span><span>💎 +${fmt(rewards.gems)}</span><span>🟡 +${fmt(rewards.coins)} Noob Coinów</span><span>🏅 Ocena ${grade}: x${rewards.gradeMult.toFixed(2)}</span>${rewards.riderCurrencyScale>1?`<span>🛒 Dystans Ridera: x${rewards.riderCurrencyScale.toFixed(2)} walut</span>`:''}${rewards.globalMult>1?'<span>🏆 Arcade buff x1.15</span>':''}`;
  const resultOverlay=$('#miniResultOverlay');if(resultOverlay){resultOverlay.classList.remove('hidden');resultOverlay.classList.add('show');resultOverlay.scrollIntoView({behavior:'smooth',block:'center'})}
  saveBestMinigameGrade(id,grade);registerArcadeCompletion(id);submitMinigameScore(id,rawScore);
- render();loadMinigameLeaderboards()
+ render();loadMinigameLeaderboards();return true
 }
 
 /* AIM LAB */
@@ -170,7 +294,7 @@ function updateAimHud(){
 }
 function startAimGame(){
  if(!prepareMinigame('aim','aimStage'))return;scrollToActiveMinigame('aimStage');
- aimRunning=true;aimScore=0;aimHits=0;aimMisses=0;aimCombo=0;aimTimer=20;updateAimHud();moveAim();
+ aimRunning=true;aimScore=0;aimHits=0;aimMisses=0;aimCombo=0;aimTimer=20;aimStartedAt=performance.now();updateAimHud();moveAim();
  let last=performance.now();clearInterval(aimLoop);
  aimLoop=setInterval(()=>{const now=performance.now();aimTimer-=Math.min(.2,(now-last)/1000);last=now;$('#aimTime').textContent=Math.max(0,aimTimer).toFixed(1);if(aimTimer<=0)stopAimGame(true)},100)
 }
@@ -182,7 +306,18 @@ function stopAimGame(reward=true){
  const normalized=Math.min(1,accuracy*.72+comboFactor*.28);
  const raw=Math.round(accuracy*10000);
  state.aimBest=Math.max(state.aimBest,raw);
- finishMini('aim','Noob Aim Lab',`${(accuracy*100).toFixed(1)}% accuracy`,normalized,raw)
+ finishMini(
+  'aim',
+  'Noob Aim Lab',
+  `${(accuracy*100).toFixed(1)}% accuracy`,
+  normalized,
+  raw,
+  {
+   seconds:(performance.now()-aimStartedAt)/1000,
+   actions:aimHits+aimMisses,
+   score:aimScore
+  }
+ )
 }
 if($('#aimTarget'))$('#aimTarget').onclick=e=>{
  e.stopPropagation();if(!aimRunning)return;
@@ -209,7 +344,7 @@ if($('#aimField'))$('#aimField').onclick=e=>{if(!aimRunning||e.target===$('#aimT
 function startParkour(){
  if(!prepareMinigame('parkour','parkourStage'))return;scrollToActiveMinigame('parkourStage');
  const c=$('#parkourCanvas'),ctx=c.getContext('2d');
- parkourData={ctx,p:{x:110,y:245,w:62,h:52,vy:0},obs:[],pickups:[],score:0,bonus:0,speed:5,last:performance.now(),spawn:0,lives:3,nextPortal:10000,reversed:false,flipped:false,invuln:0,portal:null};
+ parkourData={ctx,p:{x:110,y:245,w:62,h:52,vy:0},obs:[],pickups:[],score:0,bonus:0,speed:5,last:performance.now(),spawn:0,lives:3,nextPortal:10000,reversed:false,flipped:false,invuln:0,portal:null,startedAt:performance.now()};
  parkourRunning=true;parkourLoop()
 }
 function parkourJump(){if(parkourRunning&&parkourData&&parkourData.p.y>=238)parkourData.p.vy=-13.5}
@@ -331,9 +466,15 @@ function parkourLoop(){
 function stopParkour(reward=true){
  if(!parkourRunning)return;parkourRunning=false;cancelAnimationFrame(parkourFrame);$('#parkourStage').classList.remove('running');
  if(!reward){parkourData=null;return hideGames()}
- const score=Math.floor((parkourData?.score||0)+(parkourData?.bonus||0));const lives=Math.max(0,parkourData?.lives||0);parkourData=null;
+ const score=Math.floor((parkourData?.score||0)+(parkourData?.bonus||0));
+ const lives=Math.max(0,parkourData?.lives||0);
+ const activity={
+  seconds:(performance.now()-(parkourData?.startedAt||performance.now()))/1000,
+  score
+ };
+ parkourData=null;
  state.parkourBest=Math.max(state.parkourBest,score);
- finishMini('parkour','Noob Rider',score+' m',Math.min(1,(score/24000)*.82+(lives/3)*.18),score)
+ finishMini('parkour','Noob Rider',score+' m',Math.min(1,(score/24000)*.82+(lives/3)*.18),score,activity)
 }
 $('#parkourCanvas')?.addEventListener('pointerdown',e=>{e.preventDefault();parkourJump()});
 
@@ -385,7 +526,7 @@ function updateReflexNotes(now){
 function startReflex(){
  if(!prepareMinigame('reflex','reflexStage'))return;scrollToActiveMinigame('reflexStage');setTimeout(()=>scrollToActiveMinigame('reflexStage'),180);
  reflexRunning=true;
- reflexData={score:0,combo:0,misses:0,bombs:0,time:25,last:performance.now(),perfectRun:true};
+ reflexData={score:0,combo:0,misses:0,bombs:0,hits:0,time:25,last:performance.now(),startedAt:performance.now(),perfectRun:true};
  reflexNotes=[];$$('.reflex-note').forEach(x=>x.remove());
  spawnReflexNote();
  reflexAnimation=requestAnimationFrame(updateReflexNotes);
@@ -429,6 +570,7 @@ function reflexInput(code){
   reflexData.misses++;reflexData.combo=0;reflexData.perfectRun=false;reflexData.score=Math.max(0,reflexData.score-12);showReflexFeedback('-12 MISS','miss');sfx('bad');return true
  }
  note.hit=true;note.el.remove();
+ if(!note.bomb)reflexData.hits=(reflexData.hits||0)+1;
  if(note.bomb){
   reflexData.score=Math.max(0,reflexData.score-35);
   reflexData.combo=0;reflexData.bombs++;reflexData.perfectRun=false;showReflexFeedback('BOOM!','bomb');sfx('bad')
@@ -450,20 +592,26 @@ function stopReflex(reward=true){
  reflexNotes.forEach(note=>note.el.remove());reflexNotes=[];
  $('#reflexStage').classList.remove('running');
  if(!reward){reflexData=null;return hideGames()}
- const score=reflexData.score;ensureAchievementStats();if(reflexData.perfectRun&&reflexData.misses===0&&reflexData.bombs===0)state.achievementStats.reflexPerfectRun=true;
+ const score=reflexData.score;
+ const activity={
+  seconds:(performance.now()-(reflexData.startedAt||performance.now()))/1000,
+  actions:(reflexData.hits||0)+reflexData.misses+reflexData.bombs,
+  score
+ };
+ ensureAchievementStats();if(reflexData.perfectRun&&reflexData.misses===0&&reflexData.bombs===0)state.achievementStats.reflexPerfectRun=true;
  const total=Math.max(1,score/20+reflexData.misses+reflexData.bombs);
  const accuracy=Math.max(0,1-(reflexData.misses+reflexData.bombs)/total);
  const normalized=Math.min(1,accuracy*.62+Math.min(1,score/800)*.38);
  reflexData=null;
  state.reflexBest=Math.max(state.reflexBest,score);
- finishMini('reflex','Noob Reflex',score+' pkt',normalized,score)
+ finishMini('reflex','Noob Reflex',score+' pkt',normalized,score,activity)
 }
 
 /* DODGE */
 function startDodge(){
  if(!prepareMinigame('dodge','dodgeStage'))return;scrollToActiveMinigame('dodgeStage');
  const c=$('#dodgeCanvas'),ctx=c.getContext('2d');
- dodgeData={ctx,p:{x:c.width/2,y:350,w:52,h:52,v:0},items:[],score:0,lives:3,time:32,last:performance.now(),spawn:0,left:false,right:false,slow:0,shield:0,reverse:0,pickups:0};
+ dodgeData={ctx,p:{x:c.width/2,y:350,w:52,h:52,v:0},items:[],score:0,lives:3,time:32,last:performance.now(),spawn:0,left:false,right:false,slow:0,shield:0,reverse:0,pickups:0,startedAt:performance.now()};
  dodgeRunning=true;dodgeLoop()
 }
 function dodgeLoop(){
@@ -523,8 +671,13 @@ function dodgeLoop(){
 function stopDodge(reward=true){
  if(!dodgeRunning)return;dodgeRunning=false;cancelAnimationFrame(dodgeFrame);$('#dodgeStage').classList.remove('running');
  if(!reward){dodgeData=null;return hideGames()}
- const score=Math.floor(dodgeData.score),lives=dodgeData.lives,pickups=dodgeData.pickups||0;ensureAchievementStats();if(lives===3)state.achievementStats.dodgeNoLifeLost=true;const normalized=Math.min(1,(score/340)*.70+(lives/3)*.20+Math.min(1,pickups/8)*.10);dodgeData=null;
- state.dodgeBest=Math.max(state.dodgeBest,score);finishMini('dodge','Brainrot Dodge',score+' pkt',normalized,score)
+ const score=Math.floor(dodgeData.score),lives=dodgeData.lives,pickups=dodgeData.pickups||0;
+ const activity={
+  seconds:(performance.now()-(dodgeData.startedAt||performance.now()))/1000,
+  score,
+  actions:pickups
+ };ensureAchievementStats();if(lives===3)state.achievementStats.dodgeNoLifeLost=true;const normalized=Math.min(1,(score/340)*.70+(lives/3)*.20+Math.min(1,pickups/8)*.10);dodgeData=null;
+ state.dodgeBest=Math.max(state.dodgeBest,score);finishMini('dodge','Brainrot Dodge',score+' pkt',normalized,score,activity)
 }
 const dodgeKeys={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
 document.addEventListener('keydown',e=>{

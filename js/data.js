@@ -613,5 +613,12 @@ const achievementMeta={
  level60:{category:'secret',special:{type:'pet',id:'overlord',name:'Ultimate Noob Pet'}},
  rebirth:{category:'secret'}
 };
-achievements.forEach(a=>Object.assign(a,{category:achievementMeta[a.id]?.category||'secret',special:achievementMeta[a.id]?.special||null}));
+achievements.forEach(a=>{
+ const meta=achievementMeta[a.id]||{};
+ Object.assign(a,{
+  category:meta.category||'secret',
+  special:meta.special||null,
+  secret:meta.secret??((meta.category||'secret')==='secret')
+ })
+});
 
