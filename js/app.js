@@ -1170,3 +1170,34 @@ document.addEventListener('click',event=>{
 });
 
 bindClick('#saveProfileStyle',()=>window.saveProfileStyleNow?.());
+
+
+/* 0.6c — blokada zaznaczania i przeciągania podczas gry */
+(function setupGameNoSelect(){
+ const editableSelector=[
+  'input',
+  'textarea',
+  'select',
+  'option',
+  '[contenteditable="true"]'
+ ].join(',');
+
+ function isEditable(target){
+  return target instanceof Element&&!!target.closest(editableSelector)
+ }
+
+ document.addEventListener('selectstart',event=>{
+  if(isEditable(event.target))return;
+  event.preventDefault()
+ },true);
+
+ document.addEventListener('dragstart',event=>{
+  if(isEditable(event.target))return;
+  event.preventDefault()
+ },true);
+
+ document.addEventListener('mousedown',event=>{
+  if(isEditable(event.target))return;
+  if(event.detail>1)event.preventDefault()
+ },true)
+})();

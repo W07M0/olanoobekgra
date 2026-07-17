@@ -3209,3 +3209,74 @@ body[class*="skin-"] #clickerWord,
  opacity:.72;
  font-weight:700;
 }
+
+
+/* 0.6c - GAME UX: blokada przypadkowego zaznaczania */
+html,
+body{
+ -webkit-tap-highlight-color:transparent;
+}
+
+#app,
+.main-layout,
+.sidebar,
+.topbar,
+.content,
+.view,
+.game-container,
+#view-game,
+#view-game *,
+.clicker-stage,
+.clicker-stage *,
+.pet-orbit,
+.pet-orbit *,
+.world-banner,
+.world-banner *,
+.world-boss,
+.world-boss *,
+button,
+.card,
+.stat-card,
+.panel,
+.shop-item,
+.pet-card,
+.skin-card,
+.world-card,
+.achievement-card,
+.rank-row,
+.profile-preview,
+.daily-quest,
+.global-ranking,
+.music-player,
+.sidebar-music-player{
+ -webkit-user-select:none!important;
+ user-select:none!important;
+ -webkit-touch-callout:none!important;
+ -webkit-user-drag:none!important;
+}
+
+img,
+svg,
+canvas{
+ -webkit-user-drag:none!important;
+ user-drag:none!important;
+}
+
+/* Pola tekstowe nadal działają normalnie */
+input,
+textarea,
+select,
+option,
+[contenteditable="true"],
+.admin-panel input,
+.admin-panel textarea,
+.admin-panel select,
+.feedback-form input,
+.feedback-form textarea{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+ pointer-events:auto!important;
+}
+
+/* END GAME UX */
