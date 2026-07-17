@@ -1,5 +1,32 @@
 
 let casinoBet=10,casinoBusy=false,currentCasinoCard=7,exchangeCurrency='coins',exchangeAmount=250;
+function normalizeCasinoBet(value){
+ const max=Math.max(1,casinoMaxBet());
+ const amount=Math.floor(Number(value));
+ if(!Number.isFinite(amount))return casinoBet;
+ return Math.max(1,Math.min(max,amount))
+}
+function setCasinoBet(value,{syncInput=true}={}){
+ casinoBet=normalizeCasinoBet(value);
+ const input=$('#casinoBetInput');
+ if(input&&syncInput)input.value=casinoBet;
+ $$('[data-bet]').forEach(button=>{
+  button.classList.toggle('active',Number(button.dataset.bet)===casinoBet)
+ });
+ const limit=$('#casinoBetLimit');
+ if(limit)limit.textContent=fmt(casinoMaxBet());
+ return casinoBet
+}
+function refreshCasinoBetControls(){
+ const input=$('#casinoBetInput');
+ if(input){
+  input.max=casinoMaxBet();
+  input.value=normalizeCasinoBet(input.value||casinoBet)
+ }
+ const limit=$('#casinoBetLimit');
+ if(limit)limit.textContent=fmt(casinoMaxBet())
+}
+
 const casinoUpgradeDefs=[
  {id:'payout',icon:'💰',name:'Lepsze wypłaty',desc:'+2% do wypłat za poziom',max:20,base:450,growth:1.72},
  {id:'supply',icon:'🎁',name:'Większa paczka',desc:'+7% żetonów z paczki godzinowej',max:20,base:600,growth:1.76},
@@ -143,6 +170,7 @@ function renderCasinoUpgrades(){
 }
 function renderCasino(){
  updateCasinoMarket();
+ refreshCasinoBetControls();
  $('#casinoChips').textContent=fmt(state.casinoChips);$('#casinoLevel').textContent=state.casinoLevel;$('#casinoLevelText').textContent=state.casinoLevel;
  $('#casinoLocked').classList.toggle('hidden',state.casinoUnlocked);$('#casinoContent').classList.toggle('hidden',!state.casinoUnlocked);
  const need=casinoXpNeed(state.casinoLevel);$('#casinoXpText').textContent=`${Math.floor(state.casinoXp)} / ${need} XP`;$('#casinoXpBar').style.width=Math.min(100,state.casinoXp/need*100)+'%';

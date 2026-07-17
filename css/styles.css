@@ -3298,3 +3298,14 @@ option,
   0 0 8px rgba(255,231,71,.9),
   0 0 18px rgba(255,192,42,.7);
 }
+
+.reflex-feedback.early{color:#aeb6d3;font-size:18px;text-shadow:0 0 8px rgba(130,150,210,.4)}
+.casino-bet-selector{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto!important;align-items:center!important;gap:10px!important}
+.casino-bet-presets{display:flex;flex-wrap:wrap;gap:7px}
+.casino-custom-bet{display:grid;grid-template-columns:auto minmax(90px,140px) 54px;align-items:center;gap:6px}
+.casino-custom-bet label{color:var(--muted);font-size:12px;font-weight:900}
+#casinoBetInput{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font:inherit;font-weight:900;outline:none;user-select:text!important;-webkit-user-select:text!important}
+#casinoBetInput:focus{border-color:#ffd45b;box-shadow:0 0 0 3px rgba(255,212,91,.12)}
+#casinoBetMax{min-height:38px;padding:7px 9px;border-radius:9px;background:linear-gradient(135deg,#ffd34e,#ff943f);color:#281500;font-weight:1000}
+.casino-bet-limit{white-space:nowrap;color:#bdaecb}
+@media(max-width:900px){.casino-bet-selector{grid-template-columns:1fr!important;align-items:stretch!important}.casino-custom-bet{grid-template-columns:auto minmax(0,1fr) 58px}}

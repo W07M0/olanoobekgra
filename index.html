@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#130623" name="theme-color"/>
 <title>Ultimate Noob Clicker v0.6c</title>
-<link href="css/styles.css?v=06creflexhospitalfix" rel="stylesheet"/>
+<link href="css/styles.css?v=06creflexcasinocustombet" rel="stylesheet"/>
 </head>
 <body data-world="neon"><div class="world-weather" id="worldWeather"></div>
 <div class="shell">
@@ -196,7 +196,22 @@
 <button class="tab" data-casino-tab="stats">📊 Statystyki</button>
 </div>
 <div class="casino-panel active" id="casino-games">
-<div class="bet-selector"><b>Stawka:</b><button class="bet-btn active" data-bet="10">10 🎲</button><button class="bet-btn" data-bet="25">25 🎲</button><button class="bet-btn" data-bet="50">50 🎲</button><button class="bet-btn" data-bet="100">100 🎲</button><button class="bet-btn" data-bet="250">250 🎲</button></div>
+<div class="bet-selector casino-bet-selector">
+<b>Stawka:</b>
+<div class="casino-bet-presets">
+<button class="bet-btn active" data-bet="10">10 🎲</button>
+<button class="bet-btn" data-bet="25">25 🎲</button>
+<button class="bet-btn" data-bet="50">50 🎲</button>
+<button class="bet-btn" data-bet="100">100 🎲</button>
+<button class="bet-btn" data-bet="250">250 🎲</button>
+</div>
+<div class="casino-custom-bet">
+<label for="casinoBetInput">Własna:</label>
+<input id="casinoBetInput" type="number" inputmode="numeric" min="1" step="1" value="10">
+<button id="casinoBetMax" type="button">MAX</button>
+</div>
+<small class="casino-bet-limit">Limit: <b id="casinoBetLimit">0</b> 🎲</small>
+</div>
 <div class="grid casino-grid">
 <div class="card casino-card"><div class="big">🎰</div><h3>Noob Slots</h3><div class="slots" id="slots"><span>🙂</span><span>🍌</span><span>🤖</span></div><button id="spinSlots">Zakręć</button><div class="casino-result" id="slotsResult">Wybierz stawkę.</div></div>
 <div class="card casino-card"><div class="big">🎡</div><h3>Noob Ruletka</h3><div class="roulette-wheel" id="casinoWheel"><span id="wheelNumber">?</span></div><div class="roulette-choices"><button class="red-choice" data-roulette="red">Czerwone</button><button class="black-choice" data-roulette="black">Czarne</button><button class="green-choice" data-roulette="green">Zielone</button></div><div class="casino-result" id="rouletteResult">Wybierz kolor.</div></div>
@@ -576,16 +591,16 @@
 </div>
 <div class="toast" id="toast"></div>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="js/data.js?v=06creflexhospitalfix"></script>
-<script defer="" src="js/core.js?v=06creflexhospitalfix"></script>
-<script src="js/textures.js?v=06creflexhospitalfix"></script>
-<script defer="" src="js/systems.js?v=06creflexhospitalfix"></script>
-<script defer="" src="js/integrations.js?v=06creflexhospitalfix"></script>
-<script defer="" src="js/profile-admin.js?v=06creflexhospitalfix"></script>
+<script defer="" src="js/data.js?v=06creflexcasinocustombet"></script>
+<script defer="" src="js/core.js?v=06creflexcasinocustombet"></script>
+<script src="js/textures.js?v=06creflexcasinocustombet"></script>
+<script defer="" src="js/systems.js?v=06creflexcasinocustombet"></script>
+<script defer="" src="js/integrations.js?v=06creflexcasinocustombet"></script>
+<script defer="" src="js/profile-admin.js?v=06creflexcasinocustombet"></script>
 
-<script src="js/music-playlist.js?v=06creflexhospitalfix"></script>
-<script src="js/music-player.js?v=06creflexhospitalfix"></script>
-<script defer="" src="js/app.js?v=06creflexhospitalfix"></script>
+<script src="js/music-playlist.js?v=06creflexcasinocustombet"></script>
+<script src="js/music-player.js?v=06creflexcasinocustombet"></script>
+<script defer="" src="js/app.js?v=06creflexcasinocustombet"></script>
 
 <div class="modal-overlay hidden" id="bossResult">
  <div class="modal boss-result-modal">

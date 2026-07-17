@@ -568,80 +568,39 @@ function showReflexFeedback(text,type){
  feedback.classList.add('show')
 }
 function getReflexLineDistance(note){
- const lane=note.el.closest('.reflex-lane');
- if(!lane)return Infinity;
-
+ if(!note?.el?.isConnected)return Infinity;
+ const line=document.querySelector('#reflexHighway .reflex-hit-line');
+ if(!line)return Infinity;
  const noteRect=note.el.getBoundingClientRect();
- const laneRect=lane.getBoundingClientRect();
-
- /*
-  Kolorowa linia jest dolną krawędzią highway.
-  Liczymy rzeczywistą odległość środka nuty od tej linii,
-  więc timing nie zależy od prędkości animacji ani rozdzielczości.
- */
- const timingLineY=laneRect.bottom-4;
- const noteCenterY=noteRect.top+noteRect.height/2;
- return Math.abs(timingLineY-noteCenterY)
+ const lineRect=line.getBoundingClientRect();
+ return Math.abs((noteRect.top+noteRect.height/2)-(lineRect.top+lineRect.height/2))
 }
 
 function reflexTimingGrade(distance){
- if(distance<=6)return{
-  name:'PERFECT',
-  score:42,
-  time:.55,
-  type:'perfect'
- };
- if(distance<=13)return{
-  name:'GREAT',
-  score:31,
-  time:.28,
-  type:'great'
- };
- if(distance<=23)return{
-  name:'GOOD',
-  score:21,
-  time:.10,
-  type:'good'
- };
- if(distance<=36)return{
-  name:'OK',
-  score:12,
-  time:0,
-  type:'ok'
- };
+ if(distance<=8)return{name:'PERFECT',score:42,time:.60,type:'perfect'};
+ if(distance<=18)return{name:'GREAT',score:31,time:.30,type:'great'};
+ if(distance<=30)return{name:'GOOD',score:21,time:.12,type:'good'};
+ if(distance<=48)return{name:'OK',score:12,time:0,type:'ok'};
  return null
 }
 
 function reflexInput(code){
  if(!reflexRunning||!reflexData||!reflexKeys.includes(code))return false;
-
  const candidates=reflexNotes
   .filter(note=>note.key===code&&!note.hit)
-  .sort((a,b)=>getReflexLineDistance(a)-getReflexLineDistance(b));
+  .map(note=>({note,distance:getReflexLineDistance(note)}))
+  .filter(item=>Number.isFinite(item.distance))
+  .sort((a,b)=>a.distance-b.distance);
 
- if(!candidates.length){
-  reflexData.misses++;
-  reflexData.combo=0;
-  reflexData.perfectRun=false;
-  reflexData.score=Math.max(0,reflexData.score-12);
-  showReflexFeedback('-12 MISS','miss');
-  sfx('bad');
+ const candidate=candidates.find(item=>item.distance<=48);
+ if(!candidate){
+  showReflexFeedback('POCZEKAJ NA LINIĘ','early');
   return true
  }
 
- const note=candidates[0];
- const distance=getReflexLineDistance(note);
- const timing=reflexTimingGrade(distance);
-
- if(!timing){
-  reflexData.misses++;
-  reflexData.combo=0;
-  reflexData.perfectRun=false;
-  reflexData.score=Math.max(0,reflexData.score-12);
-  showReflexFeedback('-12 MISS','miss');
-  sfx('bad');
-  return true
- }
+ const note=candidate.note;
+ const timing=reflexTimingGrade(candidate.distance);
+ if(!timing)return true;
 
  note.hit=true;
  note.el.remove();
@@ -659,24 +618,16 @@ function reflexInput(code){
 
  reflexData.hits=(reflexData.hits||0)+1;
  reflexData.combo++;
-
- const comboScoreMult=1+Math.min(.75,reflexData.combo*.018);
- reflexData.score+=Math.round(timing.score*comboScoreMult);
+ reflexData.score+=Math.round(timing.score*(1+Math.min(.75,reflexData.combo*.018)));
 
  let gainedTime=timing.time;
-
- // Regular time milestones reward consistent play.
  if(reflexData.combo%8===0)gainedTime+=.45;
- if(reflexData.combo%20===0)gainedTime+=1.00;
+ if(reflexData.combo%20===0)gainedTime+=1;
  if(reflexData.combo%40===0)gainedTime+=1.75;
-
- // The timer cannot grow forever.
  reflexData.time=Math.min(45,reflexData.time+gainedTime);
 
- const timeText=gainedTime>0?` +${gainedTime.toFixed(2)}s`:'';
- showReflexFeedback(timing.name+timeText,timing.type);
+ showReflexFeedback(timing.name+(gainedTime>0?` +${gainedTime.toFixed(2)}s`:''),timing.type);
  sfx(timing.name==='PERFECT'?'good':'click');
-
  return true
 }
 function stopReflex(reward=true){
@@ -1027,11 +978,27 @@ $$('[data-higher]').forEach(button=>{
 });
 $$('[data-bet]').forEach(button=>{
  button.onclick=()=>{
-  casinoBet=Number(button.dataset.bet);
-  $$('[data-bet]').forEach(x=>x.classList.toggle('active',x===button));
+  setCasinoBet(Number(button.dataset.bet));
   renderCasino()
  }
 });
+
+const casinoBetInput=$('#casinoBetInput');
+if(casinoBetInput){
+ casinoBetInput.addEventListener('input',()=>{
+  if(casinoBetInput.value==='')return;
+  setCasinoBet(casinoBetInput.value,{syncInput:false})
+ });
+ casinoBetInput.addEventListener('change',()=>{
+  setCasinoBet(casinoBetInput.value)
+ })
+}
+
+bindClick('#casinoBetMax',()=>{
+ setCasinoBet(Math.min(casinoMaxBet(),state.casinoChips));
+ renderCasino()
+});
+
 $$('[data-casino-tab]').forEach(button=>{
  button.onclick=()=>{
   $$('[data-casino-tab]').forEach(x=>x.classList.toggle('active',x===button));
