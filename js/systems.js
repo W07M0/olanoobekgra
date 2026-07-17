@@ -197,7 +197,12 @@ function currentWorldBossTemplate(){
   isWorldBoss:true
  }
 }
-function spawnWorldBoss(){
+function spawnWorldBoss(manualEvent=null){
+ if(manualEvent!==true&&!(window.event?.isTrusted)){
+  console.warn('Zablokowano automatyczny start bossa świata');
+  return false
+ }
+
  if(boss)return toast('Walka z bossem już trwa');
  let w=world();
  ensureWorldBossProgress(w.id);
@@ -262,7 +267,12 @@ function clearBossBlockers(){
 function endgameBossReady(){
  return state.world==='dev' && Date.now()-(state.lastEndgameBossAt||0)>=180000
 }
-function spawnEndgameBoss(){
+function spawnEndgameBoss(manualEvent=null){
+ if(manualEvent!==true&&!(window.event?.isTrusted)){
+  console.warn('Zablokowano automatyczny start bossa końcowego');
+  return false
+ }
+
  if(boss||state.world!=='dev'||!endgameBossReady())return;
  const names=[
   {name:'Infinite Lag',emoji:'♾️',desc:'Skaluje się do twojej aktualnej potęgi.'},
@@ -280,15 +290,24 @@ function spawnEndgameBoss(){
  },1000)
 }
 function scheduleEndgameBossCheck(){
+ const banner=safe$('#endgameBossBanner');
  if(state.world==='dev'){
-  safe$('#endgameBossBanner').classList.remove('hidden');
-  if(endgameBossReady()&&!boss)spawnEndgameBoss()
- }else safe$('#endgameBossBanner').classList.add('hidden')
+  banner?.classList.remove('hidden');
+
+  // Boss końcowy jest dostępny wyłącznie po ręcznym kliknięciu.
+  // Timer tylko odświeża informację o gotowości.
+  if(banner){
+   banner.classList.toggle('ready',endgameBossReady()&&!boss);
+   banner.dataset.bossReady=endgameBossReady()&&!boss?'1':'0'
+  }
+ }else{
+  banner?.classList.add('hidden')
+ }
 }
 
 function currentTitle(){return ''}
 
-function spawnBoss(){spawnWorldBoss()}
+function spawnBoss(){return spawnWorldBoss(true)}
 function damageBoss(amount){
  if(!boss||boss.blocked)return;
 
