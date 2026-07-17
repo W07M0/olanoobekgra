@@ -372,6 +372,7 @@ function parkourLoop(){
  d.pickups.forEach(o=>o.x+=d.speed*dt*direction);if(d.portal)d.portal.x+=d.speed*dt*direction;
  d.obs=d.obs.filter(o=>o.x>-100&&o.x<c.width+100);d.pickups=d.pickups.filter(o=>o.x>-100&&o.x<c.width+100);
  const p=d.p;
+ p.x=Math.max(12,Math.min(c.width-p.w-12,p.x));
  const playerHitbox={
   x:p.x+10,
   y:p.y+8,
@@ -431,9 +432,19 @@ function parkourLoop(){
    d.speed=Math.max(5,d.speed*.78);
    if(effect==='reverse'){
     d.reversed=!d.reversed;
+
+    /*
+     Gdy przeszkody jadą z lewej do prawej, gracz stoi po prawej.
+     Gdy jadą z prawej do lewej, gracz stoi po lewej.
+    */
+    d.p.x=d.reversed
+     ?Math.max(24,c.width-d.p.w-110)
+     :110;
+
     d.obs=[];
     d.pickups=[];
     d.spawn=8;
+    d.invuln=Math.max(d.invuln,40);
     toast('🌀 Portal: zmiana kierunku!')
    }
    if(effect==='flip'){d.flipped=!d.flipped;toast('🙃 Portal: świat do góry nogami!')}
