@@ -3160,3 +3160,35 @@ body[class*="skin-"] #clickerWord,
  font-weight:800;
  line-height:1.35;
 }
+
+/* 0.6c — detailed pet resource bonuses */
+.pet-instance-resource-bonuses{
+ display:flex;
+ flex-wrap:wrap;
+ gap:5px;
+ margin-top:5px;
+}
+
+.pet-instance-resource-bonuses span{
+ padding:3px 7px;
+ border-radius:7px;
+ background:rgba(255,255,255,.065);
+ border:1px solid rgba(255,255,255,.08);
+ color:#dffcff;
+ font-size:10px;
+ font-weight:900;
+ line-height:1.15;
+}
+
+.pet-instance-resource-bonuses span:nth-child(1){
+ color:#8fffd0;
+}
+.pet-instance-resource-bonuses span:nth-child(2){
+ color:#82eaff;
+}
+.pet-instance-resource-bonuses span:nth-child(3){
+ color:#7adfff;
+}
+.pet-instance-resource-bonuses span:nth-child(4){
+ color:#ffe36f;
+}

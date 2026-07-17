@@ -787,6 +787,12 @@ function renderPetInstance(instance){
   <div class="pet-instance-main">
    <div class="pet-instance-title"><b>${petDisplayName(instance)}</b><span>Lv.${instance.level}</span></div>
    <div class="pet-instance-meta">${base.rarity.toUpperCase()} • ${evo.short} • x${petInstanceMultiplier(instance).toFixed(2)}</div>
+    <div class="pet-instance-resource-bonuses">
+     <span title="Bonus EXP">⭐ ${formatPetResourceBonus(petInstanceResourceBonuses(instance).xp)}</span>
+     <span title="Bonus punktów">⚡ ${formatPetResourceBonus(petInstanceResourceBonuses(instance).points)}</span>
+     <span title="Bonus diamentów">💎 ${formatPetResourceBonus(petInstanceResourceBonuses(instance).gems)}</span>
+     <span title="Bonus Noob Coinów">🟡 ${formatPetResourceBonus(petInstanceResourceBonuses(instance).coins)}</span>
+    </div>
    <div class="pet-xp"><i style="width:${pct}%"></i></div>
    <small>${instance.level>=50?'MAX LEVEL':`${Math.floor(instance.xp||0)}/${needed} EXP`}</small>
   </div>
@@ -1238,6 +1244,34 @@ function grantAchievementRewardSafe(achievement){
  return false
 }
 
+function achievementCollectionHasId(collection,id){
+ if(!collection||!id)return false;
+
+ if(Array.isArray(collection)){
+  return collection.some(item=>
+   item===id||
+   item?.id===id||
+   item?.achievementId===id||
+   item?.key===id
+  )
+ }
+
+ if(typeof collection==='object'){
+  return collection[id]===true||
+   collection[id]?.claimed===true||
+   collection[id]?.unlocked===true||
+   Object.values(collection).some(item=>
+    item?.id===id&&(
+     item?.claimed===true||
+     item?.unlocked===true||
+     item===true
+    )
+   )
+ }
+
+ return false
+}
+
 function achievementIsClaimed(achievement){
  const id=achievement?.id;
  if(!id)return false;
@@ -1246,10 +1280,10 @@ function achievementIsClaimed(achievement){
   state.claimedAchievements,
   state.achievementsClaimed,
   state.unlockedAchievements,
+  state.completedAchievements,
+  state.achievementUnlocks,
   state.achievements
- ].some(collection=>
-  Array.isArray(collection)&&collection.includes(id)
- )
+ ].some(collection=>achievementCollectionHasId(collection,id))
 }
 
 function syncClaimedAchievementRewards(){
@@ -1291,26 +1325,71 @@ function isAchievementUnlocked(achievement){
 
 
 function repairUltimateNoobAchievementPet(){
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+ state.claimedAchievements=Array.isArray(state.claimedAchievements)
+  ?state.claimedAchievements
+  :state.claimedAchievements||[];
+
  const achievement=
   typeof achievements!=='undefined'
    ?achievements.find(item=>item.id==='level60')
    :null;
- if(!achievement||!achievementIsClaimed(achievement))return false;
 
- const ownsUltimate=(state.pets||[]).some(pet=>
+ const oldClaimEvidence=
+  achievementIsClaimed(achievement)||
+  state.specialPetClaimed===true||
+  state.ultimateNoobClaimed===true||
+  state.level60AchievementClaimed===true;
+
+ /*
+  Some old profiles lost the claimed marker after save migrations.
+  Level 60 plus a completed achievement state is enough to repair the
+  one-time special reward, but the pet is never duplicated.
+ */
+ const completedEvidence=
+  Number(state.level)>=60&&(
+   oldClaimEvidence||
+   achievementCollectionHasId(state.completedAchievements,'level60')||
+   achievementCollectionHasId(state.unlockedAchievements,'level60')
+  );
+
+ if(!oldClaimEvidence&&!completedEvidence)return false;
+
+ const ownsUltimate=state.pets.some(pet=>
   pet?.type==='overlord'||
   pet?.petId==='overlord'||
   pet?.id==='overlord'
  );
- if(ownsUltimate)return false;
+ if(ownsUltimate){
+  state.specialPetClaimed=true;
+  state.ultimateNoobPetMigrationDone=true;
+  return false
+ }
 
- addPetRewardToCollection('overlord');
+ const added=addPetRewardToCollection('overlord');
+ if(!added)return false;
+
+ state.specialPetClaimed=true;
+ state.ultimateNoobClaimed=true;
  state.ultimateNoobPetMigrationDone=true;
 
- try{save()}catch{}
- if(typeof savePlayerProfile==='function'){
-  setTimeout(()=>savePlayerProfile(false),200)
+ if(Array.isArray(state.claimedAchievements)&&
+    !state.claimedAchievements.includes('level60')){
+  state.claimedAchievements.push('level60')
  }
+
+ try{save()}catch(error){
+  console.warn('Ultimate Noob local save:',error)
+ }
+
+ if(typeof savePlayerProfile==='function'){
+  setTimeout(()=>{
+   Promise.resolve(savePlayerProfile(false))
+    .catch(error=>console.warn('Ultimate Noob remote save:',error))
+  },250)
+ }
+
+ toast?.('👑 Naprawiono nagrodę: Ultimate Noob trafił do petów!');
  return true
 }
 
@@ -2323,3 +2402,17 @@ let bossCooldownUiTimer=setInterval(()=>{
  document.addEventListener('DOMContentLoaded',sync);
  window.syncSettingsSoundToggle=sync
 })();
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(()=>{
+  try{
+   syncClaimedAchievementRewards();
+   repairUltimateNoobAchievementPet();
+   normalizePetInventoryInstances();
+   renderPets()
+  }catch(error){
+   console.warn('Pet achievement migration:',error)
+  }
+ },900)
+});

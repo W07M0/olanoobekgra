@@ -55,6 +55,36 @@ const PET_RARITY_BONUSES={
  secret:{xp:.180,points:.150,gems:.085,coins:.075}
 };
 
+
+function petInstanceResourceBonuses(instance){
+ if(!instance){
+  return{xp:0,points:0,gems:0,coins:0}
+ }
+
+ const base=getPetBase(instance);
+ const rarity=String(base.rarity||'common').toLowerCase();
+ const config=PET_RARITY_BONUSES[rarity]||PET_RARITY_BONUSES.common;
+ const levelScale=1+(Math.max(1,instance.level)-1)*.006;
+ const evolutionScale=1+(Math.max(0,instance.evolution||0))*.18;
+ const individualScale=Math.max(
+  1,
+  Math.log2(Math.max(1.01,base.mult||1))*.42+1
+ );
+
+ return{
+  xp:(Number(config.xp)||0)*levelScale*evolutionScale*individualScale,
+  points:(Number(config.points)||0)*levelScale*evolutionScale*individualScale,
+  gems:(Number(config.gems)||0)*levelScale*evolutionScale*individualScale,
+  coins:(Number(config.coins)||0)*levelScale*evolutionScale*individualScale
+ }
+}
+
+function formatPetResourceBonus(value){
+ return value>0
+  ?'+'+(value*100).toFixed(value*100>=10?1:2)+'%'
+  :'—'
+}
+
 function petResourceMultiplier(resource){
  sanitizeEquippedPets();
 
@@ -62,17 +92,9 @@ function petResourceMultiplier(resource){
   const instance=getPetInstance(uid);
   if(!instance)return multiplier;
 
-  const base=getPetBase(instance);
-  const rarity=String(base.rarity||'common').toLowerCase();
-  const config=PET_RARITY_BONUSES[rarity]||PET_RARITY_BONUSES.common;
-  const baseBonus=Number(config[resource])||0;
-  if(baseBonus<=0)return multiplier;
-
-  const levelScale=1+(Math.max(1,instance.level)-1)*.006;
-  const evolutionScale=1+(Math.max(0,instance.evolution||0))*.18;
-  const individualScale=Math.max(1,Math.log2(Math.max(1.01,base.mult||1))*.42+1);
-
-  return multiplier*(1+baseBonus*levelScale*evolutionScale*individualScale)
+  const bonuses=petInstanceResourceBonuses(instance);
+  const bonus=Number(bonuses[resource])||0;
+  return multiplier*(1+bonus)
  },1)
 }
 
