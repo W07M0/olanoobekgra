@@ -3309,3 +3309,86 @@ option,
 #casinoBetMax{min-height:38px;padding:7px 9px;border-radius:9px;background:linear-gradient(135deg,#ffd34e,#ff943f);color:#281500;font-weight:1000}
 .casino-bet-limit{white-space:nowrap;color:#bdaecb}
 @media(max-width:900px){.casino-bet-selector{grid-template-columns:1fr!important;align-items:stretch!important}.casino-custom-bet{grid-template-columns:auto minmax(0,1fr) 58px}}
+
+/* 0.6c — visible Noob Reflex hit zones */
+.reflex-lane{
+ position:relative;
+}
+
+.reflex-hit-zone{
+ position:absolute;
+ left:8px;
+ right:8px;
+ bottom:32px;
+ height:52px;
+ z-index:1;
+ border:2px solid rgba(255,255,255,.15);
+ border-radius:12px;
+ background:
+  linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.07));
+ box-shadow:
+  inset 0 0 18px rgba(255,255,255,.035),
+  0 0 0 1px rgba(0,0,0,.16);
+ pointer-events:none;
+ transition:
+  border-color .08s ease,
+  background .08s ease,
+  box-shadow .08s ease,
+  transform .08s ease;
+}
+
+.reflex-hit-zone::after{
+ content:"STREFA";
+ position:absolute;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ font-size:10px;
+ font-weight:1000;
+ letter-spacing:.12em;
+ color:rgba(255,255,255,.24);
+}
+
+.reflex-lane.reflex-zone-ready .reflex-hit-zone{
+ border-color:rgba(83,224,255,.72);
+ background:rgba(83,224,255,.10);
+ box-shadow:
+  inset 0 0 18px rgba(83,224,255,.18),
+  0 0 16px rgba(83,224,255,.30);
+}
+
+.reflex-lane.reflex-zone-ready .reflex-hit-zone::after{
+ content:"KLIKNIJ";
+ color:#9af5ff;
+}
+
+.reflex-lane.reflex-zone-perfect .reflex-hit-zone{
+ border-color:#ffe86f;
+ background:rgba(255,224,82,.14);
+ box-shadow:
+  inset 0 0 20px rgba(255,224,82,.20),
+  0 0 20px rgba(255,224,82,.48);
+ transform:scale(1.02);
+}
+
+.reflex-lane.reflex-zone-perfect .reflex-hit-zone::after{
+ content:"PERFECT";
+ color:#fff49b;
+}
+
+.reflex-lane.reflex-zone-hit .reflex-hit-zone{
+ border-color:#7dffbd;
+ background:rgba(74,255,169,.22);
+ box-shadow:
+  inset 0 0 24px rgba(74,255,169,.30),
+  0 0 24px rgba(74,255,169,.55);
+ transform:scale(.96);
+}
+
+.reflex-note{
+ z-index:4!important;
+}
+
+.reflex-hit-line{
+ z-index:3!important;
+}

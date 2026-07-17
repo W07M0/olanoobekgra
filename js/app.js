@@ -499,6 +499,7 @@ if(!window.__parkourSpaceBound){window.__parkourSpaceBound=true;document.addEven
 const reflexKeys=['ArrowLeft','ArrowDown','ArrowUp','ArrowRight'];
 const reflexIcons={ArrowUp:'⬆️',ArrowDown:'⬇️',ArrowLeft:'⬅️',ArrowRight:'➡️'};
 let reflexNotes=[],reflexSpawnTimer=null,reflexAnimation=null;
+const reflexInputLock=new Map();
 
 function spawnReflexNote(){
  if(!reflexRunning||!reflexData)return;
@@ -519,10 +520,19 @@ function spawnReflexNote(){
 }
 function updateReflexNotes(now){
  if(!reflexRunning)return;
+ $$('.reflex-lane').forEach(lane=>{
+  lane.classList.remove('reflex-zone-ready','reflex-zone-perfect')
+ });
  reflexNotes.forEach(note=>{
   const progress=(now-note.start)/note.duration;
   note.progress=progress;
   note.el.style.transform=`translateY(${Math.min(1.08,progress)*290}px)`;
+  const distance=getReflexLineDistance(note);
+  const lane=note.el.closest('.reflex-lane');
+  if(lane&&distance<=48){
+   lane.classList.add('reflex-zone-ready');
+   if(distance<=8)lane.classList.add('reflex-zone-perfect')
+  }
   if(progress>1.08&&!note.hit){
    note.hit=true;
    if(!note.bomb){reflexData.misses++;reflexData.combo=0;reflexData.score=Math.max(0,reflexData.score-8);showReflexFeedback('-8 MISS','miss');sfx('bad')}
@@ -536,7 +546,7 @@ function startReflex(){
  if(!prepareMinigame('reflex','reflexStage'))return;scrollToActiveMinigame('reflexStage');setTimeout(()=>scrollToActiveMinigame('reflexStage'),180);
  reflexRunning=true;
  reflexData={score:0,combo:0,misses:0,bombs:0,hits:0,time:25,last:performance.now(),startedAt:performance.now(),perfectRun:true};
- reflexNotes=[];$$('.reflex-note').forEach(x=>x.remove());
+ reflexNotes=[];reflexInputLock.clear();$$('.reflex-note').forEach(x=>x.remove());
  spawnReflexNote();
  reflexAnimation=requestAnimationFrame(updateReflexNotes);
  clearInterval(reflexTimer);
@@ -586,6 +596,11 @@ function reflexTimingGrade(distance){
 
 function reflexInput(code){
  if(!reflexRunning||!reflexData||!reflexKeys.includes(code))return false;
+
+ const now=performance.now();
+ const previous=reflexInputLock.get(code)||0;
+ if(now-previous<115)return true;
+ reflexInputLock.set(code,now);
  const candidates=reflexNotes
   .filter(note=>note.key===code&&!note.hit)
   .map(note=>({note,distance:getReflexLineDistance(note)}))
@@ -603,6 +618,11 @@ function reflexInput(code){
  if(!timing)return true;
 
  note.hit=true;
+ const hitLane=note.el.closest('.reflex-lane');
+ if(hitLane){
+  hitLane.classList.add('reflex-zone-hit');
+  setTimeout(()=>hitLane.classList.remove('reflex-zone-hit'),140)
+ }
  note.el.remove();
 
  if(note.bomb){
