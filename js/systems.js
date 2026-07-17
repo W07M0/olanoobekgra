@@ -803,7 +803,34 @@ function ensurePetState(){
  const valid=new Set(state.pets.map(p=>p?.uid||p?.instanceId||p?.id).filter(Boolean));
  state.equipped=[...new Set(state.equipped.filter(uid=>valid.has(uid)))].slice(0,3)
 }
-function renderPets(){syncClaimedAchievementRewards();
+
+function normalizePetInventoryInstances(){
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+ const used=new Set();
+
+ state.pets=state.pets
+  .filter(Boolean)
+  .map(pet=>{
+   const normalized={...pet};
+   normalized.type=normalized.type||normalized.petId||normalized.id;
+   normalized.level=Math.max(1,Number(normalized.level)||1);
+   normalized.xp=Math.max(0,Number(normalized.xp)||0);
+   normalized.evolution=Math.max(0,Number(normalized.evolution)||0);
+
+   if(!normalized.uid||used.has(normalized.uid)){
+    normalized.uid=createGuaranteedPetUid()
+   }
+   used.add(normalized.uid);
+   return normalized
+  })
+  .filter(pet=>pet.type);
+
+ state.equipped=Array.isArray(state.equipped)
+  ?[...new Set(state.equipped.filter(uid=>used.has(uid)))].slice(0,maxPetSlots())
+  :[]
+}
+
+function renderPets(){syncClaimedAchievementRewards();normalizePetInventoryInstances();
  try{
   sanitizeEquippedPets();
   const setText=(s,v)=>{const el=safe$(s);if(el)el.textContent=v};
@@ -881,23 +908,97 @@ function fusePets(type,tier){
  state.pets.push(newPet);
  confetti();sfx('good');toast(`Ewolucja udana: ${next.name}!`);render()
 }
+
+function createGuaranteedPetUid(){
+ const existing=new Set(
+  (Array.isArray(state.pets)?state.pets:[])
+   .map(pet=>pet?.uid)
+   .filter(Boolean)
+ );
+
+ let uid='';
+ let attempts=0;
+ do{
+  uid=typeof crypto!=='undefined'&&typeof crypto.randomUUID==='function'
+   ?crypto.randomUUID()
+   :'pet_'+Date.now()+'_'+Math.random().toString(36).slice(2)+'_'+attempts;
+  attempts++
+ }while(existing.has(uid)&&attempts<20);
+
+ return uid
+}
+
+function createPetInstanceSafe(type,source='egg'){
+ return{
+  uid:createGuaranteedPetUid(),
+  type,
+  level:1,
+  xp:0,
+  evolution:0,
+  source
+ }
+}
+
+function registerPetInstance(instance){
+ if(!instance||!instance.type)return false;
+
+ state.pets=Array.isArray(state.pets)?state.pets:[];
+ state.equipped=Array.isArray(state.equipped)?state.equipped:[];
+ state.discoveredPets=Array.isArray(state.discoveredPets)?state.discoveredPets:[];
+ state.petCollection=Array.isArray(state.petCollection)?state.petCollection:[];
+
+ if(!instance.uid||state.pets.some(pet=>pet.uid===instance.uid)){
+  instance.uid=createGuaranteedPetUid()
+ }
+
+ state.pets.push(instance);
+
+ if(!state.discoveredPets.includes(instance.type)){
+  state.discoveredPets.push(instance.type)
+ }
+ if(!state.petCollection.includes(instance.type)){
+  state.petCollection.push(instance.type)
+ }
+
+ return true
+}
+
+function persistPetInventory(){
+ try{save()}catch(error){console.warn('Pet local save:',error)}
+ if(typeof savePlayerProfile==='function'){
+  setTimeout(()=>{
+   savePlayerProfile(false).catch?.(error=>console.warn('Pet remote save:',error))
+  },100)
+ }
+}
+
 function weightedPet(){let petLuck=(state.luck||0)*.08+(state.petExpBonus||0)*.04+(state.achievementBonuses?.petLuck||0);let adjusted=pets.map((p,i)=>({...p,w:p.chance*Math.pow(1+petLuck,i/2)})),total=adjusted.reduce((a,p)=>a+p.w,0),r=Math.random()*total,sum=0;for(let p of adjusted){sum+=p.w;if(r<=sum)return p}return pets[0]}
 function openCrate(){
  if(!featureUnlocked('pets'))return toast(lockedFeatureMessage('pets'));
  const eggCost=30;
  if(state.gems<eggCost)return toast(`Potrzebujesz ${eggCost} diamentów`);
  const base=weightedPet();
- const instance={uid:createPetUid(),type:base.id,level:1,xp:0,evolution:0};
+ const instance=createPetInstanceSafe(base.id,'egg');
  state.gems-=eggCost;state.eventStats.crates++;
  const overlay=safe$('#crateOverlay'),egg=safe$('#petEgg'),glow=safe$('#eggGlow');
  overlay.classList.add('show');safe$('#crateTitle').textContent='Jajko zaczyna się ruszać…';safe$('#petRevealIcon').textContent='❔';safe$('#petRevealRarity').textContent='';safe$('#crateResult').textContent='';safe$('#crateClose').classList.add('hidden');
  egg.className='pet-egg hatching';egg.innerHTML='<span>?</span>';glow.classList.remove('show');sfx('buy');
  setTimeout(()=>{egg.classList.add('cracking');safe$('#crateTitle').textContent='Coś jest w środku…';safe$('#petRevealIcon').textContent='✨';tone(180,.09,'square',.035);tone(240,.08,'square',.028,.1)},900);
  setTimeout(()=>{
-  egg.classList.remove('hatching');egg.classList.add('opened');glow.classList.add('show');egg.innerHTML=`<span>${base.emoji}</span>`;state.pets.push(instance);
+  egg.classList.remove('hatching');egg.classList.add('opened');glow.classList.add('show');egg.innerHTML=`<span>${base.emoji}</span>`;
+  const added=registerPetInstance(instance);
   {const el=safe$('#petRevealIcon');if(el)el.textContent=base.emoji;safe$('#crateTitle').textContent=base.name;safe$('#petRevealRarity').textContent=base.rarity.toUpperCase();safe$('#crateResult').innerHTML=`Mnożnik: <b>x${base.mult}</b><br>Nowy osobny egzemplarz`;}
   safe$('#crateClose').classList.remove('hidden');
-  const rare=['legendary','mythic','secret'].includes(base.rarity);sfx(rare?'good':'buy');if(rare)confetti();render()
+  const rare=['legendary','mythic','secret'].includes(base.rarity);
+  sfx(rare?'good':'buy');
+  if(rare)confetti();
+  if(added){
+   persistPetInventory();
+   renderPets();
+   render()
+  }else{
+   toast('Nie udało się dodać peta do ekwipunku')
+  }
  },1900)
 }
 
@@ -1818,7 +1919,12 @@ function applySkin(){if(typeof applyTextureVariables==='function')applyTextureVa
    if(skin.cls)button.classList.add(skin.cls)
   }
   applySkinArenaEffects(skin);
-  if(typeof renderSkinOrbit==='function')renderSkinOrbit();applySkinTextTheme()
+  try{
+   if(typeof renderSkinOrbit==='function')renderSkinOrbit()
+  }catch(orbitError){
+   console.warn('Skin orbit:',orbitError)
+  }
+  applySkinTextTheme()
  }catch(error){
   console.error('Skin render error:',error);
   if(typeof saveDiagnostic==='function')saveDiagnostic('Skin render',error.message,error.stack||'')
@@ -1842,7 +1948,10 @@ function equipSkin(id){
 }
 
 
-if(typeof window.renderSkinOrbit!=='function')window.renderSkinOrbit=function(){};function bossDamageUpgradeMax(){return 10}
+if(typeof window.renderSkinOrbit!=='function'){
+ window.renderSkinOrbit=function(){}
+}
+function bossDamageUpgradeMax(){return 10}
 function bossDamageUpgradeCost(){return Math.floor(125000*Math.pow(2.15,state.bossDamageLevel||0))}
 function bossBlockerUpgradeMax(){return 8}
 function bossBlockerUpgradeCost(){return Math.floor(220000*Math.pow(2.28,state.bossBlockerDelayLevel||0))}

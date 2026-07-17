@@ -155,20 +155,12 @@ async function savePlayerProfile(showError=false){
   p_save_data:state
  });
 
- // Zgodność ze starszą konfiguracją do chwili uruchomienia nowego SQL.
- if(result.error&&/save_player_full_profile|schema cache|function/i.test(result.error.message||'')){
-  result=await db.rpc('save_player_profile',{
-   p_player_id:playerId,
-   p_player_name:state.playerName,
-   p_best_score:Math.floor(state.points),
-   p_level:state.level,
-   p_rebirths:state.rebirths,
-   p_game_version:GAME_VERSION
-  })
- }
 
  if(result.error){
   const error=result.error;
+  if(/save_player_full_profile|schema cache|function/i.test(error.message||'')){
+   error.message='Brakuje aktualnej funkcji save_player_full_profile w Supabase. Stary zapis save_player_profile został wyłączony.'
+  }
   console.error(error);
   saveDiagnostic?.('Profil',error.message,error.stack||'');
   $('#profileStatus')&&($('#profileStatus').textContent='Błąd profilu: '+error.message);
